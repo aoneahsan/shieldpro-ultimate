@@ -1,0 +1,299 @@
+# Dependencies
+node_modules/
+bower_components/
+jspm_packages/
+
+# Build outputs
+dist/
+build/
+out/
+*.zip
+*.crx
+*.pem
+*.xpi
+
+# Development builds
+dev/
+development/
+staging/
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env*.local
+*.env
+
+# Firebase
+.firebase/
+.firebaserc
+firebase-debug.log
+firebase-debug.*.log
+firestore-debug.log
+database-debug.log
+functions-debug.log
+pubsub-debug.log
+ui-debug.log
+emulators-debug.log
+firebase-export-*/
+firestore.indexes.json
+.runtimeconfig.json
+
+# Firebase Functions
+functions/node_modules/
+functions/lib/
+functions/.eslintrc.js
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+*.sublime-project
+.history/
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+pnpm-lock.yaml
+
+# Testing
+coverage/
+.nyc_output/
+*.lcov
+.coverage
+*.cover
+.hypothesis/
+.pytest_cache/
+test-results/
+playwright-report/
+test-report/
+e2e/screenshots/
+e2e/videos/
+
+# Package manager files
+package-lock.json
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+.yarn-integrity
+
+# TypeScript
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# Cache directories
+.cache/
+.parcel-cache/
+.next/
+.nuxt/
+.docusaurus/
+.serverless/
+.fusebox/
+.dynamodb/
+.tern-port
+.vuepress/dist
+.temp/
+
+# Chrome Extension specific
+web-ext-artifacts/
+extension.zip
+packed/
+unpacked/
+
+# Webpack
+.webpack/
+webpack-stats.json
+
+# Security and secrets
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+*.cer
+private/
+secrets/
+credentials/
+auth/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+*.orig
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Database files
+*.sqlite
+*.sqlite3
+*.db
+*.sql
+
+# Archives
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+
+# Custom ignore pattern (your personal pattern)
+*.ignore.*
+
+# Documentation build outputs (if using docusaurus)
+docs/.docusaurus/
+docs/build/
+
+# Storybook
+storybook-static/
+.storybook/out/
+
+# ESLint
+.eslintcache
+
+# Prettier
+.prettierignore
+
+# Stylelint
+.stylelintcache
+
+# Misc
+.grunt/
+.lock-wscript
+.node_repl_history
+.npm/
+.pnpm-store/
+.svn/
+.hg/
+.bzr/
+
+# Production builds
+production/
+release/
+releases/
+
+# Monitoring and profiling
+.clinic/
+.tap/
+.heapsnapshot
+
+# Generated files
+generated/
+auto-generated/
+*.generated.*
+
+# Backup files
+backup/
+backups/
+*.backup
+
+# Local development
+local/
+.local/
+*.local.*
+
+# Analytics
+analytics/
+.ga/
+gtag/
+
+# Source maps
+*.map
+*.js.map
+*.css.map
+
+# Bundle analysis
+stats.json
+bundle-stats.json
+webpack-bundle-analyzer/
+
+# Lock files (keeping yarn.lock as it's already in your project)
+# Uncomment if you want to ignore package-lock.json
+# package-lock.json
+
+# Service worker
+sw.js
+service-worker.js.map
+workbox-*.js
+workbox-*.js.map
+
+# PWA
+manifest.json.bak
+
+# Extension review files
+review/
+submissions/
+
+# Screenshots for store listing (keep in repo if needed)
+# screenshots/
+
+# Promotional materials (keep in repo if needed)  
+# promo/
+
+# Development certificates
+*.localhost.crt
+*.localhost.key
+
+# Hot reload files
+hot-update.*
+*.hot-update.*
+
+# Error reports
+error-reports/
+crash-reports/
+
+# Performance reports
+lighthouse-reports/
+performance/
+
+# API mocks
+__mocks__/
+
+# Sentry
+.sentryclirc
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# Docker
+docker-compose.override.yml
+.dockerignore.local
