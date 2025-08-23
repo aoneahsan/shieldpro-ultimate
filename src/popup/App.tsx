@@ -1,166 +1,367 @@
-import React, { useState, useEffect } from 'react';
-import { Shield, Settings, TrendingUp, Users, Zap, ChevronRight } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { ExtensionSettings, BlockingStats, TabState } from '../shared/types';
+import { AccountManager } from './components/AccountManager';
+import { 
+  Shield, 
+  Power, 
+  ListX, 
+  TrendingUp, 
+  Globe, 
+  Settings,
+  RefreshCw,
+  CheckCircle,
+  XCircle,
+  Activity,
+  BarChart3,
+  Youtube,
+  Eye,
+  Share2
+} from 'lucide-react';
 
-interface TierInfo {
-  level: number;
-  name: string;
-  color: string;
-  progress: number;
-  features: string[];
-}
-
-const tiers: TierInfo[] = [
-  {
-    level: 1,
-    name: 'Basic',
-    color: 'bg-gray-500',
-    progress: 20,
-    features: ['Basic ad blocking', 'Popup blocker']
-  },
-  {
-    level: 2,
-    name: 'Enhanced',
-    color: 'bg-blue-500',
-    progress: 40,
-    features: ['YouTube ad blocking', 'Tracker blocking']
-  },
-  {
-    level: 3,
-    name: 'Professional',
-    color: 'bg-purple-500',
-    progress: 60,
-    features: ['Custom filters', 'Whitelist management']
-  },
-  {
-    level: 4,
-    name: 'Premium',
-    color: 'bg-orange-500',
-    progress: 80,
-    features: ['Advanced privacy', 'Cloud sync']
-  },
-  {
-    level: 5,
-    name: 'Ultimate',
-    color: 'bg-red-500',
-    progress: 100,
-    features: ['All features', 'Priority support']
-  }
-];
-
-function App() {
-  const [enabled, setEnabled] = useState(true);
-  const [blockedCount, setBlockedCount] = useState(0);
-  const [currentTier, setCurrentTier] = useState(1);
+const App: React.FC = () => {
+  const [settings, setSettings] = useState<ExtensionSettings | null>(null);
+  const [stats, setStats] = useState<BlockingStats | null>(null);
+  const [tabState, setTabState] = useState<TabState | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    chrome.storage.local.get(['enabled', 'blockedCount', 'tier'], (data) => {
-      setEnabled(data.enabled ?? true);
-      setBlockedCount(data.blockedCount ?? 0);
-      setCurrentTier(data.tier ?? 1);
-    });
+    loadData();
+    
+    const interval = setInterval(loadData, 1000);
+    return () => clearInterval(interval);
   }, []);
 
-  const toggleExtension = () => {
-    const newState = !enabled;
-    setEnabled(newState);
-    chrome.storage.local.set({ enabled: newState });
-    chrome.runtime.sendMessage({ action: 'toggleExtension' });
+  const loadData = async () => {
+    try {
+      const [settingsRes, statsRes, tabStateRes] = await Promise.all([
+        chrome.runtime.sendMessage({ action: 'getSettings' }),
+        chrome.runtime.sendMessage({ action: 'getStats' }),
+        chrome.runtime.sendMessage({ action: 'getTabState' })
+      ]);
+      
+      setSettings(settingsRes);
+      setStats(statsRes);
+      setTabState(tabStateRes);
+      setLoading(false);
+    } catch (error) {
+      console.error('Failed to load data:', error);
+      setLoading(false);
+    }
   };
 
-  const openOptions = () => {
+  const toggleExtension = async () => {
+    try {
+      const response = await chrome.runtime.sendMessage({ action: 'toggleExtension' });
+      setSettings(prev => prev ? { ...prev, enabled: response.enabled } : null);
+    } catch (error) {
+      console.error('Failed to toggle extension:', error);
+    }
+  };
+
+  const toggleWhitelist = async () => {
+    if (!tabState?.domain) return;
+    
+    try {
+      const response = await chrome.runtime.sendMessage({ 
+        action: 'toggleWhitelist',
+        domain: tabState.domain 
+      });
+      setTabState(prev => prev ? { ...prev, whitelisted: response.whitelisted } : null);
+    } catch (error) {
+      console.error('Failed to toggle whitelist:', error);
+    }
+  };
+
+  const clearStats = async () => {
+    if (confirm('Clear all statistics?')) {
+      try {
+        await chrome.runtime.sendMessage({ action: 'clearStats' });
+        await loadData();
+      } catch (error) {
+        console.error('Failed to clear stats:', error);
+      }
+    }
+  };
+
+  const openSettings = () => {
     chrome.runtime.openOptionsPage();
   };
 
-  const currentTierInfo = tiers[currentTier - 1];
+  const formatNumber = (num: number): string => {
+    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
+    return num.toString();
+  };
+
+  const handleTierUpgrade = (newTier: number) => {
+    setSettings(prev => prev ? {
+      ...prev,
+      tier: {
+        ...prev.tier,
+        level: newTier as any,
+        name: getTierName(newTier),
+        unlockedAt: Date.now(),
+        progress: newTier * 20
+      }
+    } : null);
+  };
+
+  const getTierName = (tier: number): any => {
+    const names = ['Basic', 'Enhanced', 'Professional', 'Premium', 'Ultimate'];
+    return names[tier - 1] || 'Basic';
+  };
+
+  const getTierColor = (tier: number): string => {
+    const colors = ['bg-gray-500', 'bg-green-500', 'bg-blue-500', 'bg-purple-500', 'bg-gradient-to-r from-yellow-400 to-orange-500'];
+    return colors[tier - 1] || colors[0];
+  };
+
+  if (loading) {
+    return (
+      <div className="popup-container flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
+
+  const currentTier = settings?.tier?.level || 1;
+  const isYouTubeActive = currentTier >= 2 && tabState?.domain?.includes('youtube.com');
 
   return (
-    <div className="w-full h-full bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-      <div className="p-4">
-        <div className="flex items-center justify-between mb-4">
+    <div className="popup-container bg-gradient-to-br from-gray-50 to-gray-100">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-primary-600 to-primary-700 p-4 text-white">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center space-x-2">
+            <Shield className="w-6 h-6" />
+            <h1 className="text-lg font-bold">ShieldPro Ultimate</h1>
+          </div>
+          <button
+            onClick={openSettings}
+            className="p-1.5 rounded-lg hover:bg-white/10 transition-colors"
+          >
+            <Settings className="w-5 h-5" />
+          </button>
+        </div>
+        
+        {/* Power Toggle */}
+        <button
+          onClick={toggleExtension}
+          className={`w-full flex items-center justify-between p-3 rounded-lg transition-all ${
+            settings?.enabled 
+              ? 'bg-white/10 hover:bg-white/20' 
+              : 'bg-red-500/20 hover:bg-red-500/30'
+          }`}
+        >
           <div className="flex items-center space-x-3">
-            <Shield className={`w-8 h-8 ${enabled ? 'text-green-500' : 'text-gray-400'}`} />
+            <Power className={`w-5 h-5 ${settings?.enabled ? 'text-green-300' : 'text-red-300'}`} />
+            <span className="font-medium">
+              {settings?.enabled ? 'Protection Active' : 'Protection Disabled'}
+            </span>
+          </div>
+          <div className={`w-12 h-6 rounded-full transition-colors ${
+            settings?.enabled ? 'bg-green-400' : 'bg-gray-400'
+          }`}>
+            <div className={`w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${
+              settings?.enabled ? 'translate-x-6' : 'translate-x-0.5'
+            } mt-0.5`} />
+          </div>
+        </button>
+      </div>
+
+      <div className="p-4 space-y-3">
+        {/* Tier Badge */}
+        <div className={`${getTierColor(currentTier)} text-white rounded-lg p-3`}>
+          <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-lg font-bold text-gray-900 dark:text-white">ShieldPro</h1>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                {enabled ? 'Protection Active' : 'Protection Disabled'}
-              </p>
+              <div className="text-xs opacity-80">Current Tier</div>
+              <div className="text-xl font-bold">{settings?.tier?.name || 'Basic'}</div>
+            </div>
+            <div className="text-right">
+              <div className="text-2xl font-bold">{currentTier}</div>
+              <div className="text-xs opacity-80">Level</div>
             </div>
           </div>
-          <button
-            onClick={toggleExtension}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-              enabled ? 'bg-green-500' : 'bg-gray-300'
-            }`}
-          >
-            <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                enabled ? 'translate-x-6' : 'translate-x-1'
-              }`}
+          <div className="mt-2 bg-white/20 rounded-full h-2">
+            <div 
+              className="bg-white rounded-full h-2 transition-all duration-500"
+              style={{ width: `${(settings?.tier?.progress || 0)}%` }}
             />
-          </button>
+          </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 mb-4 shadow-sm">
+        {/* Account Manager for Tier 2 */}
+        {currentTier < 2 && (
+          <AccountManager 
+            currentTier={currentTier}
+            onTierUpgrade={handleTierUpgrade}
+          />
+        )}
+
+        {/* Current Site */}
+        <div className="bg-white rounded-lg p-3 shadow-sm">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Ads Blocked</span>
-            <span className="text-2xl font-bold text-primary-600">{blockedCount.toLocaleString()}</span>
-          </div>
-          <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
-            <TrendingUp className="w-3 h-3 mr-1" />
-            <span>Since installation</span>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 mb-4 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                Tier {currentTierInfo.level}: {currentTierInfo.name}
-              </h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                {currentTierInfo.progress}% to next tier
-              </p>
+            <div className="flex items-center space-x-2">
+              <Globe className="w-4 h-4 text-gray-400" />
+              <span className="text-sm font-medium text-gray-600">Current Site</span>
             </div>
-            <div className={`w-10 h-10 rounded-full ${currentTierInfo.color} flex items-center justify-center`}>
-              <Zap className="w-5 h-5 text-white" />
-            </div>
+            {tabState?.whitelisted && (
+              <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded">
+                Whitelisted
+              </span>
+            )}
           </div>
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-3">
-            <div
-              className={`h-2 rounded-full ${currentTierInfo.color} transition-all duration-300`}
-              style={{ width: `${currentTierInfo.progress}%` }}
-            />
-          </div>
-          <div className="space-y-1">
-            {currentTierInfo.features.map((feature, index) => (
-              <div key={index} className="flex items-center text-xs text-gray-600 dark:text-gray-400">
-                <ChevronRight className="w-3 h-3 mr-1 text-green-500" />
-                {feature}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <button
-            onClick={() => chrome.tabs.create({ url: 'options.html#upgrade' })}
-            className="w-full bg-gradient-to-r from-primary-600 to-primary-700 text-white py-2 px-4 rounded-lg font-medium text-sm hover:from-primary-700 hover:to-primary-800 transition-all duration-200 flex items-center justify-center space-x-2"
-          >
-            <Users className="w-4 h-4" />
-            <span>Unlock Next Tier</span>
-          </button>
           
-          <button
-            onClick={openOptions}
-            className="w-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-2 px-4 rounded-lg font-medium text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200 flex items-center justify-center space-x-2"
-          >
-            <Settings className="w-4 h-4" />
-            <span>Settings</span>
-          </button>
+          <div className="text-sm font-medium text-gray-900 truncate mb-2">
+            {tabState?.domain || 'No active tab'}
+          </div>
+          
+          {/* YouTube Indicator for Tier 2+ */}
+          {isYouTubeActive && (
+            <div className="flex items-center space-x-2 mb-2 p-2 bg-red-50 rounded">
+              <Youtube className="w-4 h-4 text-red-600" />
+              <span className="text-xs text-red-600 font-medium">YouTube Ad Blocking Active</span>
+            </div>
+          )}
+          
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <div className={`w-2 h-2 rounded-full ${
+                tabState?.whitelisted ? 'bg-yellow-400' : 
+                settings?.enabled ? 'bg-green-500' : 'bg-gray-400'
+              } animate-pulse`} />
+              <span className="text-2xl font-bold text-primary-600">
+                {tabState?.blocked || 0}
+              </span>
+              <span className="text-sm text-gray-500">blocked</span>
+            </div>
+            
+            <button
+              onClick={toggleWhitelist}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                tabState?.whitelisted
+                  ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              {tabState?.whitelisted ? (
+                <>
+                  <CheckCircle className="w-3.5 h-3.5 inline mr-1" />
+                  Remove Whitelist
+                </>
+              ) : (
+                <>
+                  <ListX className="w-3.5 h-3.5 inline mr-1" />
+                  Add Whitelist
+                </>
+              )}
+            </button>
+          </div>
         </div>
+
+        {/* Statistics */}
+        <div className="bg-white rounded-lg p-3 shadow-sm">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center space-x-2">
+              <BarChart3 className="w-4 h-4 text-gray-400" />
+              <span className="text-sm font-medium text-gray-600">Statistics</span>
+            </div>
+            <button
+              onClick={clearStats}
+              className="text-xs text-gray-500 hover:text-gray-700"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+            </button>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <div className="text-xs text-gray-500">Total Blocked</div>
+              <div className="text-xl font-bold text-gray-900">
+                {formatNumber(stats?.totalBlocked || 0)}
+              </div>
+            </div>
+            <div>
+              <div className="text-xs text-gray-500">Today</div>
+              <div className="text-xl font-bold text-primary-600">
+                {formatNumber(stats?.blockedToday || 0)}
+              </div>
+            </div>
+          </div>
+          
+          {/* Category Breakdown */}
+          <div className="mt-3 pt-3 border-t border-gray-100">
+            <div className="text-xs text-gray-500 mb-2">Category Breakdown</div>
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-600">Ads</span>
+                <span className="text-xs font-medium">{stats?.categoryStats?.ads || 0}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-600">Trackers</span>
+                <span className="text-xs font-medium">{stats?.categoryStats?.trackers || 0}</span>
+              </div>
+              {currentTier >= 2 && (
+                <>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-600">YouTube</span>
+                    <span className="text-xs font-medium text-red-600">
+                      {stats?.categoryStats?.youtube || 0}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-600">Social</span>
+                    <span className="text-xs font-medium">{stats?.categoryStats?.social || 0}</span>
+                  </div>
+                </>
+              )}
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-600">Other</span>
+                <span className="text-xs font-medium">{stats?.categoryStats?.other || 0}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Tier 2+ Features Indicator */}
+        {currentTier >= 2 && (
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-3 border border-green-200">
+            <div className="flex items-center space-x-2 mb-2">
+              <Activity className="w-4 h-4 text-green-600" />
+              <span className="text-sm font-medium text-green-800">Tier 2 Features Active</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-xs text-green-700">
+              <div className="flex items-center space-x-1">
+                <Youtube className="w-3 h-3" />
+                <span>YouTube Blocking</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <Eye className="w-3 h-3" />
+                <span>Advanced Trackers</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <Share2 className="w-3 h-3" />
+                <span>Social Trackers</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <BarChart3 className="w-3 h-3" />
+                <span>Analytics Blocking</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Settings Button */}
+        <button
+          onClick={openSettings}
+          className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 px-4 rounded-lg transition-colors text-sm font-medium flex items-center justify-center space-x-2"
+        >
+          <Settings className="w-4 h-4" />
+          <span>Advanced Settings</span>
+        </button>
       </div>
     </div>
   );
-}
+};
 
 export default App;

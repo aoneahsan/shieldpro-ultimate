@@ -25,7 +25,8 @@ export default (env, argv) => {
       popup: './src/popup/index.tsx',
       options: './src/options/index.tsx',
       background: './src/background/service-worker.ts',
-      content: './src/content/injector.ts'
+      content: './src/content/injector.ts',
+      'youtube-blocker': './src/content/youtube-blocker.ts'
     },
 
     output: {
