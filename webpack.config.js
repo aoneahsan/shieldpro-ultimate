@@ -159,7 +159,8 @@ export default (env, argv) => {
           { from: 'public/icons', to: 'icons', noErrorOnMissing: true },
           { from: 'public/rules', to: 'rules', noErrorOnMissing: true },
           { from: 'public/_locales', to: '_locales', noErrorOnMissing: true },
-          { from: 'src/locales', to: 'locales', noErrorOnMissing: true }
+          { from: 'src/locales', to: 'locales', noErrorOnMissing: true },
+          { from: 'src/content/content.css', to: 'content.css', noErrorOnMissing: true }
         ]
       }),
 
