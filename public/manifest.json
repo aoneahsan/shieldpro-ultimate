@@ -132,8 +132,6 @@
     }
   },
   
-  "default_locale": "en",
-  
   "offline_enabled": true,
   
   "incognito": "spanning",
