@@ -10,15 +10,15 @@ export class CookieConsentBlocker {
     const settings = await this.storage.getSettings();
     this.tier = settings.tier?.level || 1;
 
-    // Only activate for Tier 2+
-    if (this.tier >= 2 && settings.enabled) {
+    // Activate for Tier 1+ (basic cookie consent blocking)
+    if (this.tier >= 1 && settings.enabled) {
       this.startBlocking();
       this.injectStyles();
     }
 
     // Listen for tier updates
     chrome.runtime.onMessage.addListener((message) => {
-      if (message.action === 'tierUpdated' && message.tier >= 2) {
+      if (message.action === 'tierUpdated' && message.tier >= 1) {
         this.tier = message.tier;
         this.startBlocking();
       }
