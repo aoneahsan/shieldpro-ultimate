@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShieldPro - Site Blocked</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+    
+    .container {
+      max-width: 600px;
+      padding: 40px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+    
+    .warning-icon {
+      font-size: 5rem;
+      margin-bottom: 20px;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 0.8; }
+    }
+    
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .threat-type {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 10px 20px;
+      border-radius: 50px;
+      margin-bottom: 30px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .description {
+      font-size: 1.2rem;
+      line-height: 1.6;
+      margin-bottom: 30px;
+      opacity: 0.9;
+    }
+    
+    .blocked-url {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 15px;
+      border-radius: 10px;
+      font-family: 'Courier New', monospace;
+      word-break: break-all;
+      margin-bottom: 30px;
+      font-size: 0.9rem;
+    }
+    
+    .actions {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 30px;
+    }
+    
+    .btn {
+      padding: 15px 30px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .btn-primary {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .btn-primary:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+    
+    .btn-secondary {
+      background: rgba(0, 0, 0, 0.3);
+      color: white;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .btn-secondary:hover {
+      background: rgba(0, 0, 0, 0.5);
+      transform: translateY(-2px);
+    }
+    
+    .details {
+      margin-top: 40px;
+      text-align: left;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 20px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+    }
+    
+    .details h3 {
+      margin-bottom: 10px;
+      color: #fbbf24;
+    }
+    
+    .details ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    
+    .details li {
+      margin-bottom: 8px;
+      padding-left: 20px;
+      position: relative;
+    }
+    
+    .details li:before {
+      content: "⚠️";
+      position: absolute;
+      left: 0;
+    }
+    
+    .footer {
+      margin-top: 30px;
+      font-size: 0.8rem;
+      opacity: 0.7;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="warning-icon">🛡️</div>
+    <h1>Site Blocked</h1>
+    <div class="threat-type" id="threat-type">Security Threat</div>
+    <div class="description" id="description">
+      ShieldPro has blocked access to this website because it has been identified as potentially dangerous.
+    </div>
+    <div class="blocked-url" id="blocked-url">
+      <!-- URL will be populated by JavaScript -->
+    </div>
+    
+    <div class="actions">
+      <button class="btn btn-primary" onclick="goBack()">
+        ← Go Back Safely
+      </button>
+      <button class="btn btn-secondary" onclick="reportFalsePositive()">
+        🚨 Report False Positive
+      </button>
+    </div>
+    
+    <div class="details">
+      <h3>Why was this site blocked?</h3>
+      <ul id="threat-details">
+        <li>Site identified as potential security threat</li>
+        <li>Domain appears in malware/phishing database</li>
+        <li>Blocked to protect your device and data</li>
+      </ul>
+    </div>
+    
+    <div class="footer">
+      Protected by ShieldPro Ultimate - Tier 4 Premium Security
+    </div>
+  </div>
+
+  <script>
+    // Get URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const reason = urlParams.get('reason') || 'security';
+    const blockedUrl = urlParams.get('url') || 'unknown';
+    
+    // Update content based on threat type
+    const threatMessages = {
+      malware: {
+        type: 'Malware Detected',
+        icon: '🦠',
+        description: 'This website has been identified as hosting malware that could harm your computer or steal your personal information.',
+        details: [
+          'Site contains malicious software',
+          'May attempt to install viruses or trojans',
+          'Could steal personal information',
+          'Blocked to protect your device'
+        ]
+      },
+      phishing: {
+        type: 'Phishing Site',
+        icon: '🎣',
+        description: 'This website appears to be impersonating a legitimate service to steal your login credentials or personal information.',
+        details: [
+          'Site impersonates legitimate services',
+          'Designed to steal login credentials',
+          'May harvest personal information',
+          'Blocked to protect your accounts'
+        ]
+      },
+      cryptomining: {
+        type: 'Cryptomining Script',
+        icon: '⛏️',
+        description: 'This website contains cryptocurrency mining scripts that would use your computer resources without permission.',
+        details: [
+          'Contains unauthorized mining scripts',
+          'Would use your CPU resources',
+          'May slow down your computer',
+          'Blocked to preserve performance'
+        ]
+      },
+      suspicious: {
+        type: 'Suspicious Activity',
+        icon: '⚠️',
+        description: 'This website exhibits suspicious patterns that suggest it may be harmful or deceptive.',
+        details: [
+          'Suspicious URL patterns detected',
+          'Site may be recently compromised',
+          'Potentially harmful content',
+          'Blocked as a precautionary measure'
+        ]
+      }
+    };
+    
+    const threatInfo = threatMessages[reason] || threatMessages.suspicious;
+    
+    // Update page content
+    document.querySelector('.warning-icon').textContent = threatInfo.icon;
+    document.getElementById('threat-type').textContent = threatInfo.type;
+    document.getElementById('description').textContent = threatInfo.description;
+    document.getElementById('blocked-url').textContent = decodeURIComponent(blockedUrl);
+    
+    const detailsList = document.getElementById('threat-details');
+    detailsList.innerHTML = '';
+    threatInfo.details.forEach(detail => {
+      const li = document.createElement('li');
+      li.textContent = detail;
+      detailsList.appendChild(li);
+    });
+    
+    function goBack() {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = 'https://www.google.com';
+      }
+    }
+    
+    function reportFalsePositive() {
+      const subject = encodeURIComponent(`False Positive Report: ${threatInfo.type}`);
+      const body = encodeURIComponent(`I believe the following site was incorrectly blocked:\n\nURL: ${blockedUrl}\nReason: ${reason}\nThreat Type: ${threatInfo.type}\n\nAdditional Details:\n`);
+      
+      // Try to open extension popup for reporting
+      if (typeof chrome !== 'undefined' && chrome.runtime) {
+        chrome.runtime.sendMessage({
+          action: 'reportFalsePositive',
+          url: blockedUrl,
+          reason: reason,
+          timestamp: Date.now()
+        }).catch(() => {
+          // Fallback to email
+          window.location.href = `mailto:support@shieldpro.com?subject=${subject}&body=${body}`;
+        });
+      } else {
+        // Direct email fallback
+        window.location.href = `mailto:support@shieldpro.com?subject=${subject}&body=${body}`;
+      }
+    }
+    
+    // Log the blocked attempt
+    if (typeof chrome !== 'undefined' && chrome.runtime) {
+      chrome.runtime.sendMessage({
+        action: 'securityThreatBlocked',
+        url: blockedUrl,
+        reason: reason,
+        timestamp: Date.now()
+      }).catch(() => {
+        // Ignore if extension context not available
+      });
+    }
+  </script>
+</body>
+</html>
