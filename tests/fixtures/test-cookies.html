@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cookie Consent Test Page</title>
+  <style>
+    .cookie-consent {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #333;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      z-index: 9999;
+    }
+    #onetrust-banner {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background: #fff;
+      border-top: 1px solid #ccc;
+      padding: 20px;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <h1>Cookie Consent Test Page</h1>
+  
+  <!-- Generic cookie consent banner -->
+  <div class="cookie-consent" id="cookie-banner">
+    <p>We use cookies to improve your experience. By continuing, you agree to our use of cookies.</p>
+    <button class="accept-cookies">Accept All</button>
+    <button class="reject-cookies">Reject All</button>
+  </div>
+  
+  <!-- OneTrust cookie banner (popular consent platform) -->
+  <div id="onetrust-banner" class="onetrust-pc-dark-filter">
+    <div class="ot-sdk-container">
+      <p>This site uses cookies for analytics and personalization.</p>
+      <button id="onetrust-accept-btn-handler">Accept All Cookies</button>
+      <button id="onetrust-reject-all-handler">Reject All</button>
+    </div>
+  </div>
+  
+  <!-- Cookiebot banner -->
+  <div id="CybotCookiebotDialog" style="display: block;">
+    <div class="CybotCookiebotDialogBody">
+      <p>This website uses cookies</p>
+      <button id="CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll">Allow all</button>
+      <button id="CybotCookiebotDialogBodyLevelButtonLevelOptinDeclineAll">Decline all</button>
+    </div>
+  </div>
+  
+  <!-- Quantcast Choice -->
+  <div class="qc-cmp-ui-container" style="display: block;">
+    <button class="qc-cmp-button qc-cmp-accept">Accept</button>
+    <button class="qc-cmp-button qc-cmp-reject">Reject</button>
+  </div>
+  
+  <div style="margin-top: 100px;">
+    <h2>Page Content</h2>
+    <p>This is the main content of the page. Cookie banners above should be auto-rejected and hidden.</p>
+  </div>
+  
+  <script>
+    // Simulate cookie consent manager initialization
+    console.log('Cookie consent manager initializing...');
+    
+    // Check if cookies were rejected
+    setTimeout(() => {
+      const banners = document.querySelectorAll('.cookie-consent, #onetrust-banner, #CybotCookiebotDialog, .qc-cmp-ui-container');
+      banners.forEach(banner => {
+        if (window.getComputedStyle(banner).display === 'none') {
+          console.log('Cookie banner was hidden: ', banner.id || banner.className);
+        }
+      });
+    }, 1000);
+  </script>
+</body>
+</html>

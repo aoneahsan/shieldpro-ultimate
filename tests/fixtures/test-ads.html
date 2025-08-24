@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ad Blocking Test Page</title>
+  <style>
+    .ad { 
+      background: red; 
+      padding: 20px; 
+      margin: 10px; 
+      color: white; 
+      font-weight: bold;
+    }
+    .content { 
+      background: #f0f0f0; 
+      padding: 20px; 
+      margin: 10px; 
+    }
+  </style>
+</head>
+<body>
+  <h1>Test Page for Ad Blocking</h1>
+  
+  <!-- Google Ads -->
+  <div class="google-ad ad">
+    <ins class="adsbygoogle" data-ad-client="ca-pub-123456789"></ins>
+    Google Ad - Should be blocked
+  </div>
+  
+  <!-- Banner Ad -->
+  <div class="banner-ad ad" id="banner_ad_top">
+    Banner Ad - Should be blocked
+  </div>
+  
+  <!-- Generic ad container -->
+  <div id="ad-container" class="ad">
+    Generic Ad Container - Should be blocked
+  </div>
+  
+  <!-- Content that should NOT be blocked -->
+  <div class="content">
+    <h2>Regular Content</h2>
+    <p>This is regular content that should remain visible.</p>
+  </div>
+  
+  <!-- Popup trigger button -->
+  <button id="popup-trigger" onclick="window.open('popup.html', '_blank')">
+    Try to open popup (should be blocked)
+  </button>
+  
+  <!-- Work mode blocked (Tier 3 scheduled blocking) -->
+  <div class="work-mode-blocked ad">
+    Distraction during work hours - Blocked by schedule
+  </div>
+  
+  <!-- Custom class for testing custom filters -->
+  <div class="custom-ad-class ad">
+    Custom Ad Class - For testing Tier 3 custom filters
+  </div>
+  
+  <!-- Unwanted element for element picker testing -->
+  <div class="unwanted-element" style="background: orange; padding: 10px;">
+    Unwanted Element - For element picker testing
+  </div>
+  
+  <!-- Heavy content for performance testing -->
+  <div id="heavy-content">
+    <!-- This would normally contain lots of ads and trackers -->
+  </div>
+  
+  <script>
+    // Simulate ad loading
+    console.log('Ad script attempting to load...');
+    
+    // Google Analytics (should be blocked in Tier 2+)
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  </script>
+</body>
+</html>

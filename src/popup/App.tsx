@@ -113,7 +113,7 @@ const App: React.FC = () => {
 
   const getTierColor = (tier: number): string => {
     const colors = ['bg-gray-500', 'bg-green-500', 'bg-blue-500', 'bg-purple-500', 'bg-gradient-to-r from-yellow-400 to-orange-500'];
-    return colors[tier - 1] || colors[0];
+    return colors[tier - 1] || 'bg-gray-500';
   };
 
   if (loading) {

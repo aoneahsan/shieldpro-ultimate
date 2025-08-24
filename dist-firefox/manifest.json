@@ -1,0 +1,118 @@
+{
+  "manifest_version": 2,
+  "name": "ShieldPro Ultimate - Advanced Ad Blocker",
+  "version": "1.0.0",
+  "description": "Revolutionary ad blocking with 5-tier progressive feature unlock system. Block ads, popups, and trackers while earning premium features.",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "permissions": [
+    "declarativeNetRequestWithHostAccess",
+    "declarativeNetRequestFeedback",
+    "storage",
+    "unlimitedStorage",
+    "tabs",
+    "scripting",
+    "webNavigation",
+    "alarms",
+    "notifications",
+    "contextMenus",
+    "cookies",
+    "<all_urls>"
+  ],
+  "background": {
+    "scripts": [
+      "background.js"
+    ],
+    "persistent": false
+  },
+  "options_page": "options.html",
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "css": [
+        "content.css"
+      ],
+      "run_at": "document_start",
+      "all_frames": true,
+      "match_about_blank": true
+    },
+    {
+      "matches": [
+        "*://*.youtube.com/*",
+        "*://*.youtube-nocookie.com/*"
+      ],
+      "js": [
+        "youtube-blocker.js"
+      ],
+      "css": [
+        "youtube.css"
+      ],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ],
+  "web_accessible_resources": [
+    "injected/*.js",
+    "assets/*",
+    "styles/*",
+    "fonts/*"
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+  },
+  "commands": {
+    "toggle-extension": {
+      "suggested_key": {
+        "default": "Alt+Shift+S",
+        "mac": "Alt+Shift+S"
+      },
+      "description": "Toggle extension on/off"
+    },
+    "open-options": {
+      "suggested_key": {
+        "default": "Alt+Shift+O",
+        "mac": "Alt+Shift+O"
+      },
+      "description": "Open options page"
+    },
+    "block-element": {
+      "suggested_key": {
+        "default": "Alt+Shift+B",
+        "mac": "Alt+Shift+B"
+      },
+      "description": "Block element on page"
+    }
+  },
+  "offline_enabled": true,
+  "incognito": "spanning",
+  "minimum_chrome_version": "88",
+  "browser_action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    },
+    "default_title": "ShieldPro Ultimate"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "shieldpro@example.com",
+      "strict_min_version": "89.0"
+    }
+  }
+}

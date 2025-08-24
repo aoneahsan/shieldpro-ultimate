@@ -327,7 +327,7 @@ export class ElementPicker {
     }
     
     // Highlight selected element
-    const rect = element.getBoundingClientRect();
+    // const rect = element.getBoundingClientRect();
     if (this.highlightBox) {
       this.highlightBox.style.background = 'rgba(239, 68, 68, 0.3)';
       this.highlightBox.style.borderColor = '#ef4444';

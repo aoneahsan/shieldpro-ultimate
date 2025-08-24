@@ -31,7 +31,7 @@ async function initializeContentScripts() {
     console.log('[ShieldPro] Element picker initialized');
 
     // Listen for messages from popup/background
-    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    chrome.runtime.onMessage.addListener((request) => {
       if (request.action === 'testSelector' && request.selector) {
         try {
           const elements = document.querySelectorAll(request.selector);

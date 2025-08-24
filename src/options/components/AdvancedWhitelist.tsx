@@ -39,7 +39,7 @@ export const AdvancedWhitelist: React.FC<AdvancedWhitelistProps> = ({ currentTie
   const [whitelist, setWhitelist] = useState<WhitelistEntry[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddEntry, setShowAddEntry] = useState(false);
-  const [editingEntry, setEditingEntry] = useState<string | null>(null);
+  // const [editingEntry, setEditingEntry] = useState<string | null>(null);
   const [newEntry, setNewEntry] = useState<Partial<WhitelistEntry>>({
     domain: '',
     pattern: '',

@@ -225,9 +225,9 @@ export class PopupBlocker {
   }
 
   private preventNewWindows(): void {
-    // Override window.showModalDialog (deprecated but still used)
-    if (window.showModalDialog) {
-      window.showModalDialog = () => {
+    // Override (window as any).showModalDialog (deprecated but still used)
+    if ((window as any).showModalDialog) {
+      (window as any).showModalDialog = () => {
         console.log('ShieldPro: Blocked showModalDialog');
         return undefined;
       };

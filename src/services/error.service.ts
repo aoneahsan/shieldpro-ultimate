@@ -303,8 +303,8 @@ class ErrorService {
 
   private reportToAnalytics(error: ErrorDetails) {
     // Send to analytics service if configured
-    if (window.gtag) {
-      window.gtag('event', 'exception', {
+    if ((window as any).gtag) {
+      (window as any).gtag('event', 'exception', {
         description: error.message,
         fatal: !error.recoverable
       });

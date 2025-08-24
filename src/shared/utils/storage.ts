@@ -59,7 +59,7 @@ export class StorageManager {
   async incrementBlockedCount(domain: string, category: keyof BlockingStats['categoryStats'] = 'ads'): Promise<void> {
     try {
       const stats = await this.getStats();
-      const now = Date.now();
+      // const now = Date.now();
       const today = new Date().setHours(0, 0, 0, 0);
       // const weekAgo = now - 7 * 24 * 60 * 60 * 1000;
       // const monthAgo = now - 30 * 24 * 60 * 60 * 1000;
