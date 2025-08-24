@@ -1,0 +1,134 @@
+[
+  {
+    "id": 300,
+    "priority": 4,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*instagram.com/logging*",
+      "resourceTypes": ["xmlhttprequest"]
+    }
+  },
+  {
+    "id": 301,
+    "priority": 4,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*twitter.com/i/jot*",
+      "resourceTypes": ["xmlhttprequest"]
+    }
+  },
+  {
+    "id": 302,
+    "priority": 4,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*linkedin.com/li/track*",
+      "resourceTypes": ["xmlhttprequest", "image"]
+    }
+  },
+  {
+    "id": 303,
+    "priority": 4,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*tiktok.com/webcast/ranklist*",
+      "resourceTypes": ["xmlhttprequest"]
+    }
+  },
+  {
+    "id": 304,
+    "priority": 4,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*pinterest.com/resource/UserSessionResource*",
+      "resourceTypes": ["xmlhttprequest"]
+    }
+  },
+  {
+    "id": 305,
+    "priority": 4,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*snapchat.com/web-calling/track*",
+      "resourceTypes": ["xmlhttprequest"]
+    }
+  },
+  {
+    "id": 306,
+    "priority": 4,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*reddit.com/api/v1/sendbird*",
+      "resourceTypes": ["xmlhttprequest"]
+    }
+  },
+  {
+    "id": 307,
+    "priority": 4,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*mixpanel.com*",
+      "resourceTypes": ["script", "xmlhttprequest"]
+    }
+  },
+  {
+    "id": 308,
+    "priority": 4,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*hotjar.com*",
+      "resourceTypes": ["script", "xmlhttprequest"]
+    }
+  },
+  {
+    "id": 309,
+    "priority": 4,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*fullstory.com*",
+      "resourceTypes": ["script", "xmlhttprequest"]
+    }
+  },
+  {
+    "id": 310,
+    "priority": 4,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*mouseflow.com*",
+      "resourceTypes": ["script", "xmlhttprequest"]
+    }
+  },
+  {
+    "id": 311,
+    "priority": 4,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*crazyegg.com*",
+      "resourceTypes": ["script", "xmlhttprequest"]
+    }
+  }
+]

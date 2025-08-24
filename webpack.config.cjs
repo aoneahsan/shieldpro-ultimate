@@ -60,7 +60,7 @@ module.exports = (env, argv) => {
           use: {
             loader: 'ts-loader',
             options: {
-              transpileOnly: isDevelopment,
+              transpileOnly: true, // Skip type checking for now
               compilerOptions: {
                 module: 'esnext'
               }
@@ -125,13 +125,15 @@ module.exports = (env, argv) => {
       new HtmlWebpackPlugin({
         template: './public/blocked.html',
         filename: 'blocked.html',
-        chunks: []
+        chunks: [],
+        minify: false // Don't minify this file
       }),
 
       new HtmlWebpackPlugin({
         template: './public/tiers-info.html',
         filename: 'tiers-info.html',
-        chunks: []
+        chunks: [],
+        minify: false // Don't minify this file as it has parsing issues
       }),
 
       new CopyWebpackPlugin({

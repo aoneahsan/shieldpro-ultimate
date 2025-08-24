@@ -1,0 +1,154 @@
+{
+  "manifest_version": 3,
+  "name": "ShieldPro Ultimate - Advanced Ad Blocker",
+  "version": "1.0.0",
+  "description": "Revolutionary ad blocking with 5-tier progressive feature unlock system. Block ads, popups, and trackers while earning premium features.",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  
+  "permissions": [
+    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess",
+    "declarativeNetRequestFeedback",
+    "storage",
+    "unlimitedStorage",
+    "tabs",
+    "scripting",
+    "webNavigation",
+    "alarms",
+    "notifications",
+    "contextMenus",
+    "cookies"
+  ],
+  
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    },
+    "default_title": "ShieldPro Ultimate"
+  },
+  
+  "options_page": "options.html",
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_start",
+      "all_frames": true,
+      "match_about_blank": true
+    },
+    {
+      "matches": ["*://*.youtube.com/*", "*://*.youtube-nocookie.com/*"],
+      "js": ["youtube-blocker.js"],
+      "css": ["youtube.css"],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ],
+  
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "tier1_rules",
+        "enabled": true,
+        "path": "rules/tier1.json"
+      },
+      {
+        "id": "tier2_rules",
+        "enabled": false,
+        "path": "rules/tier2.json"
+      },
+      {
+        "id": "tier3_rules",
+        "enabled": false,
+        "path": "rules/tier3.json"
+      },
+      {
+        "id": "tier4_rules",
+        "enabled": false,
+        "path": "rules/tier4.json"
+      },
+      {
+        "id": "tier4_security_rules",
+        "enabled": false,
+        "path": "rules/tier4-security.json"
+      },
+      {
+        "id": "tier5_rules",
+        "enabled": false,
+        "path": "rules/tier5.json"
+      }
+    ]
+  },
+  
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "injected/*.js",
+        "assets/*",
+        "styles/*",
+        "fonts/*",
+        "tiers-info.html",
+        "blocked.html"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+  },
+  
+  "commands": {
+    "toggle-extension": {
+      "suggested_key": {
+        "default": "Alt+Shift+S",
+        "mac": "Alt+Shift+S"
+      },
+      "description": "Toggle extension on/off"
+    },
+    "open-options": {
+      "suggested_key": {
+        "default": "Alt+Shift+O",
+        "mac": "Alt+Shift+O"
+      },
+      "description": "Open options page"
+    },
+    "block-element": {
+      "suggested_key": {
+        "default": "Alt+Shift+B",
+        "mac": "Alt+Shift+B"
+      },
+      "description": "Block element on page"
+    }
+  },
+  
+  "offline_enabled": true,
+  
+  "incognito": "spanning",
+  
+  "minimum_chrome_version": "88"
+}

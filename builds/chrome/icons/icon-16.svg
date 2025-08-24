@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4f46e5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2563eb;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="128" height="128" rx="24" fill="url(#bgGradient)"/>
+  
+  <!-- Shield Shape -->
+  <path d="M64 20 L88 32 L88 60 C88 80 76 96 64 100 C52 96 40 80 40 60 L40 32 Z" 
+        fill="white" 
+        opacity="0.95"
+        filter="url(#shadow)"/>
+  
+  <!-- Shield Icon -->
+  <path d="M64 40 L76 46 L76 60 C76 70 70 78 64 80 C58 78 52 70 52 60 L52 46 Z" 
+        fill="url(#bgGradient)"/>
+  
+  <!-- Checkmark -->
+  <path d="M58 58 L62 62 L70 54" 
+        stroke="white" 
+        stroke-width="3" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"
+        fill="none"/>
+</svg>
