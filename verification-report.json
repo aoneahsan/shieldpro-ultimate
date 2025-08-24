@@ -1,0 +1,390 @@
+{
+  "timestamp": "2025-08-24T18:25:20.780Z",
+  "results": {
+    "tier1": {
+      "total": 12,
+      "passed": 10,
+      "failed": 2,
+      "features": [
+        {
+          "passed": true,
+          "description": "Filter Engine",
+          "file": "src/background/filter-engine.ts",
+          "message": "File exists"
+        },
+        {
+          "passed": true,
+          "description": "Service Worker",
+          "file": "src/background/service-worker.ts",
+          "message": "File exists"
+        },
+        {
+          "passed": true,
+          "description": "Content Script",
+          "file": "src/content/content.ts",
+          "message": "File exists"
+        },
+        {
+          "passed": true,
+          "description": "Tier 1 Rules",
+          "file": "public/rules/tier1.json",
+          "message": "File exists"
+        },
+        {
+          "passed": true,
+          "description": "FilterEngine Class",
+          "file": "src/background/filter-engine.ts",
+          "message": "Pattern found"
+        },
+        {
+          "passed": true,
+          "description": "Filter Rules Loading",
+          "file": "src/background/filter-engine.ts",
+          "message": "Pattern found"
+        },
+        {
+          "passed": true,
+          "description": "Network Blocking",
+          "file": "src/background/service-worker.ts",
+          "message": "Pattern found"
+        },
+        {
+          "passed": true,
+          "description": "Popup Blocking",
+          "file": "src/content/popup-blocker.ts",
+          "message": "Pattern found"
+        },
+        {
+          "passed": true,
+          "description": "Cookie Consent Auto-Reject",
+          "file": "src/content/cookie-consent-handler.ts",
+          "message": "Pattern found"
+        },
+        {
+          "passed": true,
+          "description": "Popup UI",
+          "file": "src/popup/App.tsx",
+          "message": "File exists"
+        },
+        {
+          "passed": false,
+          "description": "Block Counter Component",
+          "file": "src/popup/App.tsx",
+          "message": "Pattern not found"
+        },
+        {
+          "passed": false,
+          "description": "Whitelist Toggle",
+          "file": "src/popup/App.tsx",
+          "message": "Pattern not found"
+        }
+      ]
+    },
+    "tier2": {
+      "total": 12,
+      "passed": 12,
+      "failed": 0,
+      "features": [
+        {
+          "passed": true,
+          "description": "YouTube Blocker",
+          "file": "src/content/youtube-blocker.ts",
+          "message": "File exists"
+        },
+        {
+          "passed": true,
+          "description": "Tier 2 Rules",
+          "file": "public/rules/tier2.json",
+          "message": "File exists"
+        },
+        {
+          "passed": true,
+          "description": "YouTube Ad Blocker Class",
+          "file": "src/content/youtube-blocker.ts",
+          "message": "Pattern found"
+        },
+        {
+          "passed": true,
+          "description": "YouTube Ad Skip/Hide",
+          "file": "src/content/youtube-blocker.ts",
+          "message": "Pattern found"
+        },
+        {
+          "passed": true,
+          "description": "Auth Service",
+          "file": "src/services/auth.service.ts",
+          "message": "File exists"
+        },
+        {
+          "passed": true,
+          "description": "Firebase Service",
+          "file": "src/services/firebase.service.ts",
+          "message": "File exists"
+        },
+        {
+          "passed": true,
+          "description": "Google Sign-In",
+          "file": "src/services/auth.service.ts",
+          "message": "Pattern found"
+        },
+        {
+          "passed": true,
+          "description": "Email Sign-Up",
+          "file": "src/services/auth.service.ts",
+          "message": "Pattern found"
+        },
+        {
+          "passed": true,
+          "description": "Settings Sync",
+          "file": "src/services/firebase.service.ts",
+          "message": "Pattern found"
+        },
+        {
+          "passed": true,
+          "description": "User Profile",
+          "file": "src/services/firebase.service.ts",
+          "message": "Pattern found"
+        },
+        {
+          "passed": true,
+          "description": "Tracker Blocking",
+          "file": "src/background/filter-engine.ts",
+          "message": "Pattern found"
+        },
+        {
+          "passed": true,
+          "description": "Privacy Protection",
+          "file": "src/content/privacy-protection.ts",
+          "message": "File exists"
+        }
+      ]
+    },
+    "tier3": {
+      "total": 12,
+      "passed": 12,
+      "failed": 0,
+      "features": [
+        {
+          "passed": true,
+          "description": "Custom Filters Component",
+          "file": "src/options/components/CustomFilters.tsx",
+          "message": "File exists"
+        },
+        {
+          "passed": true,
+          "description": "Tier 3 Rules",
+          "file": "public/rules/tier3.json",
+          "message": "File exists"
+        },
+        {
+          "passed": true,
+          "description": "Custom Filter Interface",
+          "file": "src/options/components/CustomFilters.tsx",
+          "message": "Pattern found"
+        },
+        {
+          "passed": true,
+          "description": "Add Filter Function",
+          "file": "src/options/components/CustomFilters.tsx",
+          "message": "Pattern found"
+        },
+        {
+          "passed": true,
+          "description": "Selector Testing",
+          "file": "src/options/components/CustomFilters.tsx",
+          "message": "Pattern found"
+        },
+        {
+          "passed": true,
+          "description": "Element Picker",
+          "file": "src/content/element-picker.ts",
+          "message": "File exists"
+        },
+        {
+          "passed": true,
+          "description": "Element Picker Class",
+          "file": "src/content/element-picker.ts",
+          "message": "Pattern found"
+        },
+        {
+          "passed": true,
+          "description": "Element Selection",
+          "file": "src/content/element-picker.ts",
+          "message": "Pattern found"
+        },
+        {
+          "passed": true,
+          "description": "Export Filters",
+          "file": "src/options/components/CustomFilters.tsx",
+          "message": "Pattern found"
+        },
+        {
+          "passed": true,
+          "description": "Import Filters",
+          "file": "src/options/components/CustomFilters.tsx",
+          "message": "Pattern found"
+        },
+        {
+          "passed": true,
+          "description": "Scheduled Filters",
+          "file": "src/options/components/CustomFilters.tsx",
+          "message": "Pattern found"
+        },
+        {
+          "passed": true,
+          "description": "Schedule Configuration",
+          "file": "src/options/components/CustomFilters.tsx",
+          "message": "Pattern found"
+        }
+      ]
+    },
+    "tier4": {
+      "total": 21,
+      "passed": 21,
+      "failed": 0,
+      "features": [
+        {
+          "passed": true,
+          "description": "Filter List Manager",
+          "file": "src/options/components/FilterListManager.tsx",
+          "message": "File exists"
+        },
+        {
+          "passed": true,
+          "description": "Tier 4 Rules",
+          "file": "public/rules/tier4.json",
+          "message": "File exists"
+        },
+        {
+          "passed": true,
+          "description": "Filter List Interface",
+          "file": "src/options/components/FilterListManager.tsx",
+          "message": "Pattern found"
+        },
+        {
+          "passed": true,
+          "description": "List Subscription",
+          "file": "src/options/components/FilterListManager.tsx",
+          "message": "Pattern found"
+        },
+        {
+          "passed": true,
+          "description": "List Updates",
+          "file": "src/options/components/FilterListManager.tsx",
+          "message": "Pattern found"
+        },
+        {
+          "passed": true,
+          "description": "Built-in Lists",
+          "file": "src/options/components/FilterListManager.tsx",
+          "message": "Pattern found"
+        },
+        {
+          "passed": true,
+          "description": "Community Lists",
+          "file": "src/options/components/FilterListManager.tsx",
+          "message": "Pattern found"
+        },
+        {
+          "passed": true,
+          "description": "Whitelist Manager",
+          "file": "src/options/components/WhitelistManager.tsx",
+          "message": "File exists"
+        },
+        {
+          "passed": true,
+          "description": "Whitelist Entry Interface",
+          "file": "src/options/components/WhitelistManager.tsx",
+          "message": "Pattern found"
+        },
+        {
+          "passed": true,
+          "description": "Temporary Entries",
+          "file": "src/options/components/WhitelistManager.tsx",
+          "message": "Pattern found"
+        },
+        {
+          "passed": true,
+          "description": "Whitelist Groups",
+          "file": "src/options/components/WhitelistManager.tsx",
+          "message": "Pattern found"
+        },
+        {
+          "passed": true,
+          "description": "Regex Pattern Manager",
+          "file": "src/options/components/RegexPatternManager.tsx",
+          "message": "File exists"
+        },
+        {
+          "passed": true,
+          "description": "Regex Pattern Interface",
+          "file": "src/options/components/RegexPatternManager.tsx",
+          "message": "Pattern found"
+        },
+        {
+          "passed": true,
+          "description": "Complexity Analysis",
+          "file": "src/options/components/RegexPatternManager.tsx",
+          "message": "Pattern found"
+        },
+        {
+          "passed": true,
+          "description": "Pattern Testing",
+          "file": "src/options/components/RegexPatternManager.tsx",
+          "message": "Pattern found"
+        },
+        {
+          "passed": true,
+          "description": "Security Service",
+          "file": "src/services/security.service.ts",
+          "message": "File exists"
+        },
+        {
+          "passed": true,
+          "description": "Malware Protection",
+          "file": "src/services/security.service.ts",
+          "message": "Pattern found"
+        },
+        {
+          "passed": true,
+          "description": "Phishing Protection",
+          "file": "src/services/security.service.ts",
+          "message": "Pattern found"
+        },
+        {
+          "passed": true,
+          "description": "Network Logger",
+          "file": "src/components/NetworkLogger.tsx",
+          "message": "File exists"
+        },
+        {
+          "passed": true,
+          "description": "Script Control Panel",
+          "file": "src/components/ScriptControlPanel.tsx",
+          "message": "File exists"
+        },
+        {
+          "passed": true,
+          "description": "DNS over HTTPS",
+          "file": "src/services/dns-over-https.service.ts",
+          "message": "File exists"
+        }
+      ]
+    },
+    "tier5": {
+      "total": 0,
+      "passed": 0,
+      "failed": 0,
+      "features": []
+    }
+  },
+  "errors": [
+    "tier1: Block Counter Component - Pattern not found",
+    "tier1: Whitelist Toggle - Pattern not found"
+  ],
+  "summary": {
+    "totalPassed": 55,
+    "totalFailed": 2,
+    "percentage": "96.5"
+  }
+}

@@ -47,6 +47,7 @@ export class FilterEngine {
     });
 
     // Load initial rules based on tier
+    await this.loadFilterRules();
     await this.loadRulesForTier(this.tierLevel);
 
     // Listen for tier changes
@@ -63,6 +64,46 @@ export class FilterEngine {
         this.updateBlockingState();
       }
     });
+  }
+
+  private async loadFilterRules() {
+    // Load base filter rules for ad blocking
+    try {
+      const baseRules = await this.generateBaseRules();
+      await chrome.declarativeNetRequest.updateDynamicRules({
+        addRules: baseRules
+      });
+    } catch (error) {
+      console.error('Failed to load filter rules:', error);
+    }
+  }
+
+  private generateBaseRules(): chrome.declarativeNetRequest.Rule[] {
+    // Common tracker and ad domains to block
+    const trackerDomains = [
+      'google-analytics.com', 'googletagmanager.com', 'doubleclick.net',
+      'facebook.com/tr', 'analytics.twitter.com', 'amazon-adsystem.com',
+      'googlesyndication.com', 'googleadservices.com', 'adsrvr.org',
+      'adsystem.com', 'adnxs.com', 'criteo.com', 'outbrain.com',
+      'taboola.com', 'scorecardresearch.com', 'quantserve.com',
+      'mixpanel.com', 'segment.io', 'amplitude.com', 'hotjar.com',
+      'fullstory.com', 'mouseflow.com', 'clarity.ms', 'crazyegg.com'
+    ];
+
+    return trackerDomains.map((domain, index) => ({
+      id: 10000 + index,
+      priority: 1,
+      action: { type: 'block' as const },
+      condition: {
+        urlFilter: `*://*.${domain}/*`,
+        resourceTypes: [
+          'script' as const,
+          'xmlhttprequest' as const,
+          'image' as const,
+          'sub_frame' as const
+        ]
+      }
+    }));
   }
 
   private async loadRulesForTier(tier: number) {

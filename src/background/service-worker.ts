@@ -257,6 +257,7 @@ async function handleMessage(request: any, sender: any, sendResponse: Function) 
         updateAllBadges();
         sendResponse({ success: true });
         break;
+      }
         
       case 'tierUpgraded': {
         const newTier = request.tier;
@@ -306,6 +307,7 @@ async function handleMessage(request: any, sender: any, sendResponse: Function) 
           sendResponse({ success: false, message: 'Invalid tier upgrade' });
         }
         break;
+      }
         
       case 'accountCreated': {
         const settingsForAccount = await storage.getSettings();
@@ -345,6 +347,7 @@ async function handleMessage(request: any, sender: any, sendResponse: Function) 
           sendResponse({ success: false, message: 'Already at Tier 2 or higher' });
         }
         break;
+      }
         
       case 'adBlocked':
         // Handle ad blocked messages from content scripts

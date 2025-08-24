@@ -226,6 +226,32 @@ export class SecurityService {
   }
 
   /**
+   * Enhanced phishing protection
+   */
+  public async checkPhishingProtection(url: string): Promise<boolean> {
+    const domain = new URL(url).hostname;
+    
+    // Check against known phishing domains
+    if (this.phishingDomains.has(domain)) {
+      return true;
+    }
+    
+    // Check for phishing patterns
+    const phishingPatterns = [
+      /secure.*paypal.*(?:verify|update|confirm)/i,
+      /(?:amazon|amaz0n|amazone).*(?:security|verify|suspend)/i,
+      /(?:microsoft|micr0soft|mircosoft).*(?:account|verify|update)/i,
+      /(?:apple|app1e|appl3).*(?:id|account|verify)/i,
+      /(?:bank|banking).*(?:verify|secure|update).*(?:account|login)/i,
+      /(?:netflix|netfl1x).*(?:payment|billing|suspend)/i,
+      /(?:facebook|faceb00k).*(?:security|verify|locked)/i,
+      /(?:google|g00gle|googIe).*(?:account|verify|suspended)/i
+    ];
+    
+    return phishingPatterns.some(pattern => pattern.test(url));
+  }
+
+  /**
    * Update security database from remote sources
    */
   private async updateSecurityDatabase(): Promise<void> {
