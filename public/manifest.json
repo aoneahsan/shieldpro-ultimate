@@ -92,6 +92,11 @@
         "path": "rules/tier4.json"
       },
       {
+        "id": "tier4_security_rules",
+        "enabled": false,
+        "path": "rules/tier4-security.json"
+      },
+      {
         "id": "tier5_rules",
         "enabled": false,
         "path": "rules/tier5.json"
@@ -105,7 +110,9 @@
         "injected/*.js",
         "assets/*",
         "styles/*",
-        "fonts/*"
+        "fonts/*",
+        "tiers-info.html",
+        "blocked.html"
       ],
       "matches": ["<all_urls>"]
     }

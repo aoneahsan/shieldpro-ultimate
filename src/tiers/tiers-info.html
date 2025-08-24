@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShieldPro Ultimate - Tier System</title>
+  <link rel="stylesheet" href="../styles/globals.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%);
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <div id="tiers-info-root"></div>
+  
+  <script src="../shared/utils/dom-utils.js"></script>
+  <script>
+    // Initialize the tiers info page
+    document.addEventListener('DOMContentLoaded', () => {
+      // This will be replaced by React rendering in the actual build
+      const root = document.getElementById('tiers-info-root');
+      
+      if (!root) {
+        console.error('Tiers info root element not found');
+        return;
+      }
+
+      // For development/fallback, show loading state
+      root.innerHTML = `
+        <div style="display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: column;">
+          <div style="width: 48px; height: 48px; border: 4px solid #f3f4f6; border-top: 4px solid #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1rem;"></div>
+          <p style="color: #6b7280; font-size: 1.125rem;">Loading ShieldPro Tier Information...</p>
+        </div>
+        <style>
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        </style>
+      `;
+
+      // Load the React component (this will be handled by webpack in production)
+      if (window.React && window.ReactDOM) {
+        import('./TiersInfo.js').then(module => {
+          const TiersInfo = module.default;
+          window.ReactDOM.render(window.React.createElement(TiersInfo), root);
+        }).catch(error => {
+          console.error('Failed to load TiersInfo component:', error);
+          showFallbackContent(root);
+        });
+      } else {
+        showFallbackContent(root);
+      }
+    });
+
+    function showFallbackContent(root) {
+      root.innerHTML = `
+        <div class="container">
+          <div style="text-align: center; margin-bottom: 3rem;">
+            <h1 style="font-size: 2.5rem; font-weight: bold; color: #111827; margin-bottom: 1rem;">
+              🛡️ ShieldPro Ultimate - Tier System
+            </h1>
+            <p style="font-size: 1.25rem; color: #6b7280; max-width: 768px; margin: 0 auto;">
+              Progressive feature unlocking system with 5 tiers of ad blocking power.
+            </p>
+          </div>
+
+          <div style="background: white; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); padding: 2rem; margin-bottom: 2rem;">
+            <h2 style="font-size: 1.875rem; font-weight: bold; color: #111827; margin-bottom: 1.5rem; display: flex; align-items: center;">
+              <span style="font-size: 2rem; margin-right: 0.75rem;">🛡️</span>
+              Tier 1: Basic Shield
+            </h2>
+            <p style="color: #6b7280; margin-bottom: 1.5rem;">Essential ad blocking available immediately - no login required</p>
+            <div style="display: grid; gap: 0.75rem;">
+              <div style="display: flex; align-items: start;">
+                <span style="color: #10b981; margin-right: 0.5rem;">✓</span>
+                <span style="color: #374151;">Advanced Filter Engine with 1,000+ blocking rules</span>
+              </div>
+              <div style="display: flex; align-items: start;">
+                <span style="color: #10b981; margin-right: 0.5rem;">✓</span>
+                <span style="color: #374151;">50+ Ad Networks blocked (Google AdSense, DoubleClick)</span>
+              </div>
+              <div style="display: flex; align-items: start;">
+                <span style="color: #10b981; margin-right: 0.5rem;">✓</span>
+                <span style="color: #374151;">Smart Popup Management with rate limiting</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="background: white; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); padding: 2rem; margin-bottom: 2rem;">
+            <h2 style="font-size: 1.875rem; font-weight: bold; color: #111827; margin-bottom: 1.5rem; display: flex; align-items: center;">
+              <span style="font-size: 2rem; margin-right: 0.75rem;">⚡</span>
+              Tier 2: Enhanced Protection
+            </h2>
+            <p style="color: #6b7280; margin-bottom: 1.5rem;">Create a free account to unlock YouTube ad blocking</p>
+            <div style="display: grid; gap: 0.75rem;">
+              <div style="display: flex; align-items: start;">
+                <span style="color: #10b981; margin-right: 0.5rem;">✓</span>
+                <span style="color: #374151;">Complete YouTube Ad Blocking</span>
+              </div>
+              <div style="display: flex; align-items: start;">
+                <span style="color: #10b981; margin-right: 0.5rem;">✓</span>
+                <span style="color: #374151;">Advanced Tracking Protection</span>
+              </div>
+              <div style="display: flex; align-items: start;">
+                <span style="color: #10b981; margin-right: 0.5rem;">✓</span>
+                <span style="color: #374151;">Cloud Sync across devices</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="background: white; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); padding: 2rem; margin-bottom: 2rem;">
+            <h2 style="font-size: 1.875rem; font-weight: bold; color: #111827; margin-bottom: 1.5rem; display: flex; align-items: center;">
+              <span style="font-size: 2rem; margin-right: 0.75rem;">⭐</span>
+              Tier 3: Professional Suite
+            </h2>
+            <p style="color: #6b7280; margin-bottom: 1.5rem;">Complete your profile for professional tools</p>
+            <div style="display: grid; gap: 0.75rem;">
+              <div style="display: flex; align-items: start;">
+                <span style="color: #10b981; margin-right: 0.5rem;">✓</span>
+                <span style="color: #374151;">Visual CSS Selector Builder</span>
+              </div>
+              <div style="display: flex; align-items: start;">
+                <span style="color: #10b981; margin-right: 0.5rem;">✓</span>
+                <span style="color: #374151;">Element Picker Tool</span>
+              </div>
+              <div style="display: flex; align-items: start;">
+                <span style="color: #10b981; margin-right: 0.5rem;">✓</span>
+                <span style="color: #374151;">Custom Filter Editor</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="background: white; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); padding: 2rem; margin-bottom: 2rem;">
+            <h2 style="font-size: 1.875rem; font-weight: bold; color: #111827; margin-bottom: 1.5rem; display: flex; align-items: center;">
+              <span style="font-size: 2rem; margin-right: 0.75rem;">🔥</span>
+              Tier 4: Premium Power
+            </h2>
+            <p style="color: #6b7280; margin-bottom: 1.5rem;">Generate 30 referrals for ultimate security</p>
+            <div style="display: grid; gap: 0.75rem;">
+              <div style="display: flex; align-items: start;">
+                <span style="color: #10b981; margin-right: 0.5rem;">✓</span>
+                <span style="color: #374151;">Real-time Malware Domain Blocking</span>
+              </div>
+              <div style="display: flex; align-items: start;">
+                <span style="color: #10b981; margin-right: 0.5rem;">✓</span>
+                <span style="color: #374151;">Advanced Phishing Protection</span>
+              </div>
+              <div style="display: flex; align-items: start;">
+                <span style="color: #10b981; margin-right: 0.5rem;">✓</span>
+                <span style="color: #374151;">Canvas Fingerprinting Protection</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="background: white; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); padding: 2rem;">
+            <h2 style="font-size: 1.875rem; font-weight: bold; color: #111827; margin-bottom: 1.5rem; display: flex; align-items: center;">
+              <span style="font-size: 2rem; margin-right: 0.75rem;">👑</span>
+              Tier 5: Ultimate Champion
+            </h2>
+            <p style="color: #6b7280; margin-bottom: 1.5rem;">Stay active for elite features and AI-powered blocking</p>
+            <div style="display: grid; gap: 0.75rem;">
+              <div style="display: flex; align-items: start;">
+                <span style="color: #10b981; margin-right: 0.5rem;">✓</span>
+                <span style="color: #374151;">AI-Powered Content Analysis</span>
+              </div>
+              <div style="display: flex; align-items: start;">
+                <span style="color: #10b981; margin-right: 0.5rem;">✓</span>
+                <span style="color: #374151;">Predictive Blocking Technology</span>
+              </div>
+              <div style="display: flex; align-items: start;">
+                <span style="color: #10b981; margin-right: 0.5rem;">✓</span>
+                <span style="color: #374151;">Priority Support & Beta Access</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="text-align: center; margin-top: 3rem; color: #6b7280;">
+            <p>Have questions? Contact us through the extension popup.</p>
+            <p style="margin-top: 0.5rem; font-size: 0.875rem;">ShieldPro Ultimate - Your Privacy, Your Control, Your Choice</p>
+          </div>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>

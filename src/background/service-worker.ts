@@ -25,9 +25,9 @@ async function updateTierRules(tier: number): Promise<void> {
   }
   
   if (tier >= 4) {
-    enabledRulesets.push('tier4_rules');
+    enabledRulesets.push('tier4_rules', 'tier4_security_rules');
   } else {
-    disabledRulesets.push('tier4_rules');
+    disabledRulesets.push('tier4_rules', 'tier4_security_rules');
   }
   
   if (tier >= 5) {
@@ -159,7 +159,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   switch (info.menuItemId) {
     case 'view-tiers':
       chrome.tabs.create({
-        url: chrome.runtime.getURL('tiers.html')
+        url: chrome.runtime.getURL('tiers-info.html')
       });
       break;
       
@@ -174,7 +174,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         }
       } else {
         chrome.tabs.create({
-          url: chrome.runtime.getURL('tiers.html')
+          url: chrome.runtime.getURL('tiers-info.html')
         });
       }
       break;
