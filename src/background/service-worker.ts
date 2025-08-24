@@ -55,7 +55,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     const stats = await storage.getStats();
     
     // Enable tier-based rulesets
-    await updateTierRules(settings.tier);
+    await updateTierRules(settings.tier.level || 1);
     
     updateIcon(settings.enabled);
     
@@ -66,7 +66,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     console.log('Extension updated to version:', chrome.runtime.getManifest().version);
     // Re-apply tier rules after update
     const settings = await storage.getSettings();
-    await updateTierRules(settings.tier);
+    await updateTierRules(settings.tier.level || 1);
   }
 });
 
@@ -198,12 +198,29 @@ async function handleMessage(request: any, sender: any, sendResponse: Function) 
         sendResponse({ success: true });
         break;
         
-      case 'upgradeTier':
-        const currentSettings = await storage.getSettings();
-        const newTier = request.tier || currentSettings.tier + 1;
+      case 'tierUpgraded':
+        const newTier = request.tier;
+        const userId = request.userId;
         
-        if (newTier > currentSettings.tier && newTier <= 5) {
-          await storage.setSettings({ ...currentSettings, tier: newTier });
+        if (newTier >= 1 && newTier <= 5) {
+          const currentSettings = await storage.getSettings();
+          const tierNames: Record<number, string> = {
+            1: 'Basic',
+            2: 'Enhanced',
+            3: 'Professional',
+            4: 'Premium',
+            5: 'Ultimate'
+          };
+          
+          await storage.setSettings({ 
+            ...currentSettings, 
+            tier: {
+              level: newTier,
+              name: tierNames[newTier] as any,
+              unlockedAt: Date.now(),
+              progress: newTier * 20
+            }
+          });
           await updateTierRules(newTier);
           
           // Notify all tabs about tier upgrade
@@ -233,8 +250,16 @@ async function handleMessage(request: any, sender: any, sendResponse: Function) 
         
       case 'accountCreated':
         const settingsForAccount = await storage.getSettings();
-        if (settingsForAccount.tier < 2) {
-          await storage.setSettings({ ...settingsForAccount, tier: 2 });
+        if (settingsForAccount.tier.level < 2) {
+          await storage.setSettings({ 
+            ...settingsForAccount, 
+            tier: {
+              level: 2,
+              name: 'Enhanced',
+              unlockedAt: Date.now(),
+              progress: 20
+            }
+          });
           await updateTierRules(2);
           
           // Notify all tabs
@@ -394,7 +419,8 @@ async function updateBadge(tabId: number) {
   if (blocked > 0) {
     // Use different colors based on tier
     const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6'];
-    const color = colors[Math.min(settings.tier - 1, 4)];
+    const tierLevel = settings.tier.level || 1;
+    const color = colors[Math.min(tierLevel - 1, 4)];
     chrome.action.setBadgeBackgroundColor({ color, tabId });
   }
 }

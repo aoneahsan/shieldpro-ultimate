@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StorageManager } from '../../shared/utils/storage';
+import authService from '../../services/auth.service';
+import { User } from 'firebase/auth';
 
 interface AccountManagerProps {
   currentTier: number;
@@ -8,11 +10,29 @@ interface AccountManagerProps {
 
 export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onTierUpgrade }) => {
   const [showSignup, setShowSignup] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [referralCode, setReferralCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
+
+  useEffect(() => {
+    // Check if user is already logged in
+    const user = authService.getCurrentUser();
+    const profile = authService.getUserProfile();
+    if (user) {
+      setCurrentUser(user);
+      setUserProfile(profile);
+      if (profile?.tier?.level) {
+        onTierUpgrade(profile.tier.level);
+      }
+    }
+  }, [onTierUpgrade]);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,55 +41,142 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
     setSuccess('');
 
     try {
-      // Simulate account creation (in real app, this would connect to Firebase Auth)
-      if (email && password && password.length >= 6) {
-        // Send message to background to upgrade tier
-        const response = await chrome.runtime.sendMessage({ action: 'accountCreated' });
+      // Create account with Firebase Auth
+      const user = await authService.signUp(email, password, displayName, referralCode);
+      
+      if (user) {
+        setSuccess('Account created successfully! Tier 2 features unlocked!');
+        setCurrentUser(user);
+        onTierUpgrade(2);
         
-        if (response.success) {
-          setSuccess('Account created successfully! Tier 2 features unlocked!');
-          onTierUpgrade(2);
-          
-          // Store account info locally (in real app, use Firebase)
-          const storage = StorageManager.getInstance();
-          await storage.setSettings({
-            tier: {
-              level: 2,
-              name: 'Enhanced',
-              unlockedAt: Date.now(),
-              progress: 20
-            }
-          });
-          
-          setTimeout(() => {
-            setShowSignup(false);
-            setSuccess('');
-          }, 2000);
-        } else {
-          setError(response.message || 'Failed to create account');
-        }
-      } else {
-        setError('Please enter a valid email and password (min 6 characters)');
+        // Update local storage
+        const storage = StorageManager.getInstance();
+        await storage.setSettings({
+          tier: {
+            level: 2,
+            name: 'Enhanced',
+            unlockedAt: Date.now(),
+            progress: 20
+          }
+        });
+        
+        // Send message to background to update tier rules
+        await chrome.runtime.sendMessage({ 
+          action: 'tierUpgraded', 
+          tier: 2,
+          userId: user.uid 
+        });
+        
+        setTimeout(() => {
+          setShowSignup(false);
+          setSuccess('');
+        }, 2000);
       }
-    } catch (err) {
-      setError('Failed to create account. Please try again.');
+    } catch (err: any) {
+      setError(err.message || 'Failed to create account. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  if (currentTier >= 2) {
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const user = await authService.signIn(email, password);
+      
+      if (user) {
+        const profile = authService.getUserProfile();
+        const tierLevel = profile?.tier?.level || 2;
+        
+        setSuccess(`Welcome back! Tier ${tierLevel} features active.`);
+        setCurrentUser(user);
+        setUserProfile(profile);
+        onTierUpgrade(tierLevel);
+        
+        // Update local storage
+        const storage = StorageManager.getInstance();
+        await storage.setSettings({
+          tier: profile?.tier || {
+            level: 2,
+            name: 'Enhanced',
+            unlockedAt: Date.now(),
+            progress: 20
+          }
+        });
+        
+        // Send message to background to update tier rules
+        await chrome.runtime.sendMessage({ 
+          action: 'tierUpgraded', 
+          tier: tierLevel,
+          userId: user.uid 
+        });
+        
+        setTimeout(() => {
+          setShowLogin(false);
+          setSuccess('');
+        }, 2000);
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to sign in. Please check your credentials.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await authService.signOut();
+      setCurrentUser(null);
+      setUserProfile(null);
+      onTierUpgrade(1);
+      
+      // Update local storage
+      const storage = StorageManager.getInstance();
+      await storage.setSettings({
+        tier: {
+          level: 1,
+          name: 'Basic',
+          unlockedAt: Date.now(),
+          progress: 0
+        }
+      });
+      
+      // Send message to background to update tier rules
+      await chrome.runtime.sendMessage({ 
+        action: 'tierUpgraded', 
+        tier: 1
+      });
+    } catch (err: any) {
+      setError(err.message || 'Failed to sign out.');
+    }
+  };
+
+  if (currentUser && currentTier >= 2) {
     return (
       <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg p-4 text-white">
         <div className="flex items-center justify-between">
-          <div>
+          <div className="flex-1">
             <h3 className="font-semibold text-lg">Account Active</h3>
-            <p className="text-sm opacity-90">Tier {currentTier} Features Unlocked</p>
+            <p className="text-sm opacity-90">Tier {currentTier} - {userProfile?.tier?.name || 'Enhanced'}</p>
+            <p className="text-xs opacity-75 mt-1">{currentUser.email}</p>
+            {userProfile?.stats?.referralCode && (
+              <p className="text-xs opacity-75 mt-1">Referral Code: {userProfile.stats.referralCode}</p>
+            )}
           </div>
-          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
+          <button
+            onClick={handleSignOut}
+            className="ml-3 p-2 hover:bg-white/20 rounded-lg transition-colors"
+            title="Sign Out"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+          </button>
         </div>
       </div>
     );
@@ -92,7 +199,23 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
           </div>
         )}
         
-        <form onSubmit={handleSignup}>
+        <form onSubmit={showLogin ? handleLogin : handleSignup}>
+          {!showLogin && (
+            <div className="mb-3">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Display Name
+              </label>
+              <input
+                type="text"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Your name"
+                disabled={loading}
+              />
+            </div>
+          )}
+          
           <div className="mb-3">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Email
@@ -124,13 +247,29 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
             />
           </div>
           
+          {!showLogin && (
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Referral Code (Optional)
+              </label>
+              <input
+                type="text"
+                value={referralCode}
+                onChange={(e) => setReferralCode(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Enter if you have one"
+                disabled={loading}
+              />
+            </div>
+          )}
+          
           <div className="flex gap-2">
             <button
               type="submit"
               disabled={loading}
               className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2 px-4 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 disabled:opacity-50"
             >
-              {loading ? 'Creating...' : 'Create Account'}
+              {loading ? (showLogin ? 'Signing In...' : 'Creating...') : (showLogin ? 'Sign In' : 'Create Account')}
             </button>
             <button
               type="button"
@@ -142,6 +281,20 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
             </button>
           </div>
         </form>
+        
+        <div className="mt-3 text-center">
+          <button
+            type="button"
+            onClick={() => {
+              setShowLogin(!showLogin);
+              setError('');
+              setSuccess('');
+            }}
+            className="text-sm text-blue-600 hover:text-blue-700"
+          >
+            {showLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
+          </button>
+        </div>
         
         <div className="mt-4 pt-4 border-t border-gray-200">
           <h4 className="font-medium text-sm mb-2">Tier 2 Features:</h4>

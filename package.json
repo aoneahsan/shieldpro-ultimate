@@ -18,7 +18,15 @@
     "format": "prettier --write src/**/*.{ts,tsx,json,css}",
     "type-check": "tsc --noEmit",
     "package": "cd dist && zip -r ../extension.zip *",
-    "release": "node scripts/release.js"
+    "release": "node scripts/release.js",
+    "build:chrome": "BUILD_TARGET=chrome npm run build:prod",
+    "build:firefox": "BUILD_TARGET=firefox npm run build:prod",
+    "build:edge": "BUILD_TARGET=edge npm run build:prod",
+    "build:all": "node scripts/build-browsers.js",
+    "package:chrome": "npm run build:chrome && cd dist && zip -r ../builds/shieldpro-chrome.zip *",
+    "package:firefox": "npm run build:firefox && cd dist && zip -r ../builds/shieldpro-firefox.zip *",
+    "package:edge": "npm run build:edge && cd dist && zip -r ../builds/shieldpro-edge.zip *",
+    "package:all": "npm run build:all"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.3",
