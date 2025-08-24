@@ -189,7 +189,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 async function handleMessage(request: any, sender: any, sendResponse: Function) {
   try {
     switch (request.action) {
-      case 'getTabState':
+      case 'getTabState': {
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
         if (tab?.id) {
           const state = tabStates.get(tab.id) || {
@@ -204,15 +204,17 @@ async function handleMessage(request: any, sender: any, sendResponse: Function) 
           sendResponse(null);
         }
         break;
+      }
         
-      case 'toggleExtension':
+      case 'toggleExtension': {
         const enabled = await storage.toggleExtension();
         updateIcon(enabled);
         updateAllBadges();
         sendResponse({ enabled });
         break;
+      }
         
-      case 'toggleWhitelist':
+      case 'toggleWhitelist': {
         const domain = request.domain;
         const isWhitelisted = await storage.isWhitelisted(domain);
         
@@ -235,25 +237,28 @@ async function handleMessage(request: any, sender: any, sendResponse: Function) 
         
         sendResponse({ whitelisted: !isWhitelisted });
         break;
+      }
         
-      case 'getStats':
+      case 'getStats': {
         const stats = await storage.getStats();
         sendResponse(stats);
         break;
+      }
         
-      case 'getSettings':
+      case 'getSettings': {
         const settings = await storage.getSettings();
         sendResponse(settings);
         break;
+      }
         
-      case 'clearStats':
+      case 'clearStats': {
         await storage.clearStats();
         blockedRequests.clear();
         updateAllBadges();
         sendResponse({ success: true });
         break;
         
-      case 'tierUpgraded':
+      case 'tierUpgraded': {
         const newTier = request.tier;
         
         if (newTier >= 1 && newTier <= 5) {
@@ -302,7 +307,7 @@ async function handleMessage(request: any, sender: any, sendResponse: Function) 
         }
         break;
         
-      case 'accountCreated':
+      case 'accountCreated': {
         const settingsForAccount = await storage.getSettings();
         if (settingsForAccount.tier.level < 2) {
           await storage.setSettings({ 

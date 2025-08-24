@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Shield, Users, Settings, Filter, Globe, Lock, Check, Download, Upload, Network, Code, Zap, ShieldX } from 'lucide-react';
+import { Shield, Users, Settings, Filter, Globe, Lock, Check, Download, Upload, Network, Code, Zap, ShieldX, Database, List } from 'lucide-react';
 import { CustomFilters } from './components/CustomFilters';
 import { AdvancedWhitelist } from './components/AdvancedWhitelist';
+import { FilterListManager } from './components/FilterListManager';
+import { WhitelistManager } from './components/WhitelistManager';
+import { RegexPatternManager } from './components/RegexPatternManager';
 import { ScriptControlPanel } from '../components/ScriptControlPanel';
 import { NetworkLogger } from '../components/NetworkLogger';
 import { StorageManager } from '../shared/utils/storage';
@@ -27,7 +30,13 @@ function Options() {
     { id: 'privacy', label: 'Privacy', icon: Lock },
     { id: 'whitelist', label: 'Whitelist', icon: Globe },
     { id: 'tiers', label: 'Tiers', icon: Users },
+    ...(currentTier >= 3 ? [
+      { id: 'custom-filters', label: 'Custom Filters', icon: Filter }
+    ] : []),
     ...(currentTier >= 4 ? [
+      { id: 'filter-lists', label: 'Filter Lists', icon: Database },
+      { id: 'whitelist-manager', label: 'Whitelist Manager', icon: List },
+      { id: 'regex-patterns', label: 'Regex Patterns', icon: Code },
       { id: 'scripts', label: 'Script Control', icon: Code },
       { id: 'network', label: 'Network Logger', icon: Network },
       { id: 'security', label: 'Security', icon: Shield }
@@ -76,6 +85,10 @@ function Options() {
             {activeTab === 'privacy' && <PrivacySettings />}
             {activeTab === 'whitelist' && <WhitelistSettings />}
             {activeTab === 'tiers' && <TierSettings />}
+            {activeTab === 'custom-filters' && currentTier >= 3 && <CustomFilters currentTier={currentTier} />}
+            {activeTab === 'filter-lists' && currentTier >= 4 && <FilterListManager currentTier={currentTier} />}
+            {activeTab === 'whitelist-manager' && currentTier >= 4 && <WhitelistManager currentTier={currentTier} />}
+            {activeTab === 'regex-patterns' && currentTier >= 4 && <RegexPatternManager currentTier={currentTier} />}
             {activeTab === 'scripts' && currentTier >= 4 && <ScriptControlPanel />}
             {activeTab === 'network' && currentTier >= 4 && <NetworkLogger />}
             {activeTab === 'security' && currentTier >= 4 && <SecuritySettings />}
