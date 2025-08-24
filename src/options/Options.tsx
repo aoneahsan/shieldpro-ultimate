@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
-import { Shield, Users, Settings, Filter, Globe, Lock, ChevronRight, Check } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Shield, Users, Settings, Filter, Globe, Lock, ChevronRight, Check, Download, Upload, FileText } from 'lucide-react';
+import { CustomFilters } from './components/CustomFilters';
+import { AdvancedWhitelist } from './components/AdvancedWhitelist';
+import { StorageManager } from '../shared/utils/storage';
 
 function Options() {
   const [activeTab, setActiveTab] = useState('general');
@@ -68,6 +71,91 @@ function GeneralSettings() {
     notifications: true,
     autoUpdate: true,
   });
+  const [currentTier, setCurrentTier] = useState(1);
+
+  useEffect(() => {
+    loadSettings();
+  }, []);
+
+  const loadSettings = async () => {
+    const storage = StorageManager.getInstance();
+    const savedSettings = await storage.getSettings();
+    setCurrentTier(savedSettings.tier?.level || 1);
+    setSettings({
+      enabled: savedSettings.enabled ?? true,
+      showBadge: savedSettings.showBadge ?? true,
+      notifications: savedSettings.notifications ?? true,
+      autoUpdate: savedSettings.autoUpdate ?? true,
+    });
+  };
+
+  const saveSettings = async (newSettings: typeof settings) => {
+    setSettings(newSettings);
+    const storage = StorageManager.getInstance();
+    await storage.updateSettings(newSettings);
+  };
+
+  const exportSettings = async () => {
+    const storage = StorageManager.getInstance();
+    const allData = {
+      settings: await storage.getSettings(),
+      customFilters: await chrome.storage.local.get('customFilters'),
+      whitelist: await chrome.storage.local.get('whitelist'),
+      stats: await chrome.storage.local.get('stats'),
+      version: '1.0.0',
+      exportDate: new Date().toISOString()
+    };
+
+    const dataStr = JSON.stringify(allData, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', `shieldpro-settings-${Date.now()}.json`);
+    linkElement.click();
+  };
+
+  const importSettings = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/json';
+    
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        try {
+          const imported = JSON.parse(event.target?.result as string);
+          
+          // Import settings
+          if (imported.settings) {
+            const storage = StorageManager.getInstance();
+            await storage.updateSettings(imported.settings);
+          }
+          
+          // Import custom filters
+          if (imported.customFilters) {
+            await chrome.storage.local.set({ customFilters: imported.customFilters.customFilters });
+          }
+          
+          // Import whitelist
+          if (imported.whitelist) {
+            await chrome.storage.local.set({ whitelist: imported.whitelist.whitelist });
+          }
+          
+          alert('Settings imported successfully! Reloading extension...');
+          chrome.runtime.reload();
+        } catch (error) {
+          alert('Failed to import settings. Please check the file format.');
+        }
+      };
+      reader.readAsText(file);
+    };
+    
+    input.click();
+  };
 
   return (
     <div className="space-y-6">
@@ -87,17 +175,55 @@ function GeneralSettings() {
             <input
               type="checkbox"
               checked={value}
-              onChange={(e) => setSettings({ ...settings, [key]: e.target.checked })}
+              onChange={(e) => saveSettings({ ...settings, [key]: e.target.checked })}
               className="h-5 w-5 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
             />
           </label>
         ))}
       </div>
+
+      {/* Import/Export Section - Tier 3 Feature */}
+      {currentTier >= 3 && (
+        <div className="border-t pt-6">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Backup & Restore</h3>
+          <div className="flex space-x-4">
+            <button
+              onClick={exportSettings}
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <Download className="w-4 h-4" />
+              <span>Export Settings</span>
+            </button>
+            <button
+              onClick={importSettings}
+              className="flex items-center space-x-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+            >
+              <Upload className="w-4 h-4" />
+              <span>Import Settings</span>
+            </button>
+          </div>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+            Tier 3 Feature: Export and import all your settings, custom filters, and whitelist
+          </p>
+        </div>
+      )}
     </div>
   );
 }
 
 function FilterSettings() {
+  const [currentTier, setCurrentTier] = useState(1);
+
+  useEffect(() => {
+    loadTier();
+  }, []);
+
+  const loadTier = async () => {
+    const storage = StorageManager.getInstance();
+    const settings = await storage.getSettings();
+    setCurrentTier(settings.tier?.level || 1);
+  };
+
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Filter Settings</h2>
@@ -109,19 +235,26 @@ function FilterSettings() {
           <ul className="space-y-2">
             <li className="flex items-center text-sm text-blue-700 dark:text-blue-400">
               <Check className="w-4 h-4 mr-2" />
-              EasyList (Ads)
+              Tier 1: Basic Ad Blocking (50+ rules)
             </li>
-            <li className="flex items-center text-sm text-blue-700 dark:text-blue-400">
-              <Check className="w-4 h-4 mr-2" />
-              EasyPrivacy (Trackers)
-            </li>
-            <li className="flex items-center text-sm text-blue-700 dark:text-blue-400">
-              <Check className="w-4 h-4 mr-2" />
-              uBlock Filters
-            </li>
+            {currentTier >= 2 && (
+              <li className="flex items-center text-sm text-blue-700 dark:text-blue-400">
+                <Check className="w-4 h-4 mr-2" />
+                Tier 2: Advanced Trackers (40+ rules)
+              </li>
+            )}
+            {currentTier >= 3 && (
+              <li className="flex items-center text-sm text-blue-700 dark:text-blue-400">
+                <Check className="w-4 h-4 mr-2" />
+                Tier 3: Professional Filters (100+ rules)
+              </li>
+            )}
           </ul>
         </div>
       </div>
+
+      {/* Custom Filters Component */}
+      <CustomFilters currentTier={currentTier} />
     </div>
   );
 }
@@ -136,10 +269,43 @@ function PrivacySettings() {
 }
 
 function WhitelistSettings() {
+  const [currentTier, setCurrentTier] = useState(1);
+
+  useEffect(() => {
+    loadTier();
+  }, []);
+
+  const loadTier = async () => {
+    const storage = StorageManager.getInstance();
+    const settings = await storage.getSettings();
+    setCurrentTier(settings.tier?.level || 1);
+  };
+
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Whitelist</h2>
+      <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Whitelist Management</h2>
       <p className="text-gray-600 dark:text-gray-400">Manage websites where ads are allowed</p>
+      
+      {/* Basic whitelist for all tiers */}
+      <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+        <h3 className="font-medium text-gray-900 dark:text-white mb-2">Basic Whitelist</h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+          Add websites where you want to allow ads (supports all tiers)
+        </p>
+        <div className="space-y-2">
+          <input
+            type="text"
+            placeholder="Enter domain (e.g., example.com)"
+            className="w-full px-3 py-2 border rounded-lg dark:bg-gray-800 dark:border-gray-600"
+          />
+          <button className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700">
+            Add to Whitelist
+          </button>
+        </div>
+      </div>
+
+      {/* Advanced whitelist component for Tier 3+ */}
+      <AdvancedWhitelist currentTier={currentTier} />
     </div>
   );
 }

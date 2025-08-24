@@ -48,6 +48,33 @@ async function updateTierRules(tier: number): Promise<void> {
 }
 
 chrome.runtime.onInstalled.addListener(async (details) => {
+  // Create context menu items
+  chrome.contextMenus.removeAll(() => {
+    chrome.contextMenus.create({
+      id: 'view-tiers',
+      title: 'View Tier System',
+      contexts: ['action']
+    });
+    
+    chrome.contextMenus.create({
+      id: 'separator-1',
+      type: 'separator',
+      contexts: ['action']
+    });
+    
+    chrome.contextMenus.create({
+      id: 'open-options',
+      title: 'Options',
+      contexts: ['action']
+    });
+    
+    chrome.contextMenus.create({
+      id: 'activate-element-picker',
+      title: 'Element Picker (Tier 3)',
+      contexts: ['page']
+    });
+  });
+
   if (details.reason === 'install') {
     console.log('Extension installed');
     
@@ -123,6 +150,35 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 chrome.tabs.onRemoved.addListener((tabId) => {
   tabStates.delete(tabId);
   blockedRequests.delete(tabId);
+});
+
+// Handle context menu clicks
+chrome.contextMenus.onClicked.addListener(async (info, tab) => {
+  const settings = await storage.getSettings();
+  
+  switch (info.menuItemId) {
+    case 'view-tiers':
+      chrome.tabs.create({
+        url: chrome.runtime.getURL('tiers.html')
+      });
+      break;
+      
+    case 'open-options':
+      chrome.runtime.openOptionsPage();
+      break;
+      
+    case 'activate-element-picker':
+      if (settings.tier.level >= 3) {
+        if (tab?.id) {
+          chrome.tabs.sendMessage(tab.id, { action: 'activateElementPicker' });
+        }
+      } else {
+        chrome.tabs.create({
+          url: chrome.runtime.getURL('tiers.html')
+        });
+      }
+      break;
+  }
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
