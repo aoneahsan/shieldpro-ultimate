@@ -59,6 +59,13 @@
       "run_at": "document_start",
       "all_frames": true,
       "match_about_blank": true
+    },
+    {
+      "matches": ["*://*.youtube.com/*", "*://*.youtube-nocookie.com/*"],
+      "js": ["youtube-blocker.js"],
+      "css": ["youtube.css"],
+      "run_at": "document_start",
+      "all_frames": true
     }
   ],
   

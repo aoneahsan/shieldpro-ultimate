@@ -1,0 +1,181 @@
+/* ShieldPro Ultimate - YouTube Ad Blocking Styles (Tier 2) */
+
+/* Hide all video ads */
+.video-ads,
+.ytp-ad-module,
+.ytp-ad-overlay-container,
+.ytp-ad-player-overlay,
+.ytp-ad-player-overlay-instream-info,
+.ytp-ad-player-overlay-skip-or-preview,
+ytd-player-legacy-desktop-watch-ads-renderer,
+ytd-action-companion-ad-renderer,
+ytd-display-ad-renderer,
+ytd-video-masthead-ad-advertiser-info-renderer,
+ytd-video-masthead-ad-primary-video-renderer {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  width: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Hide in-feed ads */
+ytd-in-feed-ad-layout-renderer,
+ytd-ad-slot-renderer,
+ytd-banner-promo-renderer,
+ytd-statement-banner-renderer,
+ytd-masthead-ad-v3-renderer,
+ytd-primetime-promo-renderer,
+ytd-inline-survey-renderer,
+ytd-brand-video-singleton-renderer,
+ytd-brand-video-shelf-renderer {
+  display: none !important;
+}
+
+/* Hide sidebar ads */
+ytd-companion-slot-renderer,
+ytd-promoted-video-renderer,
+ytd-compact-promoted-video-renderer,
+ytd-promoted-sparkles-web-renderer,
+ytd-promoted-sparkles-text-search-renderer,
+#player-ads,
+#masthead-ad,
+#homepage-chrome-side-promo,
+#watch-channel-brand-div,
+#watch7-sidebar-ads {
+  display: none !important;
+}
+
+/* Hide search ads */
+ytd-search-pyv-renderer,
+ytd-promoted-video-renderer,
+ytd-compact-promoted-video-renderer,
+ytd-ad-slot-renderer {
+  display: none !important;
+}
+
+/* Hide overlay ads */
+.ytp-ad-overlay-slot,
+.ytp-ad-overlay-container,
+.ytp-ad-overlay-close-button,
+.ytp-ad-overlay-image,
+.ytp-ad-text-overlay,
+.ytp-ad-hover-text-container,
+.ytp-ad-info-hover-container {
+  display: none !important;
+}
+
+/* Hide popup and modal ads */
+tp-yt-paper-dialog:has(ytd-mealbar-promo-renderer),
+yt-mealbar-promo-renderer,
+ytd-popup-container,
+ytd-mealbar-promo-renderer,
+yt-tooltip-renderer:has([class*="promo"]),
+tp-yt-paper-dialog:has(yt-mealbar-promo-renderer) {
+  display: none !important;
+}
+
+/* Hide sponsor and merchandise sections */
+ytd-engagement-panel-section-list-renderer[target-id="engagement-panel-ads"],
+ytd-merch-shelf-renderer,
+ytd-product-details-renderer,
+ytd-offer-module-renderer,
+ytd-sponsorships-offer-renderer {
+  display: none !important;
+}
+
+/* Hide YouTube Premium prompts */
+ytd-background-promo-renderer,
+yt-mealbar-promo-renderer,
+ytd-unlimited-offer-module-renderer,
+tp-yt-paper-dialog.ytmusic-popup-container,
+ytmusic-mealbar-promo-renderer {
+  display: none !important;
+}
+
+/* Hide rich item ads */
+ytd-rich-item-renderer:has(ytd-display-ad-renderer),
+ytd-rich-item-renderer:has(ytd-in-feed-ad-layout-renderer),
+ytd-rich-section-renderer:has(ytd-statement-banner-renderer),
+ytd-feed-nudge-renderer,
+ytm-promoted-sparkles-web-renderer {
+  display: none !important;
+}
+
+/* Hide ad badges and indicators */
+.ytp-ad-badge,
+.ytp-ad-badge-container,
+.ytp-ad-duration-remaining,
+.ytp-ad-feedback-dialog-background,
+.ytp-ad-info-dialog-container {
+  display: none !important;
+}
+
+/* Hide empty ad containers */
+.ytp-ad-module:empty,
+.ytp-ad-player-overlay:empty,
+ytd-display-ad-renderer:empty {
+  display: none !important;
+}
+
+/* Clean up layout after ad removal */
+ytd-watch-flexy[theater-requested_] #player-theater-container.ytd-watch-flexy,
+ytd-watch-flexy[fullscreen] #player-theater-container.ytd-watch-flexy {
+  min-height: 0 !important;
+}
+
+/* Remove ad placeholders in grid */
+ytd-rich-grid-renderer #contents:has(ytd-ad-slot-renderer) {
+  gap: 0 !important;
+}
+
+/* Hide ad skip button when not needed */
+.ytp-ad-skip-button-container:empty,
+.ytp-ad-skip-button-slot:empty {
+  display: none !important;
+}
+
+/* Hide survey and feedback prompts */
+ytd-single-option-survey-renderer,
+ytd-inline-survey-renderer,
+ytd-feed-nudge-renderer,
+ytd-brand-video-shelf-renderer {
+  display: none !important;
+}
+
+/* Hide Shorts ads */
+ytd-reel-video-renderer:has([class*="ad"]),
+ytd-reel-video-renderer:has([id*="ad"]),
+ytd-ad-slot-renderer[slot-type="SHORTS"] {
+  display: none !important;
+}
+
+/* Hide video end screen ads */
+.ytp-ce-element[aria-label*="product"],
+.ytp-ce-element[aria-label*="merch"],
+.ytp-ce-element[aria-label*="sponsor"] {
+  display: none !important;
+}
+
+/* Smooth transitions after ad removal */
+* {
+  transition: none !important;
+}
+
+/* Fix player size after ad removal */
+#movie_player:not(.ad-showing) .html5-main-video {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Hide ad loading spinner */
+.ytp-spinner-container {
+  display: none !important;
+}
+
+/* Hide ad countdown */
+.ytp-ad-preview-container,
+.ytp-ad-message-container {
+  display: none !important;
+}
