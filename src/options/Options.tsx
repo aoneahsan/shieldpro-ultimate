@@ -1,11 +1,25 @@
 import { useState, useEffect } from 'react';
-import { Shield, Users, Settings, Filter, Globe, Lock,  Check, Download, Upload } from 'lucide-react';
+import { Shield, Users, Settings, Filter, Globe, Lock, Check, Download, Upload, Network, Code, Zap, ShieldX } from 'lucide-react';
 import { CustomFilters } from './components/CustomFilters';
 import { AdvancedWhitelist } from './components/AdvancedWhitelist';
+import { ScriptControlPanel } from '../components/ScriptControlPanel';
+import { NetworkLogger } from '../components/NetworkLogger';
 import { StorageManager } from '../shared/utils/storage';
 
 function Options() {
   const [activeTab, setActiveTab] = useState('general');
+
+  const [currentTier, setCurrentTier] = useState(1);
+
+  useEffect(() => {
+    loadCurrentTier();
+  }, []);
+
+  const loadCurrentTier = async () => {
+    const storage = StorageManager.getInstance();
+    const settings = await storage.getSettings();
+    setCurrentTier(settings.tier?.level || 1);
+  };
 
   const tabs = [
     { id: 'general', label: 'General', icon: Settings },
@@ -13,6 +27,11 @@ function Options() {
     { id: 'privacy', label: 'Privacy', icon: Lock },
     { id: 'whitelist', label: 'Whitelist', icon: Globe },
     { id: 'tiers', label: 'Tiers', icon: Users },
+    ...(currentTier >= 4 ? [
+      { id: 'scripts', label: 'Script Control', icon: Code },
+      { id: 'network', label: 'Network Logger', icon: Network },
+      { id: 'security', label: 'Security', icon: Shield }
+    ] : [])
   ];
 
   return (
@@ -57,6 +76,9 @@ function Options() {
             {activeTab === 'privacy' && <PrivacySettings />}
             {activeTab === 'whitelist' && <WhitelistSettings />}
             {activeTab === 'tiers' && <TierSettings />}
+            {activeTab === 'scripts' && currentTier >= 4 && <ScriptControlPanel />}
+            {activeTab === 'network' && currentTier >= 4 && <NetworkLogger />}
+            {activeTab === 'security' && currentTier >= 4 && <SecuritySettings />}
           </div>
         </div>
       </div>
@@ -260,10 +282,169 @@ function FilterSettings() {
 }
 
 function PrivacySettings() {
+  const [currentTier, setCurrentTier] = useState(1);
+  const [privacySettings, setPrivacySettings] = useState({
+    // Tier 2+ features
+    trackingProtection: true,
+    socialMediaBlocking: true,
+    sessionRecordingPrevention: true,
+    // Tier 4 features
+    canvasFingerprinting: false,
+    webrtcLeakProtection: false,
+    audioFingerprinting: false,
+    fontFingerprinting: false,
+    dnsOverHttps: false,
+  });
+
+  useEffect(() => {
+    loadPrivacySettings();
+  }, []);
+
+  const loadPrivacySettings = async () => {
+    const storage = StorageManager.getInstance();
+    const settings = await storage.getSettings();
+    setCurrentTier(settings.tier?.level || 1);
+    
+    // Load privacy settings
+    const stored = await chrome.storage.local.get(['privacySettings']);
+    if (stored.privacySettings) {
+      setPrivacySettings(prev => ({ ...prev, ...stored.privacySettings }));
+    }
+  };
+
+  const updatePrivacySetting = async (key: string, value: boolean) => {
+    const newSettings = { ...privacySettings, [key]: value };
+    setPrivacySettings(newSettings);
+    await chrome.storage.local.set({ privacySettings: newSettings });
+  };
+
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Privacy Settings</h2>
       <p className="text-gray-600 dark:text-gray-400">Manage your privacy and tracking protection</p>
+      
+      {/* Tier 2+ Privacy Features */}
+      {currentTier >= 2 && (
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">Enhanced Protection</h3>
+          
+          <label className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <div>
+              <p className="font-medium text-gray-900 dark:text-white">Advanced Tracking Protection</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Block 40+ tracking networks</p>
+            </div>
+            <input
+              type="checkbox"
+              checked={privacySettings.trackingProtection}
+              onChange={(e) => updatePrivacySetting('trackingProtection', e.target.checked)}
+              className="h-5 w-5 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+            />
+          </label>
+
+          <label className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <div>
+              <p className="font-medium text-gray-900 dark:text-white">Social Media Blocking</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Block social media widgets and trackers</p>
+            </div>
+            <input
+              type="checkbox"
+              checked={privacySettings.socialMediaBlocking}
+              onChange={(e) => updatePrivacySetting('socialMediaBlocking', e.target.checked)}
+              className="h-5 w-5 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+            />
+          </label>
+
+          <label className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <div>
+              <p className="font-medium text-gray-900 dark:text-white">Session Recording Prevention</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Block Hotjar, FullStory, and similar services</p>
+            </div>
+            <input
+              type="checkbox"
+              checked={privacySettings.sessionRecordingPrevention}
+              onChange={(e) => updatePrivacySetting('sessionRecordingPrevention', e.target.checked)}
+              className="h-5 w-5 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+            />
+          </label>
+        </div>
+      )}
+
+      {/* Tier 4 Advanced Privacy Features */}
+      {currentTier >= 4 && (
+        <div className="space-y-4 border-t pt-6">
+          <div className="flex items-center gap-2 mb-4">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Ultimate Privacy Protection</h3>
+            <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded">
+              TIER 4
+            </span>
+          </div>
+
+          <label className="flex items-center justify-between p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200">
+            <div>
+              <p className="font-medium text-gray-900 dark:text-white">Canvas Fingerprinting Protection</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Inject noise to prevent canvas-based tracking</p>
+            </div>
+            <input
+              type="checkbox"
+              checked={privacySettings.canvasFingerprinting}
+              onChange={(e) => updatePrivacySetting('canvasFingerprinting', e.target.checked)}
+              className="h-5 w-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+            />
+          </label>
+
+          <label className="flex items-center justify-between p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200">
+            <div>
+              <p className="font-medium text-gray-900 dark:text-white">WebRTC Leak Protection</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Prevent IP address leaks through WebRTC</p>
+            </div>
+            <input
+              type="checkbox"
+              checked={privacySettings.webrtcLeakProtection}
+              onChange={(e) => updatePrivacySetting('webrtcLeakProtection', e.target.checked)}
+              className="h-5 w-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+            />
+          </label>
+
+          <label className="flex items-center justify-between p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200">
+            <div>
+              <p className="font-medium text-gray-900 dark:text-white">Audio Fingerprinting Protection</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Randomize audio context to prevent fingerprinting</p>
+            </div>
+            <input
+              type="checkbox"
+              checked={privacySettings.audioFingerprinting}
+              onChange={(e) => updatePrivacySetting('audioFingerprinting', e.target.checked)}
+              className="h-5 w-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+            />
+          </label>
+
+          <label className="flex items-center justify-between p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200">
+            <div>
+              <p className="font-medium text-gray-900 dark:text-white">Font Fingerprinting Protection</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Spoof font metrics to prevent identification</p>
+            </div>
+            <input
+              type="checkbox"
+              checked={privacySettings.fontFingerprinting}
+              onChange={(e) => updatePrivacySetting('fontFingerprinting', e.target.checked)}
+              className="h-5 w-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+            />
+          </label>
+
+          <label className="flex items-center justify-between p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200">
+            <div>
+              <p className="font-medium text-gray-900 dark:text-white">DNS-over-HTTPS</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Secure DNS queries through encrypted HTTPS</p>
+            </div>
+            <input
+              type="checkbox"
+              checked={privacySettings.dnsOverHttps}
+              onChange={(e) => updatePrivacySetting('dnsOverHttps', e.target.checked)}
+              className="h-5 w-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+            />
+          </label>
+        </div>
+      )}
     </div>
   );
 }
@@ -315,6 +496,251 @@ function TierSettings() {
     <div className="space-y-6">
       <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Tier Progress</h2>
       <p className="text-gray-600 dark:text-gray-400">Track your tier progress and unlock new features</p>
+    </div>
+  );
+}
+
+function SecuritySettings() {
+  const [securitySettings, setSecuritySettings] = useState({
+    malwareBlocking: true,
+    phishingProtection: true,
+    cryptominingPrevention: true,
+    threatNotifications: true,
+    securityLogging: false,
+    advancedThreatDetection: true,
+    automaticThreatReporting: false
+  });
+
+  const [threatStats, setThreatStats] = useState({
+    totalThreats: 0,
+    malwareBlocked: 0,
+    phishingBlocked: 0,
+    cryptominingBlocked: 0,
+    lastThreatDetected: null as string | null
+  });
+
+  useEffect(() => {
+    loadSecuritySettings();
+    loadThreatStats();
+  }, []);
+
+  const loadSecuritySettings = async () => {
+    const stored = await chrome.storage.local.get(['securitySettings']);
+    if (stored.securitySettings) {
+      setSecuritySettings(prev => ({ ...prev, ...stored.securitySettings }));
+    }
+  };
+
+  const loadThreatStats = async () => {
+    const stored = await chrome.storage.local.get(['threatStats']);
+    if (stored.threatStats) {
+      setThreatStats(stored.threatStats);
+    }
+  };
+
+  const updateSecuritySetting = async (key: string, value: boolean) => {
+    const newSettings = { ...securitySettings, [key]: value };
+    setSecuritySettings(newSettings);
+    await chrome.storage.local.set({ securitySettings: newSettings });
+  };
+
+  const clearThreatLogs = async () => {
+    if (confirm('Are you sure you want to clear all threat logs?')) {
+      await chrome.storage.local.remove(['threatLogs']);
+      setThreatStats({
+        totalThreats: 0,
+        malwareBlocked: 0,
+        phishingBlocked: 0,
+        cryptominingBlocked: 0,
+        lastThreatDetected: null
+      });
+      await chrome.storage.local.set({ threatStats: { totalThreats: 0, malwareBlocked: 0, phishingBlocked: 0, cryptominingBlocked: 0, lastThreatDetected: null } });
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-3 mb-4">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Security Center</h2>
+        <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded">
+          TIER 4
+        </span>
+      </div>
+      
+      <p className="text-gray-600 dark:text-gray-400">
+        Advanced security features to protect against malware, phishing, and other threats
+      </p>
+
+      {/* Threat Statistics */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-red-600 font-medium">Total Threats</p>
+              <p className="text-2xl font-bold text-red-900">{threatStats.totalThreats}</p>
+            </div>
+            <Shield className="w-8 h-8 text-red-500" />
+          </div>
+        </div>
+
+        <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-orange-600 font-medium">Malware Blocked</p>
+              <p className="text-2xl font-bold text-orange-900">{threatStats.malwareBlocked}</p>
+            </div>
+            <ShieldX className="w-8 h-8 text-orange-500" />
+          </div>
+        </div>
+
+        <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-yellow-600 font-medium">Phishing Blocked</p>
+              <p className="text-2xl font-bold text-yellow-900">{threatStats.phishingBlocked}</p>
+            </div>
+            <Lock className="w-8 h-8 text-yellow-500" />
+          </div>
+        </div>
+
+        <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-purple-600 font-medium">Cryptomining</p>
+              <p className="text-2xl font-bold text-purple-900">{threatStats.cryptominingBlocked}</p>
+            </div>
+            <Zap className="w-8 h-8 text-purple-500" />
+          </div>
+        </div>
+      </div>
+
+      {/* Security Settings */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white">Threat Protection</h3>
+        
+        <label className="flex items-center justify-between p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200">
+          <div>
+            <p className="font-medium text-gray-900 dark:text-white">Malware Blocking</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Block known malicious domains and files</p>
+          </div>
+          <input
+            type="checkbox"
+            checked={securitySettings.malwareBlocking}
+            onChange={(e) => updateSecuritySetting('malwareBlocking', e.target.checked)}
+            className="h-5 w-5 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+          />
+        </label>
+
+        <label className="flex items-center justify-between p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200">
+          <div>
+            <p className="font-medium text-gray-900 dark:text-white">Phishing Protection</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Detect and block phishing attempts</p>
+          </div>
+          <input
+            type="checkbox"
+            checked={securitySettings.phishingProtection}
+            onChange={(e) => updateSecuritySetting('phishingProtection', e.target.checked)}
+            className="h-5 w-5 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
+          />
+        </label>
+
+        <label className="flex items-center justify-between p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200">
+          <div>
+            <p className="font-medium text-gray-900 dark:text-white">Cryptomining Prevention</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Block cryptocurrency mining scripts</p>
+          </div>
+          <input
+            type="checkbox"
+            checked={securitySettings.cryptominingPrevention}
+            onChange={(e) => updateSecuritySetting('cryptominingPrevention', e.target.checked)}
+            className="h-5 w-5 text-yellow-600 focus:ring-yellow-500 border-gray-300 rounded"
+          />
+        </label>
+
+        <label className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200">
+          <div>
+            <p className="font-medium text-gray-900 dark:text-white">Advanced Threat Detection</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Use heuristic analysis for unknown threats</p>
+          </div>
+          <input
+            type="checkbox"
+            checked={securitySettings.advancedThreatDetection}
+            onChange={(e) => updateSecuritySetting('advancedThreatDetection', e.target.checked)}
+            className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+          />
+        </label>
+      </div>
+
+      {/* Notification Settings */}
+      <div className="space-y-4 border-t pt-6">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white">Notifications & Logging</h3>
+        
+        <label className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <div>
+            <p className="font-medium text-gray-900 dark:text-white">Threat Notifications</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Show notifications when threats are detected</p>
+          </div>
+          <input
+            type="checkbox"
+            checked={securitySettings.threatNotifications}
+            onChange={(e) => updateSecuritySetting('threatNotifications', e.target.checked)}
+            className="h-5 w-5 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+          />
+        </label>
+
+        <label className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <div>
+            <p className="font-medium text-gray-900 dark:text-white">Security Logging</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Keep detailed logs of security events</p>
+          </div>
+          <input
+            type="checkbox"
+            checked={securitySettings.securityLogging}
+            onChange={(e) => updateSecuritySetting('securityLogging', e.target.checked)}
+            className="h-5 w-5 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+          />
+        </label>
+
+        <label className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <div>
+            <p className="font-medium text-gray-900 dark:text-white">Automatic Threat Reporting</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Anonymously report new threats to improve protection</p>
+          </div>
+          <input
+            type="checkbox"
+            checked={securitySettings.automaticThreatReporting}
+            onChange={(e) => updateSecuritySetting('automaticThreatReporting', e.target.checked)}
+            className="h-5 w-5 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+          />
+        </label>
+      </div>
+
+      {/* Actions */}
+      <div className="border-t pt-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Security Actions</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Manage security logs and data</p>
+          </div>
+          
+          <div className="flex gap-3">
+            <button
+              onClick={clearThreatLogs}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+            >
+              Clear Threat Logs
+            </button>
+          </div>
+        </div>
+
+        {threatStats.lastThreatDetected && (
+          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p className="text-sm text-yellow-800">
+              Last threat detected: {new Date(threatStats.lastThreatDetected).toLocaleString()}
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
