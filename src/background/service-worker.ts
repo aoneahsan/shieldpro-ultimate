@@ -52,7 +52,6 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     console.log('Extension installed');
     
     const settings = await storage.getSettings();
-    const stats = await storage.getStats();
     
     // Enable tier-based rulesets
     await updateTierRules(settings.tier.level || 1);
@@ -200,7 +199,6 @@ async function handleMessage(request: any, sender: any, sendResponse: Function) 
         
       case 'tierUpgraded':
         const newTier = request.tier;
-        const userId = request.userId;
         
         if (newTier >= 1 && newTier <= 5) {
           const currentSettings = await storage.getSettings();
@@ -306,7 +304,7 @@ async function handleMessage(request: any, sender: any, sendResponse: Function) 
     }
   } catch (error) {
     console.error('Error handling message:', error);
-    sendResponse({ error: error.message });
+    sendResponse({ error: error instanceof Error ? error.message : 'Unknown error' });
   }
 }
 
@@ -420,7 +418,7 @@ async function updateBadge(tabId: number) {
     // Use different colors based on tier
     const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6'];
     const tierLevel = settings.tier.level || 1;
-    const color = colors[Math.min(tierLevel - 1, 4)];
+    const color = colors[Math.min(tierLevel - 1, 4)] || '#ef4444';
     chrome.action.setBadgeBackgroundColor({ color, tabId });
   }
 }

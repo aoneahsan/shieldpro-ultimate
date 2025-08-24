@@ -58,7 +58,7 @@ class YouTubeAdBlocker {
 
   async init(): Promise<void> {
     const settings = await this.storage.getSettings();
-    if (settings.tier >= 2 && settings.enabled) {
+    if (settings.tier.level >= 2 && settings.enabled) {
       this.isEnabled = true;
       this.startBlocking();
     }
@@ -66,7 +66,7 @@ class YouTubeAdBlocker {
     // Listen for settings changes
     chrome.runtime.onMessage.addListener((message) => {
       if (message.action === 'settingsUpdated') {
-        if (message.settings.tier >= 2 && message.settings.enabled) {
+        if (message.settings.tier.level >= 2 && message.settings.enabled) {
           if (!this.isEnabled) {
             this.isEnabled = true;
             this.startBlocking();

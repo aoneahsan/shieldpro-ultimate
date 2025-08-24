@@ -140,7 +140,7 @@ class AuthService {
     const q = query(collection(db, 'users'), where('stats.referralCode', '==', referralCode));
     const snapshot = await getDocs(q);
     
-    if (!snapshot.empty) {
+    if (!snapshot.empty && snapshot.docs[0]) {
       const referrerDoc = snapshot.docs[0];
       const referrerId = referrerDoc.id;
       const referrerData = referrerDoc.data() as UserProfile;
