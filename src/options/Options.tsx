@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Shield, Users, Settings, Filter, Globe, Lock, ChevronRight, Check, Download, Upload, FileText } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Shield, Users, Settings, Filter, Globe, Lock,  Check, Download, Upload } from 'lucide-react';
 import { CustomFilters } from './components/CustomFilters';
 import { AdvancedWhitelist } from './components/AdvancedWhitelist';
 import { StorageManager } from '../shared/utils/storage';

@@ -204,6 +204,11 @@ class AuthService {
     }
   }
 
+  // Sign in with Google
+  async signInWithGoogle(): Promise<User> {
+    return this.signInWithSocial('google');
+  }
+
   // Social sign in
   async signInWithSocial(provider: 'google' | 'facebook' | 'github'): Promise<User> {
     try {

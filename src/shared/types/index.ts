@@ -28,6 +28,7 @@ export interface ExtensionSettings {
   pausedDomains: string[];
   tier: UserTier;
   notifications: boolean;
+  showBadge: boolean;
   autoUpdate: boolean;
   developerMode: boolean;
 }
@@ -60,6 +61,7 @@ export const DEFAULT_SETTINGS: ExtensionSettings = {
     progress: 0
   },
   notifications: true,
+  showBadge: true,
   autoUpdate: true,
   developerMode: false
 };
