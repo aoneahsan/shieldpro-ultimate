@@ -32,6 +32,11 @@ export class ElementPicker {
     this.loadCustomFilters();
   }
 
+  // Enable method for Tier 3 initialization
+  enable(): void {
+    this.init();
+  }
+
   private async loadCustomFilters(): Promise<void> {
     try {
       const result = await chrome.storage.local.get('customFilters');

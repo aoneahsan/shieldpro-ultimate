@@ -351,6 +351,32 @@ class PrivacyProtection {
   }
 
   /**
+   * Enable basic tracking protection (Tier 2)
+   */
+  public enableTrackingProtection(): void {
+    // Basic tracking protection is handled by declarativeNetRequest
+    // This method is for additional protections
+    console.log('Basic tracking protection enabled');
+  }
+
+  /**
+   * Enable advanced protection features (Tier 4)
+   */
+  public enableAdvancedProtection(): void {
+    this.enabled = true;
+    // Advanced protections are initialized in constructor
+    console.log('Advanced privacy protection enabled');
+  }
+
+  /**
+   * Enable element picker functionality (Tier 3)
+   */
+  public enable(): void {
+    this.enabled = true;
+    console.log('Privacy protection enabled');
+  }
+
+  /**
    * Disable all privacy protections
    */
   public disable(): void {
@@ -392,3 +418,8 @@ const privacyProtection = new PrivacyProtection();
 
 // Export for debugging
 (window as any).shieldProPrivacy = privacyProtection;
+
+// Export the class
+export { PrivacyProtection };
+// Also export with the name used in imports
+export { PrivacyProtection as PrivacyProtector };

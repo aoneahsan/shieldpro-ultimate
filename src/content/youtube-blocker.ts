@@ -106,7 +106,8 @@ class YouTubeAdBlocker {
     this.injectCSS();
 
     // Override YouTube's ad-related functions
-    this.overrideYouTubeFunctions();
+    // Commented out due to CSP restrictions - will use alternative approach
+    // this.overrideYouTubeFunctions();
   }
 
   private stopBlocking(): void {
