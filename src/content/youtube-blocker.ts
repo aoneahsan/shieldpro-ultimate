@@ -91,10 +91,26 @@ class YouTubeAdBlocker {
       this.skipVideoAds();
     });
 
-    this.observer.observe(document.body, {
-      childList: true,
-      subtree: true
-    });
+    // Ensure document.body exists before observing
+    if (document.body) {
+      this.observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+    } else {
+      // Wait for body to be available
+      const bodyWaitInterval = setInterval(() => {
+        if (document.body) {
+          clearInterval(bodyWaitInterval);
+          if (this.observer) {
+            this.observer.observe(document.body, {
+              childList: true,
+              subtree: true
+            });
+          }
+        }
+      }, 100);
+    }
 
     // Check for video ads periodically
     this.adSkipTimer = setInterval(() => {

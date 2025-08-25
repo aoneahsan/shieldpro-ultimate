@@ -220,9 +220,23 @@ const observer = new MutationObserver(() => {
   }
 });
 
-observer.observe(document.body, {
-  childList: true,
-  subtree: true
-});
+// Wait for document.body to be available before observing
+if (document.body) {
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+} else {
+  // If body is not ready yet, wait for it
+  const waitForBody = setInterval(() => {
+    if (document.body) {
+      clearInterval(waitForBody);
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+    }
+  }, 100);
+}
 
 export { ContentScriptManager };

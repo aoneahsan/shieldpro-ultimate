@@ -210,6 +210,13 @@ export class CookieConsentHandler {
   private startObserver() {
     if (this.observerActive) return;
     
+    // Wait for document.body to be available
+    if (!document.body) {
+      // If body is not ready, wait and try again
+      setTimeout(() => this.startObserver(), 100);
+      return;
+    }
+    
     this.observerActive = true;
     let attempts = 0;
     const maxAttempts = 20; // Try for 10 seconds
