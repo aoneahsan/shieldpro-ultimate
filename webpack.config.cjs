@@ -149,6 +149,7 @@ module.exports = (env, argv) => {
           { from: 'public/manifest.json', to: 'manifest.json' },
           { from: 'public/icons', to: 'icons' },
           { from: 'public/rules', to: 'rules' },
+          { from: 'public/youtube.css', to: 'youtube.css' },
           { from: 'src/locales', to: 'locales' },
           { from: 'src/content/content.css', to: 'content.css' }
         ]
