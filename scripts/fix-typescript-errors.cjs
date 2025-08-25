@@ -3,189 +3,114 @@
 const fs = require('fs');
 const path = require('path');
 
-// Fix TypeScript errors across the project
+// Files with unused imports to fix
 const fixes = [
-  // Fix src/services/error.service.ts
   {
-    file: 'src/services/error.service.ts',
-    replacements: [
-      {
-        from: '      code: authError.code,',
-        to: '      code: authError.code || ErrorCode.UNKNOWN,',
-      },
-      {
-        from: '      message: authError.message,',
-        to: '      message: authError.message || \'Unknown error\',',
-      },
-      {
-        from: '      userMessage: authError.userMessage,',
-        to: '      userMessage: authError.userMessage || \'An error occurred\',',
-      },
-      {
-        from: '      recoverable: authError.recoverable,',
-        to: '      recoverable: authError.recoverable ?? true,',
-      },
-      {
-        from: '      retryable: authError.retryable,',
-        to: '      retryable: authError.retryable ?? false,',
-      },
-      {
-        from: '      code: firestoreError.code,',
-        to: '      code: firestoreError.code || ErrorCode.UNKNOWN,',
-      },
-      {
-        from: '      message: firestoreError.message,',
-        to: '      message: firestoreError.message || \'Unknown error\',',
-      },
-      {
-        from: '      userMessage: firestoreError.userMessage,',
-        to: '      userMessage: firestoreError.userMessage || \'An error occurred\',',
-      },
-      {
-        from: '      recoverable: firestoreError.recoverable,',
-        to: '      recoverable: firestoreError.recoverable ?? true,',
-      },
-      {
-        from: '      retryable: firestoreError.retryable,',
-        to: '      retryable: firestoreError.retryable ?? false,',
-      },
-      {
-        from: '    if (typeof window !== \'undefined\' && window.gtag) {',
-        to: '    if (typeof window !== \'undefined\' && (window as any).gtag) {',
-      },
-      {
-        from: '      window.gtag(\'event\', \'error\', {',
-        to: '      (window as any).gtag(\'event\', \'error\', {',
-      },
-    ],
+    file: 'src/background/filter-engine.ts',
+    removeLines: ['import { auth } from \'../config/firebase\';']
   },
-
-  // Fix src/content/popup-blocker.ts
   {
-    file: 'src/content/popup-blocker.ts',
-    replacements: [
-      {
-        from: '      return originalOpen.apply(this, args);',
-        to: '      return originalOpen.apply(this, args as [url?: string | URL | undefined, target?: string | undefined, features?: string | undefined]);',
-      },
-      {
-        from: '    window.showModalDialog = function() {',
-        to: '    (window as any).showModalDialog = function() {',
-      },
-      {
-        from: '    const open = function(url: string, target: string, ...args: any[]) {',
-        to: '    const open = function(url: string, _target?: string, ..._args: any[]) {',
-      },
-    ],
+    file: 'src/components/NetworkLogger.tsx',
+    removeImports: ['Shield', 'ShieldCheck', 'Upload', 'BarChart3']
   },
-
-  // Fix src/background/performance-monitor.ts
   {
-    file: 'src/background/performance-monitor.ts',
-    replacements: [
-      {
-        from: '    if (performance.memory) {',
-        to: '    if ((performance as any).memory) {',
-      },
-      {
-        from: '    entries.forEach(({ name, duration, time }) => {',
-        to: '    entries.forEach(({ name, duration }) => {',
-      },
-      {
-        from: '    marks.forEach(({ name, time }) => {',
-        to: '    marks.forEach(({ name }) => {',
-      },
-    ],
+    file: 'src/components/ReferralSystem.tsx',
+    removeLines: ['import authService from \'../services/auth.service\';']
   },
-
-  // Fix src/content/element-picker.ts
   {
-    file: 'src/content/element-picker.ts',
-    replacements: [
-      {
-        from: '    } catch (e) {',
-        to: '    } catch {',
-      },
-      {
-        from: '    const rect = element.getBoundingClientRect();',
-        to: '    // const rect = element.getBoundingClientRect();',
-      },
-    ],
+    file: 'src/components/ScriptControlPanel.tsx',
+    removeImports: ['Settings']
   },
-
-  // Fix src/content/injector.ts - rename the file to injector.tsx
   {
-    file: 'src/content/injector.tsx',
-    replacements: [
-      {
-        from: 'chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {',
-        to: 'chrome.runtime.onMessage.addListener((request) => {',
-      },
-    ],
+    file: 'src/components/TierProgressionManager.tsx',
+    removeImports: ['auth', 'db']
   },
-
-  // Fix src/options/components/CustomFilters.tsx
   {
-    file: 'src/options/components/CustomFilters.tsx',
-    replacements: [
-      {
-        from: '    if (tab) {',
-        to: '    if (tab?.id) {',
-      },
-      {
-        from: '      tabId: tab.id,',
-        to: '      tabId: tab.id!,',
-      },
-    ],
+    file: 'src/options/components/BackupRestore.tsx',
+    removeImports: ['Database', 'RefreshCw', 'AlertCircle']
   },
-
-  // Fix src/options/components/AdvancedWhitelist.tsx
   {
-    file: 'src/options/components/AdvancedWhitelist.tsx',
-    replacements: [
-      {
-        from: '  const [editingEntry, setEditingEntry] = useState<WhitelistEntry | null>(null);',
-        to: '  // const [editingEntry, setEditingEntry] = useState<WhitelistEntry | null>(null);',
-      },
-    ],
+    file: 'src/options/components/PrivacySettings.tsx',
+    removeImports: ['Lock', 'Eye', 'Fingerprint', 'Chrome', 'Server', 'Cpu', 'HardDrive', 'Monitor', 'Smartphone', 'AlertTriangle', 'CheckCircle']
   },
-
-  // Fix src/tiers/TiersPage.tsx
+  {
+    file: 'src/options/components/Statistics.tsx',
+    removeImports: ['Zap', 'Clock', 'TrendingUp', 'Calendar', 'Globe', 'Youtube', 'ShoppingBag', 'FileText', 'BarChart3']
+  },
+  {
+    file: 'src/options/components/WhitelistManager.tsx',
+    removeImports: ['X', 'Link', 'FileText', 'Calendar', 'TrendingUp', 'AlertTriangle']
+  },
+  {
+    file: 'src/popup/App.tsx',
+    removeImports: ['TrendingUp', 'XCircle']
+  },
+  {
+    file: 'src/services/firebase.service.ts',
+    removeImports: ['collection', 'query', 'where', 'getDocs']
+  },
   {
     file: 'src/tiers/TiersPage.tsx',
-    replacements: [
-      {
-        from: '              {weeklyEngagement[day] ? \'✅\' : \'❌\'}',
-        to: '              {weeklyEngagement?.[day] ? \'✅\' : \'❌\'}',
-      },
-    ],
-  },
+    removeImports: ['XCircle', 'Calendar', 'FileText', 'Download', 'Upload', 'Settings', 'Eye', 'Clock', 'Filter', 'Youtube', 'Share2']
+  }
 ];
 
-// Apply fixes
-fixes.forEach(({ file, replacements }) => {
-  const filePath = path.join(process.cwd(), file);
+function removeUnusedImports(filePath, importsToRemove) {
+  const fullPath = path.join(__dirname, '..', filePath);
   
-  if (!fs.existsSync(filePath)) {
-    console.warn(`File not found: ${file}`);
+  if (!fs.existsSync(fullPath)) {
+    console.log(`File not found: ${filePath}`);
     return;
   }
   
-  let content = fs.readFileSync(filePath, 'utf8');
-  let modified = false;
+  let content = fs.readFileSync(fullPath, 'utf8');
   
-  replacements.forEach(({ from, to }) => {
-    if (content.includes(from)) {
-      content = content.replace(from, to);
-      modified = true;
-      console.log(`✓ Fixed: ${file} - ${from.substring(0, 50)}...`);
-    }
+  importsToRemove.forEach(importName => {
+    // Remove from multi-line imports
+    const multiLineRegex = new RegExp(`\\s*${importName},?\\s*`, 'g');
+    content = content.replace(multiLineRegex, (match) => {
+      // If it's the only import, return empty
+      if (match.includes(',')) {
+        return '';
+      }
+      return match.includes('\n') ? '\n' : '';
+    });
+    
+    // Clean up empty import lines
+    content = content.replace(/import\s*{\s*}\s*from\s*['"][^'"]+['"];?\n?/g, '');
   });
   
-  if (modified) {
-    fs.writeFileSync(filePath, content, 'utf8');
-    console.log(`✅ Updated: ${file}`);
+  fs.writeFileSync(fullPath, content);
+  console.log(`Fixed imports in ${filePath}`);
+}
+
+function removeLines(filePath, linesToRemove) {
+  const fullPath = path.join(__dirname, '..', filePath);
+  
+  if (!fs.existsSync(fullPath)) {
+    console.log(`File not found: ${filePath}`);
+    return;
+  }
+  
+  let content = fs.readFileSync(fullPath, 'utf8');
+  
+  linesToRemove.forEach(line => {
+    content = content.replace(line + '\n', '');
+    content = content.replace(line, '');
+  });
+  
+  fs.writeFileSync(fullPath, content);
+  console.log(`Fixed lines in ${filePath}`);
+}
+
+// Apply fixes
+fixes.forEach(fix => {
+  if (fix.removeImports) {
+    removeUnusedImports(fix.file, fix.removeImports);
+  }
+  if (fix.removeLines) {
+    removeLines(fix.file, fix.removeLines);
   }
 });
 
-console.log('\n✨ TypeScript error fixes applied successfully!');
+console.log('\nDone fixing common TypeScript errors!');
