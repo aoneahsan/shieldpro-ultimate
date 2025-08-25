@@ -13,7 +13,8 @@ export class PopupBlocker {
     // Activate for Tier 1+ (basic popup blocking)
     if (this.tier >= 1 && settings.enabled) {
       this.startBlocking();
-      this.injectProtection();
+      // Commented out due to CSP restrictions
+      // this.injectProtection();
     }
 
     // Listen for tier updates
