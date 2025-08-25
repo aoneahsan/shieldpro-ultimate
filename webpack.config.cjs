@@ -96,14 +96,22 @@ module.exports = (env, argv) => {
       new CleanWebpackPlugin(),
       
       new webpack.DefinePlugin({
-        'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
-        'process.env.FIREBASE_API_KEY': JSON.stringify(process.env.FIREBASE_API_KEY),
-        'process.env.FIREBASE_AUTH_DOMAIN': JSON.stringify(process.env.FIREBASE_AUTH_DOMAIN),
-        'process.env.FIREBASE_PROJECT_ID': JSON.stringify(process.env.FIREBASE_PROJECT_ID),
-        'process.env.FIREBASE_STORAGE_BUCKET': JSON.stringify(process.env.FIREBASE_STORAGE_BUCKET),
-        'process.env.FIREBASE_MESSAGING_SENDER_ID': JSON.stringify(process.env.FIREBASE_MESSAGING_SENDER_ID),
-        'process.env.FIREBASE_APP_ID': JSON.stringify(process.env.FIREBASE_APP_ID),
-        'process.env.FIREBASE_MEASUREMENT_ID': JSON.stringify(process.env.FIREBASE_MEASUREMENT_ID)
+        // Don't override NODE_ENV, webpack handles this automatically
+        'process.env': JSON.stringify({
+          // Only include environment variables we actually need
+          REACT_APP_FIREBASE_API_KEY: process.env.REACT_APP_FIREBASE_API_KEY,
+          REACT_APP_FIREBASE_AUTH_DOMAIN: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+          REACT_APP_FIREBASE_PROJECT_ID: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+          REACT_APP_FIREBASE_STORAGE_BUCKET: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+          REACT_APP_FIREBASE_MESSAGING_SENDER_ID: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+          REACT_APP_FIREBASE_APP_ID: process.env.REACT_APP_FIREBASE_APP_ID,
+          REACT_APP_FIREBASE_MEASUREMENT_ID: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
+          REACT_APP_FIREBASE_DATABASE_URL: process.env.REACT_APP_FIREBASE_DATABASE_URL,
+          USE_FIREBASE_EMULATOR: process.env.USE_FIREBASE_EMULATOR,
+          BUILD_TARGET: process.env.BUILD_TARGET || 'chrome',
+          EXTENSION_ID: process.env.EXTENSION_ID,
+          EXTENSION_PACKAGE_IDENTIFIER: process.env.EXTENSION_PACKAGE_IDENTIFIER
+        })
       }),
 
       new MiniCssExtractPlugin({
@@ -174,9 +182,9 @@ module.exports = (env, argv) => {
     },
 
     performance: {
-      hints: false,
-      maxEntrypointSize: 512000,
-      maxAssetSize: 512000
+      hints: false, // Suppress all performance warnings
+      maxEntrypointSize: 1024000, // 1MB - reasonable for extension
+      maxAssetSize: 1024000 // 1MB - reasonable for extension
     }
   };
 };
