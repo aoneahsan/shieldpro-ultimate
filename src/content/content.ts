@@ -62,11 +62,12 @@ class ContentScriptManager {
   }
 
   private initializeTier2() {
-    // YouTube ad blocking
-    if (window.location.hostname.includes('youtube.com')) {
-      this.youtubeBlocker = new YouTubeAdBlocker();
-      this.youtubeBlocker.init();
-    }
+    // YouTube ad blocking - DISABLED to prevent breaking YouTube
+    // Will rely on declarativeNetRequest API instead
+    // if (window.location.hostname.includes('youtube.com')) {
+    //   this.youtubeBlocker = new YouTubeAdBlocker();
+    //   this.youtubeBlocker.init();
+    // }
 
     // Enhanced tracking protection
     this.privacyProtector.enableTrackingProtection();
@@ -91,16 +92,12 @@ class ContentScriptManager {
   private injectBasicStyles() {
     const style = document.createElement('style');
     style.textContent = `
-      /* Basic ad hiding rules */
-      [class*="ad-"], [id*="ad-"],
-      [class*="advertisement"], [id*="advertisement"],
-      [class*="banner-ad"], [id*="banner-ad"],
-      [class*="sponsored"], [id*="sponsored"],
+      /* Basic ad hiding rules - simplified to avoid breaking sites */
       .google-ads, .googleads,
       .ad-container, .ad-wrapper,
       .advertisement-container,
-      iframe[src*="doubleclick"],
-      iframe[src*="googlesyndication"] {
+      iframe[src*="doubleclick.net"],
+      iframe[src*="googlesyndication.com"] {
         display: none !important;
         visibility: hidden !important;
         height: 0 !important;

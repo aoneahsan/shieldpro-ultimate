@@ -83,7 +83,8 @@ class YouTubeAdBlocker {
     // Initial cleanup
     this.removeAds();
     this.skipVideoAds();
-    this.blockAdRequests();
+    // Temporarily disable request blocking to prevent YouTube from breaking
+    // this.blockAdRequests();
 
     // Set up mutation observer
     this.observer = new MutationObserver(() => {
@@ -154,29 +155,8 @@ class YouTubeAdBlocker {
       });
     });
 
-    // Remove ads by class patterns
-    const adPatterns = [
-      '[class*="ad-"]',
-      '[class*="ads-"]',
-      '[class*="promoted"]',
-      '[class*="sponsor"]',
-      '[id*="ad-"]',
-      '[id*="ads-"]'
-    ];
-
-    adPatterns.forEach(pattern => {
-      const elements = document.querySelectorAll(pattern);
-      elements.forEach(el => {
-        const classList = el.className.toString().toLowerCase();
-        const idList = el.id.toLowerCase();
-        if ((classList.includes('ad-') || classList.includes('ads-') || 
-             classList.includes('promoted') || classList.includes('sponsor') ||
-             idList.includes('ad-') || idList.includes('ads-')) &&
-            !classList.includes('load') && !classList.includes('add')) {
-          el.remove();
-        }
-      });
-    });
+    // Removed overly broad class pattern matching that was breaking YouTube
+    // The specific YouTube ad selectors above are sufficient
   }
 
   private skipVideoAds(): void {
@@ -220,48 +200,63 @@ class YouTubeAdBlocker {
     // Intercept and block XHR requests to ad endpoints
     const originalOpen = XMLHttpRequest.prototype.open;
     XMLHttpRequest.prototype.open = function(method: string, url: string, ...args: any[]) {
+      // Only block actual ad-related endpoints
       const blockedPatterns = [
         '/api/stats/ads',
-        '/api/stats/qoe',
-        '/pagead/',
+        '/api/stats/qoe', 
+        'doubleclick.net',
+        'googleads.g.doubleclick.net',
+        '/pagead/ads',
         '/ptracking',
-        '/get_midroll_',
-        '/youtubei/v1/log_event',
-        '/csi_204',
-        '/generate_204'
+        '/get_midroll_info'
       ];
 
-      if (blockedPatterns.some(pattern => url.includes(pattern))) {
+      // More specific blocking - only if it's actually an ad request
+      const shouldBlock = blockedPatterns.some(pattern => url.includes(pattern)) &&
+                         !url.includes('/youtubei/v1/player') && // Don't block player API
+                         !url.includes('/youtubei/v1/browse') &&  // Don't block browse API
+                         !url.includes('/youtubei/v1/search');    // Don't block search API
+
+      if (shouldBlock) {
         chrome.runtime.sendMessage({
           action: 'adBlocked',
           category: 'youtube',
           domain: 'youtube.com'
-        });
+        }).catch(() => {});
         return; // Block the request
       }
 
       return originalOpen.apply(this, [method, url, ...args] as any);
     };
 
-    // Intercept fetch requests
+    // Intercept fetch requests  
     const originalFetch = window.fetch;
     window.fetch = function(input: RequestInfo | URL, init?: RequestInit) {
       const url = typeof input === 'string' ? input : input.toString();
+      
+      // Only block actual ad-related endpoints
       const blockedPatterns = [
         '/api/stats/ads',
         '/api/stats/qoe',
-        '/pagead/',
+        'doubleclick.net',
+        'googleads.g.doubleclick.net',
+        '/pagead/ads',
         '/ptracking',
-        '/get_midroll_',
-        '/youtubei/v1/log_event'
+        '/get_midroll_info'
       ];
 
-      if (blockedPatterns.some(pattern => url.includes(pattern))) {
+      // More specific blocking - only if it's actually an ad request
+      const shouldBlock = blockedPatterns.some(pattern => url.includes(pattern)) &&
+                         !url.includes('/youtubei/v1/player') && // Don't block player API
+                         !url.includes('/youtubei/v1/browse') &&  // Don't block browse API
+                         !url.includes('/youtubei/v1/search');    // Don't block search API
+
+      if (shouldBlock) {
         chrome.runtime.sendMessage({
           action: 'adBlocked',
           category: 'youtube',
           domain: 'youtube.com'
-        });
+        }).catch(() => {});
         return Promise.reject(new Error('Blocked by ShieldPro'));
       }
 

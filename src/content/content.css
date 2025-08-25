@@ -1,43 +1,29 @@
 /* ShieldPro Ultimate - Content Script Styles */
 
-/* Hide common ad containers */
-.ad, .ads, .advertisement, .advert,
-[id*="ad-"], [id*="ads-"], [id*="google-ads"],
-[class*="ad-"], [class*="ads-"], [class*="google-ads"],
-[data-ad], [data-ads] {
+/* Hide specific ad containers - avoid overly broad selectors */
+.google-ads, .googleads,
+.ad-container, .ad-wrapper,
+.advertisement-container,
+iframe[src*="doubleclick.net"],
+iframe[src*="googlesyndication.com"] {
   display: none !important;
-  visibility: hidden !important;
-  opacity: 0 !important;
-  height: 0 !important;
-  width: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
 }
 
-/* YouTube ad blocking styles */
-.video-ads, .ytp-ad-module, .ytp-ad-overlay-container,
-.ytp-ad-text-overlay, .ytp-ad-player-overlay-layout,
-.ytp-ad-skip-button-container, .ytp-ad-overlay-close-container,
-ytd-promoted-sparkles-web-renderer, ytd-promoted-video-renderer {
+/* YouTube specific ad selectors */
+ytd-promoted-sparkles-web-renderer,
+ytd-promoted-video-renderer,
+ytd-display-ad-renderer,
+ytd-in-feed-ad-layout-renderer {
   display: none !important;
 }
 
 /* Social media tracking pixels */
-img[width="1"], img[height="1"],
-img[src*="facebook.com/tr"], img[src*="google-analytics.com"] {
+img[width="1"][height="1"] {
   display: none !important;
 }
 
-/* Cookie banners and popups */
-.cookie-banner, .cookie-consent, .gdpr-banner,
-[id*="cookie"], [class*="cookie-consent"],
-.newsletter-popup, .subscription-popup {
-  display: none !important;
-}
-
-/* Notification requests */
-.notification-request, .push-notification-request,
-[class*="notification-permission"] {
+/* Cookie banners */
+.cookie-banner, .cookie-consent, .gdpr-banner {
   display: none !important;
 }
 
@@ -80,15 +66,6 @@ img[src*="facebook.com/tr"], img[src*="google-analytics.com"] {
 .shieldpro-highlight {
   outline: 2px solid #ff4444 !important;
   background: rgba(255, 68, 68, 0.1) !important;
-}
-
-/* Anti-detection measures */
-[style*="display: none"] {
-  display: none !important;
-}
-
-[hidden] {
-  display: none !important;
 }
 
 /* Performance optimizations */
