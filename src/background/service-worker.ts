@@ -1,5 +1,7 @@
 import { storage } from '../shared/utils/storage';
 import { TabState } from '../shared/types';
+import { earlyAdopterService } from '../shared/services/early-adopter.service';
+import { firebaseUserTracking } from '../shared/services/firebase-user-tracking.service';
 
 console.log('ShieldPro Ultimate - Background Service Worker Started');
 
@@ -212,6 +214,54 @@ async function handleMessage(request: any, sender: any, sendResponse: Function) 
         updateIcon(enabled);
         updateAllBadges();
         sendResponse({ enabled });
+        break;
+      }
+      
+      case 'getEarlyAdopterStatus': {
+        try {
+          // Initialize Firebase user if needed
+          const firebaseUser = await firebaseUserTracking.initializeAnonymousUser();
+          const status = await firebaseUserTracking.getUserStatus(firebaseUser.uid);
+          
+          // Also get global user count
+          const globalCount = await firebaseUserTracking.getGlobalUserCount();
+          
+          sendResponse({
+            ...status,
+            globalUserCount: globalCount
+          });
+        } catch (error) {
+          console.error('Error getting early adopter status:', error);
+          // Fallback to local service
+          const status = await earlyAdopterService.initializeUser();
+          sendResponse(status);
+        }
+        break;
+      }
+      
+      case 'openAccountCreation': {
+        chrome.tabs.create({
+          url: chrome.runtime.getURL('options.html?section=account')
+        });
+        break;
+      }
+      
+      case 'linkAccount': {
+        try {
+          await firebaseUserTracking.linkAnonymousAccount(request.email, request.password);
+          const status = await earlyAdopterService.onAccountCreated(request.email);
+          
+          // Update tier if needed
+          if (status.currentTier !== settings.tier.level) {
+            await updateTierRules(status.currentTier);
+            await storage.updateTier(status.currentTier);
+          }
+          
+          sendResponse({ success: true, status });
+        } catch (error) {
+          console.error('Error linking account:', error);
+          sendResponse({ success: false, error: error.message });
+        }
         break;
       }
         

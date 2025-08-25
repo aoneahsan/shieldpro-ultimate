@@ -144,6 +144,13 @@ module.exports = (env, argv) => {
         minify: false // Don't minify this file as it has parsing issues
       }),
 
+      new HtmlWebpackPlugin({
+        template: './src/pages/early-adopter-info.html',
+        filename: 'early-adopter.html',
+        chunks: [],
+        minify: false // Don't minify this file
+      }),
+
       new CopyWebpackPlugin({
         patterns: [
           { from: 'public/manifest.json', to: 'manifest.json' },

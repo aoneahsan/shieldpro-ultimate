@@ -6,6 +6,17 @@ admin.initializeApp();
 const db = admin.firestore();
 const auth = admin.auth();
 
+// Export user tracking functions
+export {
+  incrementUserCount,
+  deleteAnonymousUser,
+  cleanupOldAnonymousAccounts,
+  trackAnalytics,
+  getGlobalStats,
+  updateUserTiers,
+  notifyEarlyAdopters
+} from './userTracking';
+
 // Tier management function - checks user qualifications for tier upgrades
 export const checkTierUpgrade = functions.https.onCall(async (data, context) => {
   if (!context.auth) {

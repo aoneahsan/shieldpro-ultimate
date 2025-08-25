@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ExtensionSettings, BlockingStats, TabState } from '../shared/types';
 import { AccountManager } from './components/AccountManager';
+import { EarlyAdopterStatus } from '../shared/constants/marketing';
 import { 
   Shield, 
   Power, 
@@ -15,13 +16,16 @@ import {
   BarChart3,
   Youtube,
   Eye,
-  Share2
+  Share2,
+  Crown,
+  AlertCircle
 } from 'lucide-react';
 
 const App: React.FC = () => {
   const [settings, setSettings] = useState<ExtensionSettings | null>(null);
   const [stats, setStats] = useState<BlockingStats | null>(null);
   const [tabState, setTabState] = useState<TabState | null>(null);
+  const [earlyAdopterStatus, setEarlyAdopterStatus] = useState<EarlyAdopterStatus | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -33,15 +37,17 @@ const App: React.FC = () => {
 
   const loadData = async () => {
     try {
-      const [settingsRes, statsRes, tabStateRes] = await Promise.all([
+      const [settingsRes, statsRes, tabStateRes, earlyAdopterRes] = await Promise.all([
         chrome.runtime.sendMessage({ action: 'getSettings' }),
         chrome.runtime.sendMessage({ action: 'getStats' }),
-        chrome.runtime.sendMessage({ action: 'getTabState' })
+        chrome.runtime.sendMessage({ action: 'getTabState' }),
+        chrome.runtime.sendMessage({ action: 'getEarlyAdopterStatus' })
       ]);
       
       setSettings(settingsRes);
       setStats(statsRes);
       setTabState(tabStateRes);
+      setEarlyAdopterStatus(earlyAdopterRes);
       setLoading(false);
     } catch (error) {
       console.error('Failed to load data:', error);
@@ -170,6 +176,54 @@ const App: React.FC = () => {
       </div>
 
       <div className="p-4 space-y-3">
+        {/* Early Adopter Banner */}
+        {earlyAdopterStatus && (
+          <div className={`rounded-lg p-3 ${
+            earlyAdopterStatus.isEarlyAdopter 
+              ? 'bg-gradient-to-r from-yellow-400 to-orange-400' 
+              : 'bg-gradient-to-r from-blue-400 to-purple-400'
+          } text-white shadow-lg`}>
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center space-x-2 mb-1">
+                  <Crown className="w-5 h-5" />
+                  <span className="font-bold">
+                    {earlyAdopterStatus.isEarlyAdopter 
+                      ? `Early Adopter #${earlyAdopterStatus.userNumber.toLocaleString()}`
+                      : `User #${earlyAdopterStatus.userNumber.toLocaleString()}`}
+                  </span>
+                </div>
+                
+                {earlyAdopterStatus.isEarlyAdopter && !earlyAdopterStatus.hasAccount && (
+                  <div className="flex items-start space-x-1 mt-2 p-2 bg-white/20 rounded">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <div className="text-xs">
+                      <p className="font-semibold mb-1">Secure your lifetime benefits!</p>
+                      <p>Create an account to keep all Tier 5 features forever.</p>
+                    </div>
+                  </div>
+                )}
+                
+                {earlyAdopterStatus.hasAccount && (
+                  <div className="flex items-center space-x-1 mt-1">
+                    <CheckCircle className="w-4 h-4" />
+                    <span className="text-xs">Lifetime Premium Secured</span>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <a
+              href={chrome.runtime.getURL('early-adopter.html')}
+              target="_blank"
+              className="inline-flex items-center space-x-1 mt-2 text-xs text-white/90 hover:text-white"
+            >
+              <span>Learn about your benefits</span>
+              <Share2 className="w-3 h-3" />
+            </a>
+          </div>
+        )}
+
         {/* Tier Badge */}
         <div className={`${getTierColor(currentTier)} text-white rounded-lg p-3`}>
           <div className="flex items-center justify-between">
