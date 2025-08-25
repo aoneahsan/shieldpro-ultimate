@@ -28,7 +28,7 @@ import {
   Timestamp
 } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
-import { firebaseApp } from '../utils/firebase';
+import { app as firebaseApp } from '@/utils/firebase';
 import { EarlyAdopterStatus } from '../constants/marketing';
 
 interface FirebaseUserData {
