@@ -71,7 +71,7 @@
       },
       {
         "id": "tier2_rules",
-        "enabled": false,
+        "enabled": true,
         "path": "rules/tier2.json"
       },
       {

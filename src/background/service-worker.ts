@@ -80,8 +80,9 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     
     const settings = await storage.getSettings();
     
-    // Enable tier-based rulesets
-    await updateTierRules(settings.tier.level || 1);
+    // Temporarily enable tier 2 for YouTube ad blocking
+    // TODO: Revert to tier 1 after testing
+    await updateTierRules(2);
     
     updateIcon(settings.enabled);
     
