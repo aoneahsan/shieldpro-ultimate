@@ -28,6 +28,10 @@ import {
   Timestamp
 } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
+
+interface IncrementUserCountResponse {
+  userNumber: number;
+}
 import { app as firebaseApp } from '@/utils/firebase';
 import { EarlyAdopterStatus } from '../constants/marketing';
 
@@ -213,7 +217,7 @@ class FirebaseUserTrackingService {
       // Use Cloud Function for atomic increment
       const incrementUserCount = httpsCallable(this.functions, 'incrementUserCount');
       const result = await incrementUserCount();
-      return (result.data as any).userNumber;
+      return (result.data as IncrementUserCountResponse).userNumber;
     } catch (error) {
       console.error('Error incrementing user count:', error);
       // Fallback to client-side increment (less reliable)

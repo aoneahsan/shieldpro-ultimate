@@ -1,0 +1,131 @@
+/**
+ * YouTube Ad Blocking CSS
+ * Safe and effective ad hiding without breaking functionality
+ * Based on successful ad blockers like uBlock Origin
+ */
+
+/* Video Ad Containers */
+.video-ads,
+.ytp-ad-module,
+.ytp-ad-player-overlay,
+.ytp-ad-overlay-container,
+.ytp-ad-text-overlay,
+.ytp-ad-image-overlay,
+.ytp-ad-overlay-slot {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* YouTube Specific Ad Components */
+ytd-player-legacy-desktop-watch-ads-renderer,
+ytd-action-companion-ad-renderer,
+ytd-display-ad-renderer,
+ytd-video-masthead-ad-v3-renderer,
+ytd-promoted-sparkles-web-renderer,
+ytd-ad-slot-renderer,
+ytd-in-feed-ad-layout-renderer,
+ytd-statement-banner-renderer,
+ytd-banner-promo-renderer-background,
+ytd-primetime-promo-renderer,
+ytd-carousel-ad-renderer {
+  display: none !important;
+}
+
+/* Companion and Sidebar Ads */
+ytd-companion-slot-renderer,
+#player-ads,
+#watch7-sidebar-ads,
+.ytd-merch-shelf-renderer,
+ytd-shopping-shelf-renderer {
+  display: none !important;
+}
+
+/* Masthead Ads */
+ytd-masthead-ad-v3-renderer,
+ytd-video-masthead-ad-primary-video-renderer,
+ytd-video-masthead-ad-advertiser-info-renderer,
+#masthead-ad,
+.ytd-rich-grid-masthead-renderer {
+  display: none !important;
+}
+
+/* Feed Ads - More specific to avoid breaking content */
+ytd-rich-section-renderer[data-content-type="ad"],
+ytd-rich-item-renderer:has(ytd-display-ad-renderer),
+ytd-rich-item-renderer:has(ytd-in-feed-ad-layout-renderer),
+.ytd-rich-grid-row-renderer:has(ytd-display-ad-renderer) {
+  display: none !important;
+}
+
+/* Skip Ad Button Styling - Make more visible */
+.ytp-ad-skip-button,
+.ytp-ad-skip-button-modern,
+.ytp-skip-ad-button {
+  opacity: 1 !important;
+  visibility: visible !important;
+  background: #ff0000 !important;
+  color: white !important;
+  border: none !important;
+  padding: 6px 12px !important;
+  cursor: pointer !important;
+  z-index: 9999 !important;
+}
+
+/* Ad Progress Bar - Hide but don't break functionality */
+.ytp-ad-progress-list {
+  opacity: 0.3 !important;
+}
+
+/* Promotional Content */
+ytd-feed-nudge-renderer,
+ytd-banner-promo-renderer,
+ytm-promoted-sparkles-web-renderer {
+  display: none !important;
+}
+
+/* Mobile YouTube Ads */
+@media (max-width: 768px) {
+  .mobile-topstories-header,
+  .promoted-sparkles-text-search-renderer,
+  ytm-promoted-video-renderer {
+    display: none !important;
+  }
+}
+
+/* Shorts Ads */
+ytd-reel-video-renderer:has([aria-label*="Sponsored"]),
+ytd-shorts-video-renderer:has([aria-label*="Sponsored"]) {
+  display: none !important;
+}
+
+/* Overlay and Popup Ads */
+.ytp-ad-button-container,
+.ytp-ad-overlay-close-button,
+.html5-endscreen-content .videowall-endscreen-element-video-ad,
+#movie_player .videoAdUi {
+  display: none !important;
+}
+
+/* Search Result Ads */
+ytd-search-pyv-renderer,
+ytd-promoted-video-renderer,
+ytd-compact-promoted-video-renderer {
+  display: none !important;
+}
+
+/* Ensure video player remains functional */
+#movie_player,
+.html5-video-container,
+.video-stream,
+.ytp-chrome-bottom,
+.ytp-chrome-top,
+.ytp-progress-bar-container {
+  display: block !important;
+  visibility: visible !important;
+}
+
+/* Premium upsell and notifications */
+ytd-mealbar-promo-renderer,
+ytd-statement-banner-renderer[data-style="STYLE_BANNER"] {
+  display: none !important;
+}

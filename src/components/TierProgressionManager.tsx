@@ -1,11 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { User } from 'firebase/auth';
-import { auth, db, functions } from '../config/firebase';
+import { functions } from '../config/firebase';
 import { httpsCallable } from 'firebase/functions';
 import { updateProfile } from 'firebase/auth';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '../config/firebase';
 import authService from '../services/auth.service';
+
+interface EngagementResponse {
+  tierUpgraded: boolean;
+  message: string;
+}
+
+interface TierUpgradeResponse {
+  upgraded: boolean;
+  message: string;
+  newTier: number;
+}
 
 interface TierProgressionManagerProps {
   currentUser: User | null;
@@ -37,7 +48,7 @@ export const TierProgressionManager: React.FC<TierProgressionManagerProps> = ({
   });
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [referralCode, setReferralCode] = useState('');
-  const [weeklyEngagement, setWeeklyEngagement] = useState<string[]>([]);
+  const [_weeklyEngagement, _setWeeklyEngagement] = useState<string[]>([]);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -63,7 +74,7 @@ export const TierProgressionManager: React.FC<TierProgressionManagerProps> = ({
       try {
         const trackEngagement = httpsCallable(functions, 'trackDailyEngagement');
         const result = await trackEngagement();
-        const data = result.data as any;
+        const data = result.data as EngagementResponse;
         
         if (data.tierUpgraded) {
           setSuccess(data.message);
@@ -106,7 +117,7 @@ export const TierProgressionManager: React.FC<TierProgressionManagerProps> = ({
       // Check for tier upgrade
       const checkTierUpgrade = httpsCallable(functions, 'checkTierUpgrade');
       const result = await checkTierUpgrade();
-      const upgradeResult = result.data as any;
+      const upgradeResult = result.data as TierUpgradeResponse;
 
       if (upgradeResult.upgraded) {
         setSuccess(upgradeResult.message);
@@ -139,7 +150,7 @@ export const TierProgressionManager: React.FC<TierProgressionManagerProps> = ({
     }
   };
 
-  const handleReferralSubmit = async () => {
+  const _handleReferralSubmit = async () => {
     if (!referralCode.trim()) return;
     
     setLoading(true);

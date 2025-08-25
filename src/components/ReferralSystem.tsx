@@ -1,25 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../config/firebase';
-import authService from '../services/auth.service';
+
+interface FirebaseUserStats {
+  referralCount: number;
+  tier: number;
+  totalEarnings?: number;
+  conversionRate?: number;
+}
 
 interface ReferralSystemProps {
-  userId: string;
+  _userId: string;
   referralCode: string;
   referralCount: number;
-  onReferralSuccess?: () => void;
+  _onReferralSuccess?: () => void;
 }
 
 export const ReferralSystem: React.FC<ReferralSystemProps> = ({
-  userId,
+  _userId,
   referralCode,
   referralCount,
-  onReferralSuccess
+  _onReferralSuccess
 }) => {
   const [shareMethod, setShareMethod] = useState<'link' | 'qr' | 'email'>('link');
   const [emailTo, setEmailTo] = useState('');
   const [copied, setCopied] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [_loading, _setLoading] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState('');
   const [referralStats, setReferralStats] = useState({
     totalReferrals: referralCount,
@@ -45,7 +51,7 @@ export const ReferralSystem: React.FC<ReferralSystemProps> = ({
     try {
       const getUserStatistics = httpsCallable(functions, 'getUserStatistics');
       const result = await getUserStatistics();
-      const stats = result.data as any;
+      const stats = result.data as FirebaseUserStats;
       
       setReferralStats({
         totalReferrals: stats.referralCount || referralCount,

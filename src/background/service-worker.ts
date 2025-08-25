@@ -1,9 +1,9 @@
 import { storage } from '../shared/utils/storage';
-import { TabState } from '../shared/types';
+import { TabState, UserTier, BlockingStats } from '../shared/types';
 import { earlyAdopterService } from '../shared/services/early-adopter.service';
 import { firebaseUserTracking } from '../shared/services/firebase-user-tracking.service';
 
-console.log('ShieldPro Ultimate - Background Service Worker Started');
+console.warn('ShieldPro Ultimate - Background Service Worker Started');
 
 const tabStates = new Map<number, TabState>();
 const blockedRequests = new Map<number, number>();
@@ -43,7 +43,7 @@ async function updateTierRules(tier: number): Promise<void> {
       enableRulesetIds: enabledRulesets,
       disableRulesetIds: disabledRulesets
     });
-    console.log(`Updated rulesets for Tier ${tier}:`, enabledRulesets);
+    console.warn(`Updated rulesets for Tier ${tier}:`, enabledRulesets);
   } catch (error) {
     console.error('Failed to update rulesets:', error);
   }
@@ -78,7 +78,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   });
 
   if (details.reason === 'install') {
-    console.log('Extension installed');
+    console.warn('Extension installed');
     
     const settings = await storage.getSettings();
     
@@ -92,7 +92,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
       url: chrome.runtime.getURL('options.html?welcome=true')
     });
   } else if (details.reason === 'update') {
-    console.log('Extension updated to version:', chrome.runtime.getManifest().version);
+    console.warn('Extension updated to version:', chrome.runtime.getManifest().version);
     // Re-apply tier rules after update
     const settings = await storage.getSettings();
     await updateTierRules(settings.tier.level || 1);
@@ -123,7 +123,7 @@ chrome.declarativeNetRequest.onRuleMatchedDebug?.addListener(async (info) => {
       updateTabState(request.tabId, domain);
     }
     
-    console.log(`Blocked: ${request.url} (Rule: ${rule.ruleId})`);
+    console.warn(`Blocked: ${request.url} (Rule: ${rule.ruleId});`);
   } catch (error) {
     console.error('Error processing blocked request:', error);
   }
@@ -146,7 +146,9 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
       });
       
       updateBadge(tabId);
-    } catch (error) {}
+    } catch {
+      // Failed to update badge - non-critical
+    }
   }
 });
 
@@ -189,7 +191,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   return true;
 });
 
-async function handleMessage(request: any, sender: any, sendResponse: Function) {
+interface MessageRequest {
+  action: string;
+  domain?: string;
+  email?: string;
+  password?: string;
+  tier?: number;
+  category?: string;
+  [key: string]: unknown;
+}
+
+async function handleMessage(request: MessageRequest, sender: chrome.runtime.MessageSender, sendResponse: (response?: unknown) => void) {
   try {
     switch (request.action) {
       case 'getTabState': {
@@ -252,7 +264,8 @@ async function handleMessage(request: any, sender: any, sendResponse: Function) 
           const status = await earlyAdopterService.onAccountCreated(request.email);
           
           // Update tier if needed
-          if (status.currentTier !== settings.tier.level) {
+          const currentSettings = await storage.getSettings();
+          if (status.currentTier !== currentSettings.tier.level) {
             await updateTierRules(status.currentTier);
             await storage.updateTier(status.currentTier);
           }
@@ -327,7 +340,7 @@ async function handleMessage(request: any, sender: any, sendResponse: Function) 
             ...currentSettings, 
             tier: {
               level: newTier,
-              name: tierNames[newTier] as any,
+              name: tierNames[newTier] as UserTier['name'],
               unlockedAt: Date.now(),
               progress: newTier * 20
             }
@@ -409,7 +422,7 @@ async function handleMessage(request: any, sender: any, sendResponse: Function) 
           
           const category = request.category || 'other';
           const domain = request.domain || new URL(sender.tab.url || '').hostname;
-          await storage.incrementBlockedCount(domain, category as any);
+          await storage.incrementBlockedCount(domain, category as keyof BlockingStats['categoryStats']);
         }
         sendResponse({ success: true });
         break;

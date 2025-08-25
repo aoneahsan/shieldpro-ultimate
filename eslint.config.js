@@ -18,6 +18,12 @@ export default [
         }
       },
       globals: {
+        Blob: 'readonly',
+        URL: 'readonly', 
+        File: 'readonly',
+        HTMLInputElement: 'readonly',
+        HTMLDivElement: 'readonly',
+        NodeJS: 'readonly',
         browser: true,
         es2020: true,
         webextensions: true,

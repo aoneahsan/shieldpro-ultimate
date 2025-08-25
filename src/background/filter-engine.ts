@@ -3,7 +3,7 @@
  * Uses Chrome's declarativeNetRequest API for efficient network-level blocking
  */
 
-import { auth } from '../config/firebase';
+// Firebase auth removed - not needed for filter engine
 
 interface FilterRule {
   id: number;
@@ -133,7 +133,7 @@ export class FilterEngine {
       }
     }
 
-    console.log(`Filter engine loaded ${this.rules.size} rules for Tier ${tier}`);
+    console.warn(`Filter engine loaded ${this.rules.size} rules for Tier ${tier}`);
   }
 
   private async addRules(rules: FilterRule[]) {
@@ -145,8 +145,8 @@ export class FilterEngine {
         addRules: newRules.map(rule => ({
           id: rule.id,
           priority: rule.priority,
-          action: rule.action as any,
-          condition: rule.condition as any
+          action: rule.action as chrome.declarativeNetRequest.RuleAction,
+          condition: rule.condition as chrome.declarativeNetRequest.RuleCondition
         }))
       });
 

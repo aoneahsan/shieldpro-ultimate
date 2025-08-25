@@ -6,12 +6,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Network, 
-  Shield, 
-  ShieldCheck, 
   ShieldX, 
   Clock, 
   Download,
-  Upload,
   Filter,
   Search,
   Trash2,
@@ -22,8 +19,7 @@ import {
   Lock,
   Unlock,
   Eye,
-  EyeOff,
-  BarChart3
+  EyeOff
 } from 'lucide-react';
 
 interface NetworkRequest {
@@ -90,7 +86,7 @@ export const NetworkLogger: React.FC = () => {
   const [selectedRequest, setSelectedRequest] = useState<NetworkRequest | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [autoScroll, setAutoScroll] = useState(true);
-  const requestsEndRef = useRef<HTMLDivElement>(null);
+  const requestsEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     initializeNetworkLogger();
@@ -100,7 +96,7 @@ export const NetworkLogger: React.FC = () => {
         // Remove listeners
       }
     };
-  }, []);
+  }, [initializeNetworkLogger]);
 
   useEffect(() => {
     if (autoScroll && requestsEndRef.current) {
@@ -130,7 +126,7 @@ export const NetworkLogger: React.FC = () => {
 
   const startNetworkMonitoring = () => {
     // Listen for messages from background script about network events
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    chrome.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
       if (message.type === 'networkRequest') {
         handleNetworkRequest(message.request);
       }
@@ -213,7 +209,9 @@ export const NetworkLogger: React.FC = () => {
 
   const exportLogs = () => {
     const dataStr = JSON.stringify(requests, null, 2);
+    // eslint-disable-next-line no-undef
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    // eslint-disable-next-line no-undef
     const url = URL.createObjectURL(dataBlob);
     const link = document.createElement('a');
     link.href = url;
@@ -221,6 +219,7 @@ export const NetworkLogger: React.FC = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    // eslint-disable-next-line no-undef
     URL.revokeObjectURL(url);
   };
 

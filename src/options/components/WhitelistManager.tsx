@@ -24,6 +24,9 @@ import {
   AlertTriangle
 } from 'lucide-react';
 
+type WhitelistType = 'domain' | 'page' | 'regex';
+type WhitelistScope = 'all' | 'ads' | 'trackers';
+
 interface WhitelistEntry {
   id: string;
   domain: string;
@@ -153,7 +156,7 @@ export const WhitelistManager: React.FC<WhitelistManagerProps> = ({ currentTier 
       id: Date.now().toString(),
       domain: newEntry.domain,
       url: newEntry.url,
-      type: newEntry.type as any || 'domain',
+      type: (newEntry.type as WhitelistType) || 'domain',
       reason: newEntry.reason,
       enabled: newEntry.enabled !== false,
       temporary: newEntry.temporary || false,
@@ -165,7 +168,7 @@ export const WhitelistManager: React.FC<WhitelistManagerProps> = ({ currentTier 
       tags: newEntry.tags || [],
       priority: entries.length + 1,
       isFavorite: newEntry.isFavorite || false,
-      scope: newEntry.scope as any || 'all',
+      scope: (newEntry.scope as WhitelistScope) || 'all',
       notes: newEntry.notes
     };
 
@@ -456,7 +459,7 @@ export const WhitelistManager: React.FC<WhitelistManagerProps> = ({ currentTier 
               </label>
               <select
                 value={newEntry.type}
-                onChange={(e) => setNewEntry({ ...newEntry, type: e.target.value as any })}
+                onChange={(e) => setNewEntry({ ...newEntry, type: e.target.value as WhitelistType })}
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
               >
                 <option value="domain">Domain</option>
@@ -486,7 +489,7 @@ export const WhitelistManager: React.FC<WhitelistManagerProps> = ({ currentTier 
               </label>
               <select
                 value={newEntry.scope}
-                onChange={(e) => setNewEntry({ ...newEntry, scope: e.target.value as any })}
+                onChange={(e) => setNewEntry({ ...newEntry, scope: e.target.value as WhitelistScope })}
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
               >
                 <option value="all">All Blocking</option>

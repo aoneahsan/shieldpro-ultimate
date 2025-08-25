@@ -3,14 +3,14 @@
  * Coordinates all content-level blocking and protection features
  */
 
-import { YouTubeAdBlocker } from './youtube-blocker';
+import { YouTubeAdBlockerV2 } from './youtube-blocker-v2';
 import { PopupBlocker } from './popup-blocker';
 import { ElementPicker } from './element-picker';
 import { PrivacyProtector } from './privacy-protection';
 import { CookieConsentHandler } from './cookie-consent-handler';
 
 class ContentScriptManager {
-  private youtubeBlocker?: YouTubeAdBlocker;
+  private youtubeBlocker?: YouTubeAdBlockerV2;
   private popupBlocker: PopupBlocker;
   private elementPicker: ElementPicker;
   private privacyProtector: PrivacyProtector;
@@ -62,12 +62,21 @@ class ContentScriptManager {
   }
 
   private initializeTier2() {
-    // YouTube ad blocking - DISABLED to prevent breaking YouTube
-    // Will rely on declarativeNetRequest API instead
-    // if (window.location.hostname.includes('youtube.com')) {
-    //   this.youtubeBlocker = new YouTubeAdBlocker();
-    //   this.youtubeBlocker.init();
-    // }
+    // Safe YouTube ad blocking with V2 implementation
+    if (window.location.hostname.includes('youtube.com')) {
+      // Inject YouTube-specific CSS
+      this.injectYouTubeStyles();
+      
+      this.youtubeBlocker = new YouTubeAdBlockerV2();
+      // Initialize after DOM is ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+          this.youtubeBlocker?.init();
+        });
+      } else {
+        this.youtubeBlocker.init();
+      }
+    }
 
     // Enhanced tracking protection
     this.privacyProtector.enableTrackingProtection();
@@ -189,9 +198,48 @@ class ContentScriptManager {
     });
   }
 
+  private injectYouTubeStyles() {
+    const youtubeCSS = `
+/* YouTube Ad Blocking - Safe and Effective */
+.video-ads, .ytp-ad-module, .ytp-ad-player-overlay, .ytp-ad-overlay-container,
+.ytp-ad-text-overlay, .ytp-ad-image-overlay, .ytp-ad-overlay-slot {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+ytd-display-ad-renderer, ytd-video-masthead-ad-v3-renderer, ytd-promoted-sparkles-web-renderer,
+ytd-ad-slot-renderer, ytd-in-feed-ad-layout-renderer, ytd-statement-banner-renderer,
+ytd-banner-promo-renderer-background, ytd-primetime-promo-renderer, ytd-carousel-ad-renderer,
+ytd-companion-slot-renderer, ytd-action-companion-ad-renderer { display: none !important; }
+
+#player-ads, #watch7-sidebar-ads, .ytd-merch-shelf-renderer, ytd-shopping-shelf-renderer,
+ytd-masthead-ad-v3-renderer, #masthead-ad { display: none !important; }
+
+/* Skip button enhancement */
+.ytp-ad-skip-button, .ytp-ad-skip-button-modern, .ytp-skip-ad-button {
+  opacity: 1 !important; visibility: visible !important; background: #ff0000 !important;
+  color: white !important; border: none !important; padding: 6px 12px !important;
+  cursor: pointer !important; z-index: 9999 !important;
+}
+
+/* Feed ads - careful targeting */
+ytd-rich-item-renderer:has(ytd-display-ad-renderer),
+ytd-rich-item-renderer:has(ytd-in-feed-ad-layout-renderer) { display: none !important; }
+
+/* Ensure video player works */
+#movie_player, .html5-video-container, .video-stream, .ytp-chrome-bottom,
+.ytp-chrome-top, .ytp-progress-bar-container { display: block !important; visibility: visible !important; }
+    `;
+    
+    const style = document.createElement('style');
+    style.id = 'shieldpro-youtube-blocker';
+    style.textContent = youtubeCSS;
+    document.head.appendChild(style);
+  }
+
   // Public method to get blocked count
   public getBlockedCount(): number {
-    return this.popupBlocker.getBlockedCount();
+    return this.popupBlocker.getBlockedCount() + (this.youtubeBlocker?.getStats().blockedAds || 0);
   }
 }
 

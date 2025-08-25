@@ -1,0 +1,17 @@
+[
+  {
+    "name": "Popup Bundle",
+    "path": "dist/popup.js",
+    "limit": "100 KB"
+  },
+  {
+    "name": "Options Bundle",
+    "path": "dist/options.js",
+    "limit": "350 KB"
+  },
+  {
+    "name": "Total Extension Size",
+    "path": "dist/**/*",
+    "limit": "2 MB"
+  }
+]

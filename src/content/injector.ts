@@ -23,7 +23,7 @@
   ];
 
   let observer: MutationObserver | null = null;
-  let hiddenElements = new Set<Element>();
+  const hiddenElements = new Set<Element>();
   let isEnabled = true;
   let isWhitelisted = false;
   let currentTier = 1;
