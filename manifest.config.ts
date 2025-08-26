@@ -10,6 +10,7 @@ export default defineManifest(async () => ({
     : 'ShieldPro Ultimate - Advanced Ad Blocker',
   version: packageJson.version,
   description: 'Revolutionary ad blocking with 5-tier progressive feature unlock system. First 100,000 users get lifetime premium access!',
+  default_locale: 'en',
   
   icons: {
     '16': 'public/icons/icon-16.png',
