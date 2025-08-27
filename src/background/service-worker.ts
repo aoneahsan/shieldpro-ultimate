@@ -340,12 +340,6 @@ async function handleMessage(request: MessageRequest, sender: chrome.runtime.Mes
         sendResponse({ success: true });
         break;
       }
-      
-      case 'getEarlyAdopterStatus': {
-        const status = await earlyAdopterService.initializeUser();
-        sendResponse(status);
-        break;
-      }
         
       case 'tierUpgraded': {
         const newTier = request.tier;

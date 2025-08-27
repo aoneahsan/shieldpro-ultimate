@@ -18,11 +18,6 @@ export default defineConfig(({ mode }) => {
 		// Use relative paths for Chrome extension
 		base: './',
 		
-		// CRITICAL: Define NODE_ENV to prevent jsxDEV errors
-		define: {
-			'process.env.NODE_ENV': JSON.stringify(isProd ? 'production' : 'development'),
-		},
-		
 		plugins: [
 			// React with SWC for faster builds - FIXED FOR PRODUCTION
 			react({
@@ -48,9 +43,6 @@ export default defineConfig(({ mode }) => {
 		// ESBuild configuration to prevent jsxDEV
 		esbuild: {
 			jsx: 'automatic',
-			jsxFactory: 'React.createElement',
-			jsxFragment: 'React.Fragment',
-			jsxInject: `import React from 'react'`,
 			minify: isProd,
 			drop: isProd ? ['console', 'debugger'] : [],
 		},
@@ -97,15 +89,6 @@ export default defineConfig(({ mode }) => {
 					assetFileNames: 'assets/[name].[ext]',
 				},
 			},
-
-			// Output directory
-			outDir: 'dist',
-
-			// Empty output directory before build
-			emptyOutDir: true,
-
-			// Source maps for debugging
-			sourcemap: isDev,
 
 			// Target modern browsers
 			target: 'chrome90',
@@ -203,13 +186,6 @@ export default defineConfig(({ mode }) => {
 			'import.meta.env.DEV': JSON.stringify(isDev),
 		},
 
-		// Performance optimizations
-		esbuild: {
-			// Use esbuild for faster transforms
-			target: 'es2020',
-			// Remove console.log in production
-			drop: isProd ? ['console', 'debugger'] : [],
-		},
 
 		// Worker configuration
 		worker: {

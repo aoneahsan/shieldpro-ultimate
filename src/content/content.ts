@@ -5,6 +5,7 @@
 
 import { YouTubeAdBlockerV2 } from './youtube-blocker-v2';
 import { PopupBlocker } from './popup-blocker';
+import { AggressivePopupBlocker } from './aggressive-popup-blocker';
 import { ElementPicker } from './element-picker';
 import { PrivacyProtector } from './privacy-protection';
 import { CookieConsentHandler } from './cookie-consent-handler';
@@ -12,6 +13,7 @@ import { CookieConsentHandler } from './cookie-consent-handler';
 class ContentScriptManager {
   private youtubeBlocker?: YouTubeAdBlockerV2;
   private popupBlocker: PopupBlocker;
+  private aggressivePopupBlocker: AggressivePopupBlocker;
   private elementPicker: ElementPicker;
   private privacyProtector: PrivacyProtector;
   private cookieConsentHandler: CookieConsentHandler;
@@ -19,6 +21,8 @@ class ContentScriptManager {
   private isEarlyAdopter: boolean = false;
 
   constructor() {
+    // Initialize aggressive popup blocker first (runs earliest)
+    this.aggressivePopupBlocker = new AggressivePopupBlocker();
     this.popupBlocker = new PopupBlocker();
     this.elementPicker = new ElementPicker();
     this.privacyProtector = new PrivacyProtector();
@@ -103,19 +107,160 @@ class ContentScriptManager {
   private injectBasicStyles() {
     const style = document.createElement('style');
     style.textContent = `
-      /* Basic ad hiding rules - simplified to avoid breaking sites */
-      .google-ads, .googleads,
-      .ad-container, .ad-wrapper,
-      .advertisement-container,
+      /* Aggressive ad hiding rules */
+      
+      /* Common ad containers */
+      [id*="ad"], [id*="Ad"], [id*="AD"],
+      [class*="ad-"], [class*="Ad-"], [class*="_ad_"],
+      [class*="advertisement"], [class*="Advertisement"],
+      [class*="adsense"], [class*="AdSense"],
+      [class*="google-ad"], [class*="googlead"],
+      [class*="banner"], [class*="Banner"],
+      [class*="popup"], [class*="Popup"],
+      [class*="popunder"], [class*="modal-ad"],
+      [class*="sponsored"], [class*="Sponsored"],
+      [class*="promo"], [class*="Promo"],
+      [data-ad], [data-ads], [data-advertisement],
+      [data-google-query-id],
+      
+      /* Common ad IDs */
+      #ad, #ads, #adsense, #advert, #advertisement,
+      #banner, #popup, #popunder, #overlay,
+      #google_ads, #googleads, #sponsored,
+      
+      /* Ad iframes */
       iframe[src*="doubleclick.net"],
-      iframe[src*="googlesyndication.com"] {
+      iframe[src*="googlesyndication.com"],
+      iframe[src*="googleadservices.com"],
+      iframe[src*="google-analytics.com"],
+      iframe[src*="amazon-adsystem.com"],
+      iframe[src*="facebook.com/tr"],
+      iframe[src*="taboola.com"],
+      iframe[src*="outbrain.com"],
+      iframe[src*="mgid.com"],
+      iframe[src*="revcontent.com"],
+      iframe[src*="popads.net"],
+      iframe[src*="popcash.net"],
+      iframe[src*="propellerads.com"],
+      iframe[id*="google_ads"],
+      iframe[id*="aswift"],
+      
+      /* Specific ad elements */
+      .google-ads, .googleads, .adsbyGoogle, .adsbygoogle,
+      .ad-container, .ad-wrapper, .ad-unit, .ad-slot,
+      .advertisement-container, .advertisement-wrapper,
+      .banner-ad, .banner-ads, .side-ad, .sidebar-ad,
+      .top-ad, .bottom-ad, .header-ad, .footer-ad,
+      .popup-ad, .popunder-ad, .overlay-ad,
+      .sponsored-content, .sponsored-post,
+      .promoted-content, .promoted-post,
+      
+      /* Ad placeholders and containers */
+      div[id^="div-gpt-ad"],
+      div[id^="google_ads_iframe"],
+      div[class^="ad-placement"],
+      div[data-google-query-id],
+      ins.adsbygoogle,
+      
+      /* Sticky and floating ads */
+      [style*="position: fixed"][class*="ad"],
+      [style*="position: sticky"][class*="ad"],
+      .sticky-ad, .floating-ad, .fixed-ad,
+      
+      /* Video ads */
+      .video-ads, .video-ad-container,
+      .preroll-ad, .midroll-ad, .postroll-ad,
+      
+      /* Native ads */
+      .native-ad, .native-ads,
+      .content-ad, .in-article-ad,
+      
+      /* Social media ads */
+      .facebook-ad, .twitter-ad, .instagram-ad,
+      [data-testid*="sponsored"],
+      
+      /* Popup overlays */
+      .modal-backdrop[style*="display: block"],
+      .overlay[style*="display: block"],
+      div[style*="z-index: 9999"],
+      div[style*="z-index: 99999"],
+      div[style*="z-index: 999999"] {
         display: none !important;
         visibility: hidden !important;
         height: 0 !important;
         width: 0 !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        position: absolute !important;
+        left: -9999px !important;
+        top: -9999px !important;
+      }
+      
+      /* Hide empty ad containers */
+      .ad-container:empty,
+      .advertisement:empty,
+      [class*="ad-"]:empty {
+        display: none !important;
+      }
+      
+      /* Remove ad spacing */
+      .ad-spacer, .ad-placeholder {
+        display: none !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      
+      /* Block cookie notices (Tier 1 feature) */
+      .cookie-notice, .cookie-banner, .cookie-consent,
+      .gdpr-notice, .gdpr-banner, .privacy-notice,
+      #cookie-notice, #cookie-banner, #cookie-consent,
+      [class*="cookie-"], [id*="cookie-"],
+      [class*="consent-"], [id*="consent-"],
+      [class*="gdpr"], [id*="gdpr"] {
+        display: none !important;
+      }
+      
+      /* Site-specific rules for 1377x.to and similar torrent sites */
+      a[href*="//1377x.to/cdn-cgi/"],
+      a[href*="//1377x.to/torrent/"],
+      div[onclick*="window.open"],
+      div[onmousedown*="window.open"],
+      a[onclick*="window.open"],
+      a[onmousedown*="window.open"],
+      *[onclick*="_blank"],
+      *[onmousedown*="_blank"] {
+        pointer-events: none !important;
+        cursor: default !important;
+      }
+      
+      /* Remove click handlers from suspicious elements */
+      [onclick]:not(button):not(a):not(input):not(select) {
+        pointer-events: none !important;
+      }
+      
+      /* Anti-adblock detection bypass */
+      .adblock-detected, .adblock-message, .adblock-modal,
+      .adblocker-detected, .adblocker-message,
+      #adblock-detected, #adblock-message,
+      [class*="adblock"], [id*="adblock"] {
+        display: none !important;
       }
     `;
-    document.head.appendChild(style);
+    
+    // Inject style as early as possible
+    if (document.head) {
+      document.head.insertBefore(style, document.head.firstChild);
+    } else {
+      // If head doesn't exist yet, wait for it
+      const observer = new MutationObserver(() => {
+        if (document.head) {
+          document.head.insertBefore(style, document.head.firstChild);
+          observer.disconnect();
+        }
+      });
+      observer.observe(document, { childList: true, subtree: true });
+    }
   }
 
   private async loadCustomFilters() {
