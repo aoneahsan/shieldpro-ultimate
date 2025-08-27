@@ -15,7 +15,7 @@ export default defineConfig(({ mode }) => {
 	const env = loadEnv(mode, process.cwd(), '');
 
 	return {
-		// Use relative paths for assets in extension context
+		// Use relative paths for Chrome extension
 		base: './',
 		
 		plugins: [
@@ -44,10 +44,6 @@ export default defineConfig(({ mode }) => {
 				input: {
 					popup: resolve(process.cwd(), 'src/popup/index.html'),
 					options: resolve(process.cwd(), 'src/options/index.html'),
-					'early-adopter': resolve(
-						process.cwd(),
-						'src/pages/early-adopter-info.html'
-					),
 				},
 				output: {
 					// Code splitting

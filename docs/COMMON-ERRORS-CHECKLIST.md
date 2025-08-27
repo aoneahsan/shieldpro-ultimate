@@ -107,3 +107,4 @@ cat dist/manifest.json | jq .
 
 - **2025-08-27:** Document created, added localization and CSS loading errors
 - **2025-08-27:** Added blank HTML pages issue and solution (relative paths fix)
+- **2025-08-27:** Confirmed solution: Added `base: './'` to vite.config.ts ensures relative paths work correctly
