@@ -16,6 +16,12 @@ This document tracks common errors encountered during development and provides a
 **Date First Encountered:** 2025-08-27
 **Status:** ✅ FIXED
 
+### 3. Blank Options/Popup Pages
+**Error:** Options.html and popup.html pages appear blank when opened
+**Solution:** Add `base: './'` to vite.config.ts to use relative paths instead of absolute paths for assets
+**Date First Encountered:** 2025-08-27
+**Status:** ✅ FIXED
+
 ## Pre-Completion Checklist
 
 Before finishing any work on the extension, verify:
@@ -56,6 +62,12 @@ Before finishing any work on the extension, verify:
 3. Vite now copies public/content.css to dist/content.css during build
 **Current Status:** ✅ FIXED
 
+### Issue: Blank HTML Pages in Extension [RESOLVED]
+**Problem:** Options and popup pages showing blank when opened
+**Cause:** Vite was generating absolute paths (/options.js) instead of relative paths
+**Solution Applied:** Added `base: './'` to vite.config.ts
+**Current Status:** ✅ FIXED - Now using relative paths (../../options.js)
+
 ### Issue: Manifest not loading
 **Common Causes:**
 1. Invalid JSON syntax
@@ -94,3 +106,4 @@ cat dist/manifest.json | jq .
 ## Update Log
 
 - **2025-08-27:** Document created, added localization and CSS loading errors
+- **2025-08-27:** Added blank HTML pages issue and solution (relative paths fix)
