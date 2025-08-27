@@ -18,7 +18,7 @@ import {
   onSnapshot,
   Unsubscribe
 } from 'firebase/firestore';
-import { auth, db } from '../config/firebase';
+import { auth, firestore as db } from '../utils/firebase';
 import { User } from 'firebase/auth';
 
 export interface UserProfile {

@@ -15,6 +15,9 @@ export default defineConfig(({ mode }) => {
 	const env = loadEnv(mode, process.cwd(), '');
 
 	return {
+		// Use relative paths for assets in extension context
+		base: './',
+		
 		plugins: [
 			// React with SWC for faster builds
 			react(),

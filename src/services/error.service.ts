@@ -1,4 +1,4 @@
-import { auth } from '../config/firebase';
+import { auth } from '../utils/firebase';
 
 export enum ErrorCode {
   // Authentication Errors

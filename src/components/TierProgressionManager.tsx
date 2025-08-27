@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { User } from 'firebase/auth';
-import { functions } from '../config/firebase';
+import { functions } from '../utils/firebase';
 import { httpsCallable } from 'firebase/functions';
 import { updateProfile } from 'firebase/auth';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { storage } from '../config/firebase';
+import { storage } from '../utils/firebase';
 import authService from '../services/auth.service';
 
 interface EngagementResponse {

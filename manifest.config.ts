@@ -64,7 +64,7 @@ export default defineManifest(async () => ({
     {
       matches: ['<all_urls>'],
       js: ['src/content/content.ts'],
-      css: ['src/content/content.css'],
+      css: ['content.css'],
       run_at: 'document_idle',
       all_frames: false,
       match_about_blank: false

@@ -24,7 +24,7 @@ import {
   where,
   getDocs
 } from 'firebase/firestore';
-import { auth, db } from '../config/firebase';
+import { auth, firestore as db } from '../utils/firebase';
 
 export interface UserProfile {
   uid: string;

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { httpsCallable } from 'firebase/functions';
-import { functions } from '../config/firebase';
+import { functions } from '../utils/firebase';
 
 interface FirebaseUserStats {
   referralCount: number;
