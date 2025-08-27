@@ -106,7 +106,8 @@
         "styles/*",
         "fonts/*",
         "tiers-info.html",
-        "blocked.html"
+        "blocked.html",
+        "early-adopter.html"
       ],
       "matches": ["<all_urls>"]
     }
