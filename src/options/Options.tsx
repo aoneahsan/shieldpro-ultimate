@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Shield, Users, Settings, Filter, Globe, Lock, Check, Download, Upload, Network, Code, Zap, ShieldX, Database, List } from 'lucide-react';
+import { Shield, Users, Settings, Filter, Globe, Lock, Check, Download, Upload, Network, Code, Zap, ShieldX, Database, List, Sparkles, Gift, Star, X } from 'lucide-react';
 import { CustomFilters } from './components/CustomFilters';
 import { AdvancedWhitelist } from './components/AdvancedWhitelist';
 import { FilterListManager } from './components/FilterListManager';
@@ -10,18 +10,55 @@ import { NetworkLogger } from '../components/NetworkLogger';
 import { StorageManager } from '../shared/utils/storage';
 
 function Options() {
-  const [activeTab, setActiveTab] = useState('general');
+  // Get initial tab from URL or default to 'general'
+  const getInitialTab = () => {
+    const params = new URLSearchParams(window.location.search);
+    const hash = window.location.hash.slice(1); // Remove #
+    return params.get('tab') || hash || 'general';
+  };
 
+  const [activeTab, setActiveTab] = useState(getInitialTab());
   const [currentTier, setCurrentTier] = useState(1);
+  const [isEarlyAdopter, setIsEarlyAdopter] = useState(false);
+  const [userNumber, setUserNumber] = useState(0);
 
   useEffect(() => {
     loadCurrentTier();
+    checkEarlyAdopterStatus();
+    
+    // Handle browser back/forward navigation
+    const handlePopState = () => {
+      setActiveTab(getInitialTab());
+    };
+    
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
   const loadCurrentTier = async () => {
     const storage = StorageManager.getInstance();
     const settings = await storage.getSettings();
     setCurrentTier(settings.tier?.level || 1);
+  };
+
+  const checkEarlyAdopterStatus = async () => {
+    try {
+      // Import the early adopter service
+      const { earlyAdopterService } = await import('../shared/services/early-adopter.service');
+      const status = await earlyAdopterService.initializeUser();
+      setIsEarlyAdopter(status.isEarlyAdopter);
+      setUserNumber(status.userNumber);
+    } catch (error) {
+      console.error('Error checking early adopter status:', error);
+    }
+  };
+
+  // Update URL when tab changes
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId);
+    // Update URL without page reload
+    const newUrl = `${window.location.pathname}#${tabId}`;
+    window.history.pushState({ tab: tabId }, '', newUrl);
   };
 
   const tabs = [
@@ -45,6 +82,37 @@ function Options() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Early Adopter Banner */}
+      {isEarlyAdopter && userNumber > 0 && (
+        <div className="bg-gradient-to-r from-purple-600 via-pink-500 to-orange-500 text-white">
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <Sparkles className="w-6 h-6" />
+                <div>
+                  <h2 className="text-lg font-bold flex items-center space-x-2">
+                    <span>🎆 Early Adopter Benefits Active!</span>
+                    <span className="px-2 py-0.5 bg-white/20 backdrop-blur-sm rounded-full text-xs">
+                      #{userNumber.toLocaleString()}
+                    </span>
+                  </h2>
+                  <p className="text-sm opacity-90">
+                    You're one of the first 100,000 users – ALL features from ALL 5 tiers are FREE for you forever! 🎉
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="px-3 py-1.5 bg-white/20 backdrop-blur-sm rounded-full text-xs font-semibold flex items-center space-x-1">
+                  <Star className="w-3 h-3" />
+                  <span>Lifetime Premium</span>
+                </div>
+                <Gift className="w-8 h-8 text-yellow-300 animate-bounce" />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="max-w-7xl mx-auto p-6">
         <div className="flex items-center space-x-4 mb-8">
           <Shield className="w-10 h-10 text-primary-600" />
@@ -62,7 +130,7 @@ function Options() {
                 return (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
+                    onClick={() => handleTabChange(tab.id)}
                     className={`
                       flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors
                       ${activeTab === tab.id
@@ -85,13 +153,13 @@ function Options() {
             {activeTab === 'privacy' && <PrivacySettings />}
             {activeTab === 'whitelist' && <WhitelistSettings />}
             {activeTab === 'tiers' && <TierSettings />}
-            {activeTab === 'custom-filters' && currentTier >= 3 && <CustomFilters currentTier={currentTier} />}
-            {activeTab === 'filter-lists' && currentTier >= 4 && <FilterListManager currentTier={currentTier} />}
-            {activeTab === 'whitelist-manager' && currentTier >= 4 && <WhitelistManager currentTier={currentTier} />}
-            {activeTab === 'regex-patterns' && currentTier >= 4 && <RegexPatternManager currentTier={currentTier} />}
-            {activeTab === 'scripts' && currentTier >= 4 && <ScriptControlPanel />}
-            {activeTab === 'network' && currentTier >= 4 && <NetworkLogger />}
-            {activeTab === 'security' && currentTier >= 4 && <SecuritySettings />}
+            {activeTab === 'custom-filters' && (isEarlyAdopter || currentTier >= 3) && <CustomFilters currentTier={currentTier} />}
+            {activeTab === 'filter-lists' && (isEarlyAdopter || currentTier >= 4) && <FilterListManager currentTier={currentTier} />}
+            {activeTab === 'whitelist-manager' && (isEarlyAdopter || currentTier >= 4) && <WhitelistManager currentTier={currentTier} />}
+            {activeTab === 'regex-patterns' && (isEarlyAdopter || currentTier >= 4) && <RegexPatternManager currentTier={currentTier} />}
+            {activeTab === 'scripts' && (isEarlyAdopter || currentTier >= 4) && <ScriptControlPanel />}
+            {activeTab === 'network' && (isEarlyAdopter || currentTier >= 4) && <NetworkLogger />}
+            {activeTab === 'security' && (isEarlyAdopter || currentTier >= 4) && <SecuritySettings />}
           </div>
         </div>
       </div>

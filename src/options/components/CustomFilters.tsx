@@ -14,8 +14,13 @@ import {
   Eye,
   EyeOff,
   Copy,
-  RefreshCw
+  RefreshCw,
+  Star,
+  Sparkles,
+  Gift
 } from 'lucide-react';
+import { earlyAdopterService } from '../../shared/services/early-adopter.service';
+import { EarlyAdopterStatus } from '../../shared/constants/marketing';
 
 interface CustomFilter {
   id: string;
@@ -53,10 +58,21 @@ export const CustomFilters: React.FC<CustomFiltersProps> = ({ currentTier }) => 
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
   const [testResult, setTestResult] = useState<string>('');
   const [isTestingSelector, setIsTestingSelector] = useState(false);
+  const [earlyAdopterStatus, setEarlyAdopterStatus] = useState<EarlyAdopterStatus | null>(null);
 
   useEffect(() => {
     loadFilters();
+    checkEarlyAdopterStatus();
   }, []);
+
+  const checkEarlyAdopterStatus = async () => {
+    try {
+      const status = await earlyAdopterService.initializeUser();
+      setEarlyAdopterStatus(status);
+    } catch (error) {
+      console.error('Failed to check early adopter status:', error);
+    }
+  };
 
   const loadFilters = async () => {
     try {
@@ -206,7 +222,12 @@ export const CustomFilters: React.FC<CustomFiltersProps> = ({ currentTier }) => 
     }
   };
 
-  if (currentTier < 3) {
+  // Early adopters get full access regardless of tier
+  const hasAccess = earlyAdopterStatus?.isEarlyAdopter || currentTier >= 3;
+  const isEarlyAdopter = earlyAdopterStatus?.isEarlyAdopter || false;
+  const userNumber = earlyAdopterStatus?.userNumber || 0;
+
+  if (!hasAccess) {
     return (
       <div className="p-6 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg">
         <div className="flex items-center space-x-3 mb-4">
@@ -232,9 +253,21 @@ export const CustomFilters: React.FC<CustomFiltersProps> = ({ currentTier }) => 
         <div className="flex items-center space-x-3">
           <Filter className="w-6 h-6 text-primary-600" />
           <h2 className="text-xl font-bold text-gray-900">Custom Filters</h2>
-          <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
-            Tier 3 Feature
-          </span>
+          
+          {/* Tier Badge */}
+          <div className="flex items-center space-x-2">
+            <span className="px-3 py-1 bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-700 text-xs rounded-full font-semibold flex items-center space-x-1">
+              <Star className="w-3 h-3" />
+              <span>Tier 3 Feature</span>
+            </span>
+            
+            {isEarlyAdopter && (
+              <span className="px-3 py-1 bg-gradient-to-r from-yellow-100 to-amber-100 text-amber-700 text-xs rounded-full font-semibold flex items-center space-x-1 animate-pulse">
+                <Sparkles className="w-3 h-3" />
+                <span>🎉 FREE for Early Adopter #{userNumber.toLocaleString()}</span>
+              </span>
+            )}
+          </div>
         </div>
         <div className="flex items-center space-x-2">
           <button
@@ -547,6 +580,24 @@ export const CustomFilters: React.FC<CustomFiltersProps> = ({ currentTier }) => 
             <span className="text-sm text-blue-700">
               Total blocked: {filters.reduce((sum, f) => sum + f.matchCount, 0)} elements
             </span>
+          </div>
+        </div>
+      )}
+
+      {/* Early Adopter Info */}
+      {isEarlyAdopter && (
+        <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-200">
+          <div className="flex items-start space-x-3">
+            <Gift className="w-5 h-5 text-purple-600 mt-0.5" />
+            <div className="flex-1">
+              <h4 className="text-sm font-semibold text-purple-900 mb-1">
+                🎊 Early Adopter Benefit Unlocked!
+              </h4>
+              <p className="text-xs text-purple-700">
+                As Early Adopter #{userNumber.toLocaleString()}, you have lifetime access to this Tier 3 feature. 
+                Custom filters help you block any specific elements on any website!
+              </p>
+            </div>
           </div>
         </div>
       )}

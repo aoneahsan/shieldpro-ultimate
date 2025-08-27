@@ -18,8 +18,13 @@ import {
   Download,
   Upload,
   ToggleLeft,
-  ToggleRight
+  ToggleRight,
+  Star,
+  Sparkles,
+  Gift
 } from 'lucide-react';
+import { earlyAdopterService } from '../../shared/services/early-adopter.service';
+import { EarlyAdopterStatus } from '../../shared/constants/marketing';
 
 interface RegexPattern {
   id: string;
@@ -98,10 +103,21 @@ export const RegexPatternManager: React.FC<RegexPatternManagerProps> = ({ curren
   });
   const [patternError, setPatternError] = useState<string>('');
   const [showHelp, setShowHelp] = useState(false);
+  const [earlyAdopterStatus, setEarlyAdopterStatus] = useState<EarlyAdopterStatus | null>(null);
 
   useEffect(() => {
     loadPatterns();
+    checkEarlyAdopterStatus();
   }, []);
+
+  const checkEarlyAdopterStatus = async () => {
+    try {
+      const status = await earlyAdopterService.initializeUser();
+      setEarlyAdopterStatus(status);
+    } catch (error) {
+      console.error('Failed to check early adopter status:', error);
+    }
+  };
 
   const loadPatterns = async () => {
     try {
@@ -305,7 +321,12 @@ export const RegexPatternManager: React.FC<RegexPatternManagerProps> = ({ curren
     input.click();
   };
 
-  if (currentTier < 4) {
+  // Early adopters get full access regardless of tier
+  const hasAccess = earlyAdopterStatus?.isEarlyAdopter || currentTier >= 4;
+  const isEarlyAdopter = earlyAdopterStatus?.isEarlyAdopter || false;
+  const userNumber = earlyAdopterStatus?.userNumber || 0;
+
+  if (!hasAccess) {
     return (
       <div className="p-6 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg">
         <div className="flex items-center space-x-3 mb-4">
@@ -341,9 +362,21 @@ export const RegexPatternManager: React.FC<RegexPatternManagerProps> = ({ curren
         <div className="flex items-center space-x-3">
           <Code className="w-6 h-6 text-indigo-600" />
           <h2 className="text-xl font-bold text-gray-900">Regex Pattern Manager</h2>
-          <span className="px-2 py-1 bg-indigo-100 text-indigo-700 text-xs rounded-full">
-            Tier 4 Advanced
-          </span>
+          
+          {/* Tier Badge */}
+          <div className="flex items-center space-x-2">
+            <span className="px-3 py-1 bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-700 text-xs rounded-full font-semibold flex items-center space-x-1">
+              <Star className="w-3 h-3" />
+              <span>Tier 4 Advanced</span>
+            </span>
+            
+            {isEarlyAdopter && (
+              <span className="px-3 py-1 bg-gradient-to-r from-yellow-100 to-amber-100 text-amber-700 text-xs rounded-full font-semibold flex items-center space-x-1 animate-pulse">
+                <Sparkles className="w-3 h-3" />
+                <span>🎉 FREE for Early Adopter #{userNumber.toLocaleString()}</span>
+              </span>
+            )}
+          </div>
         </div>
         <div className="flex items-center space-x-2">
           <button

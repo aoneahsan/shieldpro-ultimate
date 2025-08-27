@@ -14,8 +14,13 @@ import {
   AlertCircle,
   CheckCircle,
   Link,
-  Calendar
+  Calendar,
+  Star,
+  Sparkles,
+  Gift
 } from 'lucide-react';
+import { earlyAdopterService } from '../../shared/services/early-adopter.service';
+import { EarlyAdopterStatus } from '../../shared/constants/marketing';
 
 interface WhitelistEntry {
   id: string;
@@ -49,10 +54,21 @@ export const AdvancedWhitelist: React.FC<AdvancedWhitelistProps> = ({ currentTie
     isTemporary: false,
     allowedResources: []
   });
+  const [earlyAdopterStatus, setEarlyAdopterStatus] = useState<EarlyAdopterStatus | null>(null);
 
   useEffect(() => {
     loadWhitelist();
+    checkEarlyAdopterStatus();
   }, []);
+
+  const checkEarlyAdopterStatus = async () => {
+    try {
+      const status = await earlyAdopterService.initializeUser();
+      setEarlyAdopterStatus(status);
+    } catch (error) {
+      console.error('Failed to check early adopter status:', error);
+    }
+  };
 
   const loadWhitelist = async () => {
     try {
