@@ -83,17 +83,18 @@ class FirebaseService {
    * Create or update user profile
    */
   async createUserProfile(user: User): Promise<UserProfile> {
-    const userRef = doc(db, 'users', user.uid);
-    const userSnap = await getDoc(userRef);
+    try {
+      const userRef = doc(db, 'users', user.uid);
+      const userSnap = await getDoc(userRef);
 
-    if (userSnap.exists()) {
-      // Update last active
-      await updateDoc(userRef, {
-        'stats.lastActive': serverTimestamp(),
-        updatedAt: serverTimestamp()
-      });
-      return userSnap.data() as UserProfile;
-    }
+      if (userSnap.exists()) {
+        // Update last active
+        await updateDoc(userRef, {
+          'stats.lastActive': serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+        return userSnap.data() as UserProfile;
+      }
 
     // Create new profile
     const referralCode = this.generateReferralCode(user.uid);
@@ -126,30 +127,72 @@ class FirebaseService {
       updatedAt: Timestamp.now()
     };
 
-    await setDoc(userRef, newProfile);
+      await setDoc(userRef, newProfile);
 
-    // Create referral document
-    await setDoc(doc(db, 'referrals', referralCode), {
-      code: referralCode,
-      userId: user.uid,
-      usedBy: [],
-      createdAt: Timestamp.now()
-    });
+      // Create referral document
+      await setDoc(doc(db, 'referrals', referralCode), {
+        code: referralCode,
+        userId: user.uid,
+        usedBy: [],
+        createdAt: Timestamp.now()
+      });
 
-    return newProfile;
+      return newProfile;
+    } catch (error: any) {
+      console.error('Error creating user profile:', error);
+      // Return a minimal profile on error
+      return {
+        uid: user.uid,
+        email: user.email!,
+        displayName: user.displayName || undefined,
+        photoURL: user.photoURL || undefined,
+        tier: {
+          level: 1,
+          name: 'Basic',
+          unlockedAt: Timestamp.now(),
+          progress: 0
+        },
+        referralCode: '',
+        referralCount: 0,
+        settings: {
+          syncEnabled: false,
+          notifications: false,
+          theme: 'auto',
+          language: 'en'
+        },
+        stats: {
+          totalBlocked: 0,
+          installDate: Timestamp.now(),
+          lastActive: Timestamp.now(),
+          weeklyEngagement: {}
+        },
+        createdAt: Timestamp.now(),
+        updatedAt: Timestamp.now()
+      };
+    }
   }
 
   /**
    * Get user profile
    */
   async getUserProfile(uid: string): Promise<UserProfile | null> {
-    const userRef = doc(db, 'users', uid);
-    const userSnap = await getDoc(userRef);
-    
-    if (userSnap.exists()) {
-      return userSnap.data() as UserProfile;
+    try {
+      const userRef = doc(db, 'users', uid);
+      const userSnap = await getDoc(userRef);
+      
+      if (userSnap.exists()) {
+        return userSnap.data() as UserProfile;
+      }
+      return null;
+    } catch (error: any) {
+      // Handle permission errors gracefully
+      if (error?.code === 'permission-denied') {
+        console.log('Permission denied accessing user profile. User may need to sign in.');
+        return null;
+      }
+      console.error('Error getting user profile:', error);
+      return null;
     }
-    return null;
   }
 
   /**

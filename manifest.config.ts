@@ -112,14 +112,15 @@ export default defineManifest(async () => ({
         'src/injected/*.js',
         'assets/*',
         'public/assets/*',
-        'public/fonts/*'
+        'public/fonts/*',
+        'early-adopter.html'
       ],
       matches: ['<all_urls>']
     }
   ],
 
   content_security_policy: {
-    extension_pages: "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+    extension_pages: "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; style-src 'self' 'unsafe-inline'"
   },
 
   commands: {
