@@ -9,7 +9,7 @@ import manifest from './manifest.config';
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
 	const isDev = mode === 'development';
-	const isProd = mode === 'production';
+	const isProd = mode === 'production' || process.env.NODE_ENV === 'production';
 
 	// Load environment variables
 	const env = loadEnv(mode, process.cwd(), '');
@@ -23,8 +23,7 @@ export default defineConfig(({ mode }) => {
 			react({
 				jsxRuntime: 'automatic',
 				jsxImportSource: 'react',
-				// Use production React transform
-				jsxPure: isProd,
+				fastRefresh: !isProd
 			}),
 
 			// TypeScript path resolution
@@ -155,7 +154,7 @@ export default defineConfig(({ mode }) => {
 
 		// Environment variables
 		define: {
-			'process.env.NODE_ENV': JSON.stringify(mode),
+			'process.env.NODE_ENV': JSON.stringify(isProd ? 'production' : mode),
 			'process.env': JSON.stringify({
 				REACT_APP_FIREBASE_API_KEY: env.REACT_APP_FIREBASE_API_KEY || env.VITE_FIREBASE_API_KEY,
 				REACT_APP_FIREBASE_AUTH_DOMAIN: env.REACT_APP_FIREBASE_AUTH_DOMAIN || env.VITE_FIREBASE_AUTH_DOMAIN,

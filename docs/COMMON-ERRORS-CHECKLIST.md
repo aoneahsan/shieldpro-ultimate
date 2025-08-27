@@ -24,7 +24,7 @@ This document tracks common errors encountered during development and provides a
 
 ### 4. React JSX Build Error
 **Error:** "Uncaught TypeError: o.jsxDEV is not a function"
-**Solution:** Configure React plugin with proper JSX runtime settings and remove conflicting esbuild JSX configurations
+**Solution:** Ensure build command sets NODE_ENV=production and update vite/React configuration for production builds
 **Date First Encountered:** 2025-08-27
 **Status:** ✅ FIXED
 
@@ -79,12 +79,14 @@ Before finishing any work on the extension, verify:
 ### Issue: React JSX Build Error [RESOLVED]
 **Error:** "Uncaught TypeError: o.jsxDEV is not a function" in console
 **Problem:** Development JSX transform function (jsxDEV) was being used in production build
-**Cause:** Conflicting React/JSX configuration between @vitejs/plugin-react-swc and esbuild settings
+**Cause:** Build command was not setting NODE_ENV=production, causing React to build in development mode
 **Solution Applied:**
-1. Configured React plugin with proper JSX runtime settings
-2. Removed conflicting esbuild JSX factory configurations
-3. Set `jsxRuntime: 'automatic'` in React plugin config
-**Current Status:** ✅ FIXED - Production builds now use correct JSX transform
+1. Updated package.json build script to always use `NODE_ENV=production vite build --mode production`
+2. Configured React plugin with proper JSX runtime settings
+3. Removed conflicting esbuild JSX factory configurations
+4. Updated vite config to detect production mode from both mode parameter and NODE_ENV
+5. Set `fastRefresh: !isProd` to disable fast refresh in production
+**Current Status:** ✅ FIXED - Production builds now use correct JSX transform without jsxDEV
 
 ### Issue: Manifest not loading
 **Common Causes:**
@@ -96,9 +98,15 @@ Before finishing any work on the extension, verify:
 ## Verification Commands
 
 ```bash
-# Check if all manifest files exist
+# Build in production mode (IMPORTANT!)
 yarn build
+
+# Check if all manifest files exist
 ls -la dist/
+
+# Verify NO jsxDEV in production build
+grep -c "jsxDEV" dist/options.js dist/popup.js
+# Should output: 0 for both files
 
 # Verify content.css location
 find dist/ -name "*.css" -type f
