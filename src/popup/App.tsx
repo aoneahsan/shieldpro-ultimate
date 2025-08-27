@@ -131,7 +131,9 @@ const App: React.FC = () => {
   }
 
   const currentTier = settings?.tier?.level || 1;
-  const isYouTubeActive = currentTier >= 2 && tabState?.domain?.includes('youtube.com');
+  const isEarlyAdopter = earlyAdopterStatus?.isEarlyAdopter || false;
+  const hasYouTubeAccess = isEarlyAdopter || currentTier >= 2;
+  const isYouTubeActive = hasYouTubeAccess && tabState?.domain?.includes('youtube.com');
 
   return (
     <div className="popup-container bg-gradient-to-br from-gray-50 to-gray-100">
@@ -355,7 +357,7 @@ const App: React.FC = () => {
                 <span className="text-xs text-gray-600">Trackers</span>
                 <span className="text-xs font-medium">{stats?.categoryStats?.trackers || 0}</span>
               </div>
-              {currentTier >= 2 && (
+              {hasYouTubeAccess && (
                 <>
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-gray-600">YouTube</span>

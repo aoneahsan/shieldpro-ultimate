@@ -80,11 +80,28 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   if (details.reason === 'install') {
     console.warn('Extension installed');
     
+    // Initialize early adopter status
+    const earlyAdopterStatus = await earlyAdopterService.initializeUser();
+    console.warn('Early Adopter Status:', earlyAdopterStatus);
+    
     const settings = await storage.getSettings();
     
-    // Temporarily enable tier 2 for YouTube ad blocking
-    // TODO: Revert to tier 1 after testing
-    await updateTierRules(2);
+    // Set tier based on early adopter status
+    const initialTier = earlyAdopterStatus.isEarlyAdopter ? 5 : settings.tier.level || 1;
+    await updateTierRules(initialTier);
+    
+    // Update settings with proper tier
+    if (earlyAdopterStatus.isEarlyAdopter) {
+      await storage.setSettings({
+        ...settings,
+        tier: {
+          level: 5,
+          name: 'Ultimate',
+          unlockedAt: Date.now(),
+          progress: 100
+        }
+      });
+    }
     
     updateIcon(settings.enabled);
     
@@ -93,9 +110,10 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     });
   } else if (details.reason === 'update') {
     console.warn('Extension updated to version:', chrome.runtime.getManifest().version);
-    // Re-apply tier rules after update
+    // Check early adopter status and re-apply tier rules
+    const earlyAdopterStatus = await earlyAdopterService.checkTierEligibility();
     const settings = await storage.getSettings();
-    await updateTierRules(settings.tier.level || 1);
+    await updateTierRules(earlyAdopterStatus || settings.tier.level || 1);
   }
 });
 
@@ -320,6 +338,12 @@ async function handleMessage(request: MessageRequest, sender: chrome.runtime.Mes
         blockedRequests.clear();
         updateAllBadges();
         sendResponse({ success: true });
+        break;
+      }
+      
+      case 'getEarlyAdopterStatus': {
+        const status = await earlyAdopterService.initializeUser();
+        sendResponse(status);
         break;
       }
         

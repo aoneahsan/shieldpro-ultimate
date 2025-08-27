@@ -16,6 +16,7 @@ class ContentScriptManager {
   private privacyProtector: PrivacyProtector;
   private cookieConsentHandler: CookieConsentHandler;
   private currentTier: number = 1;
+  private isEarlyAdopter: boolean = false;
 
   constructor() {
     this.popupBlocker = new PopupBlocker();
@@ -27,21 +28,22 @@ class ContentScriptManager {
   }
 
   private async initialize() {
-    // Get current tier from storage
-    const result = await chrome.storage.local.get(['settings']);
+    // Get current tier and early adopter status from storage
+    const result = await chrome.storage.local.get(['settings', 'earlyAdopterStatus']);
     this.currentTier = result.settings?.tier?.level || 1;
+    this.isEarlyAdopter = result.earlyAdopterStatus?.isEarlyAdopter || false;
 
     // Initialize tier 1 features (always active)
     this.initializeTier1();
 
-    // Initialize higher tier features based on current tier
-    if (this.currentTier >= 2) {
+    // Initialize higher tier features based on current tier or early adopter status
+    if (this.isEarlyAdopter || this.currentTier >= 2) {
       this.initializeTier2();
     }
-    if (this.currentTier >= 3) {
+    if (this.isEarlyAdopter || this.currentTier >= 3) {
       this.initializeTier3();
     }
-    if (this.currentTier >= 4) {
+    if (this.isEarlyAdopter || this.currentTier >= 4) {
       this.initializeTier4();
     }
 
