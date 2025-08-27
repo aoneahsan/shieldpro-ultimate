@@ -126,6 +126,7 @@ export default defineConfig(() => {
 				input: {
 					popup: resolve(process.cwd(), 'src/popup/index.html'),
 					options: resolve(process.cwd(), 'src/options/index.html'),
+					'service-worker': resolve(process.cwd(), 'src/background/service-worker.ts'),
 				},
 				output: {
 					manualChunks: {
@@ -148,14 +149,31 @@ export default defineConfig(() => {
 					chunkFileNames: 'chunks/[name]-[hash].js',
 					assetFileNames: 'assets/[name].[ext]',
 					
-					// Inject production mode at the top of every bundle
-					intro: `
-						if (typeof process === 'undefined') {
-							window.process = { env: { NODE_ENV: 'production' } };
-						} else {
-							process.env.NODE_ENV = 'production';
+					// Inject production mode at the top of every bundle (except service workers)
+					intro: (chunkInfo) => {
+						// Don't inject window references in service worker chunks
+						if (chunkInfo.name?.includes('service-worker')) {
+							return `
+								if (typeof process === 'undefined') {
+									globalThis.process = { env: { NODE_ENV: 'production' } };
+								} else {
+									process.env.NODE_ENV = 'production';
+								}
+							`;
 						}
-					`,
+						// For other chunks, use window in browser context
+						return `
+							if (typeof process === 'undefined') {
+								if (typeof window !== 'undefined') {
+									window.process = { env: { NODE_ENV: 'production' } };
+								} else {
+									globalThis.process = { env: { NODE_ENV: 'production' } };
+								}
+							} else {
+								process.env.NODE_ENV = 'production';
+							}
+						`;
+					},
 				},
 				// Maximum tree shaking
 				treeshake: {
