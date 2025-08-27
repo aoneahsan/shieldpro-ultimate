@@ -22,6 +22,12 @@ This document tracks common errors encountered during development and provides a
 **Date First Encountered:** 2025-08-27
 **Status:** ✅ FIXED
 
+### 4. React JSX Build Error
+**Error:** "Uncaught TypeError: o.jsxDEV is not a function"
+**Solution:** Configure React plugin with proper JSX runtime settings and remove conflicting esbuild JSX configurations
+**Date First Encountered:** 2025-08-27
+**Status:** ✅ FIXED
+
 ## Pre-Completion Checklist
 
 Before finishing any work on the extension, verify:
@@ -45,6 +51,8 @@ Before finishing any work on the extension, verify:
 - [ ] dist/ folder contains all necessary files after build
 - [ ] No references to src/ folder in final manifest.json
 - [ ] All assets are copied/built to correct locations
+- [ ] React builds in production mode (no jsxDEV functions)
+- [ ] HTML files correctly reference JS files with relative paths
 
 ### Common Path Issues
 - [ ] Content CSS should be at `dist/content.css` not `dist/src/content/content.css`
@@ -67,6 +75,16 @@ Before finishing any work on the extension, verify:
 **Cause:** Vite was generating absolute paths (/options.js) instead of relative paths
 **Solution Applied:** Added `base: './'` to vite.config.ts
 **Current Status:** ✅ FIXED - Now using relative paths (../../options.js)
+
+### Issue: React JSX Build Error [RESOLVED]
+**Error:** "Uncaught TypeError: o.jsxDEV is not a function" in console
+**Problem:** Development JSX transform function (jsxDEV) was being used in production build
+**Cause:** Conflicting React/JSX configuration between @vitejs/plugin-react-swc and esbuild settings
+**Solution Applied:**
+1. Configured React plugin with proper JSX runtime settings
+2. Removed conflicting esbuild JSX factory configurations
+3. Set `jsxRuntime: 'automatic'` in React plugin config
+**Current Status:** ✅ FIXED - Production builds now use correct JSX transform
 
 ### Issue: Manifest not loading
 **Common Causes:**
@@ -108,3 +126,4 @@ cat dist/manifest.json | jq .
 - **2025-08-27:** Document created, added localization and CSS loading errors
 - **2025-08-27:** Added blank HTML pages issue and solution (relative paths fix)
 - **2025-08-27:** Confirmed solution: Added `base: './'` to vite.config.ts ensures relative paths work correctly
+- **2025-08-27:** Added React JSX build error and solution (fixed JSX runtime configuration)

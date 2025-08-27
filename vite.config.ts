@@ -20,7 +20,12 @@ export default defineConfig(({ mode }) => {
 		
 		plugins: [
 			// React with SWC for faster builds
-			react(),
+			react({
+				jsxRuntime: 'automatic',
+				jsxImportSource: 'react',
+				// Use production React transform
+				jsxPure: isProd,
+			}),
 
 			// TypeScript path resolution
 			tsconfigPaths(),
@@ -179,8 +184,6 @@ export default defineConfig(({ mode }) => {
 		esbuild: {
 			// Use esbuild for faster transforms
 			target: 'es2020',
-			jsxFactory: 'React.createElement',
-			jsxFragment: 'React.Fragment',
 			// Remove console.log in production
 			drop: isProd ? ['console', 'debugger'] : [],
 		},
