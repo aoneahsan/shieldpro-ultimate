@@ -89,7 +89,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     updateIcon(settings.enabled);
     
     chrome.tabs.create({
-      url: chrome.runtime.getURL('options.html?welcome=true')
+      url: chrome.runtime.getURL('src/options/index.html?welcome=true')
     });
   } else if (details.reason === 'update') {
     console.warn('Extension updated to version:', chrome.runtime.getManifest().version);
@@ -253,7 +253,7 @@ async function handleMessage(request: MessageRequest, sender: chrome.runtime.Mes
       
       case 'openAccountCreation': {
         chrome.tabs.create({
-          url: chrome.runtime.getURL('options.html?section=account')
+          url: chrome.runtime.getURL('src/options/index.html?section=account')
         });
         break;
       }

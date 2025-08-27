@@ -241,15 +241,15 @@ const TiersInfo: React.FC = () => {
     switch (tier.id) {
       case 2:
         // Redirect to sign-in
-        window.open(chrome.runtime.getURL('/popup.html#/auth'), '_blank');
+        window.open(chrome.runtime.getURL('/src/popup/index.html#/auth'), '_blank');
         break;
       case 3:
         // Redirect to profile completion
-        window.open(chrome.runtime.getURL('/options.html#/profile'), '_blank');
+        window.open(chrome.runtime.getURL('/src/options/index.html#/profile'), '_blank');
         break;
       case 4:
         // Show referral information
-        window.open(chrome.runtime.getURL('/options.html#/referrals'), '_blank');
+        window.open(chrome.runtime.getURL('/src/options/index.html#/referrals'), '_blank');
         break;
       case 5:
         // Show engagement tips
