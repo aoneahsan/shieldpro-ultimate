@@ -6,8 +6,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "NODE_ENV=production vite build --mode production",
-    "build:prod": "NODE_ENV=production vite build --mode production",
+    "build": "NODE_ENV=production vite build --mode production --config vite.config.ts",
+    "build:prod": "NODE_ENV=production vite build --mode production --config vite.config.production.ts",
+    "build:safe": "NODE_ENV=production vite build --mode production --config vite.config.production.ts",
     "watch": "vite build --watch",
     "preview": "vite preview",
     "test": "vitest",

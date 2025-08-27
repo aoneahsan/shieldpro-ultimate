@@ -18,12 +18,19 @@ export default defineConfig(({ mode }) => {
 		// Use relative paths for Chrome extension
 		base: './',
 		
+		// CRITICAL: Define NODE_ENV to prevent jsxDEV errors
+		define: {
+			'process.env.NODE_ENV': JSON.stringify(isProd ? 'production' : 'development'),
+		},
+		
 		plugins: [
-			// React with SWC for faster builds
+			// React with SWC for faster builds - FIXED FOR PRODUCTION
 			react({
 				jsxRuntime: 'automatic',
 				jsxImportSource: 'react',
-				fastRefresh: !isProd
+				fastRefresh: !isProd,
+				// Ensure production mode
+				tsDecorators: true
 			}),
 
 			// TypeScript path resolution
@@ -38,10 +45,27 @@ export default defineConfig(({ mode }) => {
 			}),
 		],
 
+		// ESBuild configuration to prevent jsxDEV
+		esbuild: {
+			jsx: 'automatic',
+			jsxFactory: 'React.createElement',
+			jsxFragment: 'React.Fragment',
+			jsxInject: `import React from 'react'`,
+			minify: isProd,
+			drop: isProd ? ['console', 'debugger'] : [],
+		},
+		
 		// Build optimizations
 		build: {
 			// Use Rollup for production builds
 			minify: isProd ? 'terser' : false,
+			
+			// Force production mode
+			sourcemap: !isProd,
+			
+			// Output configuration
+			outDir: 'dist',
+			emptyOutDir: true,
 
 			// Better tree-shaking
 			rollupOptions: {
