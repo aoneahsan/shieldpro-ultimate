@@ -88,11 +88,13 @@ class FirebaseService {
       const userSnap = await getDoc(userRef);
 
       if (userSnap.exists()) {
-        // Update last active
-        await updateDoc(userRef, {
-          'stats.lastActive': serverTimestamp(),
+        // Update last active using setDoc with merge
+        await setDoc(userRef, {
+          stats: {
+            lastActive: serverTimestamp()
+          },
           updatedAt: serverTimestamp()
-        });
+        }, { merge: true });
         return userSnap.data() as UserProfile;
       }
 
@@ -200,10 +202,11 @@ class FirebaseService {
    */
   async updateUserProfile(uid: string, updates: Partial<UserProfile>): Promise<void> {
     const userRef = doc(db, 'users', uid);
-    await updateDoc(userRef, {
+    // Use setDoc with merge to handle non-existent documents
+    await setDoc(userRef, {
       ...updates,
       updatedAt: serverTimestamp()
-    });
+    }, { merge: true });
   }
 
   /**
@@ -262,17 +265,17 @@ class FirebaseService {
         throw new Error('Cannot use your own referral code');
       }
 
-      // Apply referral
-      await updateDoc(referralRef, {
+      // Apply referral using setDoc with merge
+      await setDoc(referralRef, {
         usedBy: [...referralData.usedBy, userId]
-      });
+      }, { merge: true });
 
-      // Update referrer's count
+      // Update referrer's count using setDoc with merge
       const referrerRef = doc(db, 'users', referralData.userId);
-      await updateDoc(referrerRef, {
+      await setDoc(referrerRef, {
         referralCount: increment(1),
         updatedAt: serverTimestamp()
-      });
+      }, { merge: true });
 
       // Update user's referredBy
       await this.updateUserProfile(userId, {

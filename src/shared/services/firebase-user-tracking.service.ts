@@ -130,10 +130,10 @@ class FirebaseUserTrackingService {
         
         return { uid: user.uid, userNumber };
       } else {
-        // Existing user - update last active
-        await updateDoc(userDocRef, {
+        // Existing user - update last active using setDoc with merge
+        await setDoc(userDocRef, {
           lastActiveDate: serverTimestamp()
-        });
+        }, { merge: true });
         
         return { 
           uid: user.uid, 
@@ -168,8 +168,8 @@ class FirebaseUserTrackingService {
       if (userDoc.exists()) {
         const userData = userDoc.data() as FirebaseUserData;
         
-        // Update with account info
-        await updateDoc(userDocRef, {
+        // Update with account info using setDoc with merge
+        await setDoc(userDocRef, {
           isAnonymous: false,
           hasAccount: true,
           email,
@@ -177,7 +177,7 @@ class FirebaseUserTrackingService {
           // Early adopters get permanent Tier 5
           currentTier: userData.isEarlyAdopter ? 5 : userData.currentTier,
           lockedTier: userData.isEarlyAdopter ? 5 : userData.lockedTier
-        });
+        }, { merge: true });
         
         // Track conversion
         this.trackEvent('account_created', {
@@ -222,9 +222,9 @@ class FirebaseUserTrackingService {
       console.error('Error incrementing user count:', error);
       // Fallback to client-side increment (less reliable)
       const statsRef = doc(this.db, 'stats', 'global');
-      await updateDoc(statsRef, {
+      await setDoc(statsRef, {
         totalUsers: increment(1)
-      });
+      }, { merge: true });
       return await this.getGlobalUserCount();
     }
   }
@@ -262,10 +262,10 @@ class FirebaseUserTrackingService {
     
     // Update if changed
     if (newTier !== userData.currentTier) {
-      await updateDoc(userDocRef, {
+      await setDoc(userDocRef, {
         currentTier: newTier,
         lastActiveDate: serverTimestamp()
-      });
+      }, { merge: true });
     }
     
     return newTier;
@@ -332,15 +332,22 @@ class FirebaseUserTrackingService {
    * Initialize auth state listener
    */
   private initializeAuthListener(): void {
-    onAuthStateChanged(this.auth, (user) => {
+    onAuthStateChanged(this.auth, async (user) => {
       this.currentUser = user;
       
       if (user) {
-        // Update last active
+        // Check if document exists before updating
         const userDocRef = doc(this.db, 'users', user.uid);
-        updateDoc(userDocRef, {
-          lastActiveDate: serverTimestamp()
-        }).catch(console.error);
+        const userDoc = await getDoc(userDocRef);
+        
+        if (userDoc.exists()) {
+          // Update last active only if document exists
+          setDoc(userDocRef, {
+            lastActiveDate: serverTimestamp()
+          }, { merge: true }).catch(console.error);
+        } else {
+          console.log('User document does not exist yet, skipping lastActiveDate update');
+        }
       }
     });
   }
