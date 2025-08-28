@@ -291,7 +291,8 @@ const App: React.FC = () => {
               </div>
               <button
                 onClick={() => {
-                  const accountSection = document.getElementById('account-section');
+                  // Set a flag to show the form immediately
+                  const accountSection = document.getElementById('account-section-form');
                   accountSection?.scrollIntoView({ behavior: 'smooth' });
                 }}
                 className="bg-white/20 hover:bg-white/30 px-2 py-1 rounded text-xs font-medium transition-colors whitespace-nowrap"
@@ -511,35 +512,74 @@ const App: React.FC = () => {
 
 
         {/* Account Management Section - Below fold */}
-        <div id="account-section">
-          {isEarlyAdopter && !earlyAdopterStatus?.hasAccount && (
-            <div className="bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-lg p-3">
-              <div className="flex items-start space-x-2">
-                <Gift className="w-5 h-5 flex-shrink-0 mt-0.5" />
+        {/* Show these as separate, always-visible elements for better UX */}
+        
+        {/* Early Adopter Account Creation Section */}
+        {isEarlyAdopter && !earlyAdopterStatus?.hasAccount && (
+          <>
+            {/* Benefits Card */}
+            <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white rounded-lg p-3 shadow-lg">
+              <div className="flex items-start gap-2">
+                <Crown className="w-5 h-5 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-bold text-sm mb-1">🎉 Secure Your FREE Benefits!</p>
-                  <p className="text-xs opacity-95 mb-2">
-                    Create a free account to:
-                    • Save & sync settings across all devices
-                    • Keep all 5 tiers unlocked forever  
-                    • Never lose your early adopter status
-                  </p>
-                  <AccountManager 
-                    currentTier={5}
-                    onTierUpgrade={handleTierUpgrade}
-                  />
+                  <p className="font-bold text-sm mb-2">🎉 Your Early Adopter Benefits</p>
+                  <ul className="text-xs space-y-1 opacity-95">
+                    <li>✅ All 5 tiers unlocked forever (worth $120/year)</li>
+                    <li>✅ Lifetime premium features at no cost</li>
+                    <li>✅ Priority support & early access to new features</li>
+                    <li>✅ Your settings sync across all devices</li>
+                    <li>✅ Never lose your early adopter status</li>
+                  </ul>
                 </div>
               </div>
             </div>
-          )}
 
-          {!isEarlyAdopter && currentTier < 2 && (
-            <AccountManager 
-              currentTier={currentTier}
-              onTierUpgrade={handleTierUpgrade}
-            />
-          )}
-        </div>
+            {/* Account Creation Form - Always visible, not hidden in component state */}
+            <div id="account-section-form" className="bg-white rounded-lg p-3 shadow-sm border border-gray-100">
+              <h3 className="text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
+                <Gift className="w-4 h-4 text-green-600" />
+                Secure Your Lifetime Access
+              </h3>
+              <p className="text-xs text-gray-600 mb-3">
+                Create your free account now to lock in all benefits forever
+              </p>
+              <AccountManager 
+                currentTier={5}
+                onTierUpgrade={handleTierUpgrade}
+              />
+            </div>
+          </>
+        )}
+
+        {/* Non-Early Adopter Account Section */}
+        {!isEarlyAdopter && currentTier < 2 && (
+          <>
+            {/* Benefits Card */}
+            <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg p-3 shadow-lg">
+              <div className="flex items-start gap-2">
+                <TrendingUp className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-bold text-sm mb-2">Unlock Tier 2 Features</p>
+                  <ul className="text-xs space-y-1 opacity-95">
+                    <li>✅ YouTube ad blocking</li>
+                    <li>✅ Advanced tracker blocking</li>
+                    <li>✅ Social media tracker removal</li>
+                    <li>✅ Analytics blocking</li>
+                    <li>✅ 40+ additional blocking rules</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Account Creation Form */}
+            <div id="account-section-form" className="bg-white rounded-lg p-3 shadow-sm border border-gray-100">
+              <AccountManager 
+                currentTier={currentTier}
+                onTierUpgrade={handleTierUpgrade}
+              />
+            </div>
+          </>
+        )}
 
         {/* Early Adopter full details - if applicable */}
         {earlyAdopterStatus && earlyAdopterStatus.isEarlyAdopter && (
