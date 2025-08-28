@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Shield, Users, Settings, Filter, Globe, Lock, Check, Download, Upload, Network, Code, Zap, ShieldX, Database, List, Sparkles, Gift, Star, X } from 'lucide-react';
+import { Shield, Users, Settings, Filter, Globe, Lock, Check, Download, Upload, Network, Code, Zap, ShieldX, Database, List, Sparkles, Gift, Star, X, Palette, Image, Cloud } from 'lucide-react';
 import { CustomFilters } from './components/CustomFilters';
 import { AdvancedWhitelist } from './components/AdvancedWhitelist';
 import { FilterListManager } from './components/FilterListManager';
@@ -7,6 +7,10 @@ import { WhitelistManager } from './components/WhitelistManager';
 import { RegexPatternManager } from './components/RegexPatternManager';
 import { ScriptControlPanel } from '../components/ScriptControlPanel';
 import { NetworkLogger } from '../components/NetworkLogger';
+import { GeneralSettings } from './components/GeneralSettings';
+import { ThemeManager } from './components/ThemeManager';
+import { ImageSwap } from './components/ImageSwap';
+import { BackupSync } from './components/BackupSync';
 import { StorageManager } from '../shared/utils/storage';
 
 function Options() {
@@ -67,8 +71,13 @@ function Options() {
     { id: 'privacy', label: 'Privacy', icon: Lock },
     { id: 'whitelist', label: 'Whitelist', icon: Globe },
     { id: 'tiers', label: 'Tiers', icon: Users },
+    ...(currentTier >= 2 ? [
+      { id: 'themes', label: 'Themes', icon: Palette }
+    ] : []),
     ...(currentTier >= 3 ? [
-      { id: 'custom-filters', label: 'Custom Filters', icon: Filter }
+      { id: 'custom-filters', label: 'Custom Filters', icon: Filter },
+      { id: 'image-swap', label: 'Image Swap', icon: Image },
+      { id: 'backup-sync', label: 'Backup & Sync', icon: Cloud }
     ] : []),
     ...(currentTier >= 4 ? [
       { id: 'filter-lists', label: 'Filter Lists', icon: Database },
@@ -148,17 +157,20 @@ function Options() {
           </div>
 
           <div className="p-6">
-            {activeTab === 'general' && <GeneralSettings />}
+            {activeTab === 'general' && <GeneralSettings currentTier={isEarlyAdopter ? 5 : currentTier} />}
             {activeTab === 'filters' && <FilterSettings />}
             {activeTab === 'privacy' && <PrivacySettings />}
             {activeTab === 'whitelist' && <WhitelistSettings />}
             {activeTab === 'tiers' && <TierSettings />}
-            {activeTab === 'custom-filters' && (isEarlyAdopter || currentTier >= 3) && <CustomFilters currentTier={currentTier} />}
-            {activeTab === 'filter-lists' && (isEarlyAdopter || currentTier >= 4) && <FilterListManager currentTier={currentTier} />}
-            {activeTab === 'whitelist-manager' && (isEarlyAdopter || currentTier >= 4) && <WhitelistManager currentTier={currentTier} />}
-            {activeTab === 'regex-patterns' && (isEarlyAdopter || currentTier >= 4) && <RegexPatternManager currentTier={currentTier} />}
-            {activeTab === 'scripts' && (isEarlyAdopter || currentTier >= 4) && <ScriptControlPanel />}
-            {activeTab === 'network' && (isEarlyAdopter || currentTier >= 4) && <NetworkLogger />}
+            {activeTab === 'themes' && (isEarlyAdopter || currentTier >= 2) && <ThemeManager currentTier={isEarlyAdopter ? 5 : currentTier} />}
+            {activeTab === 'custom-filters' && (isEarlyAdopter || currentTier >= 3) && <CustomFilters currentTier={isEarlyAdopter ? 5 : currentTier} />}
+            {activeTab === 'image-swap' && (isEarlyAdopter || currentTier >= 3) && <ImageSwap currentTier={isEarlyAdopter ? 5 : currentTier} />}
+            {activeTab === 'backup-sync' && (isEarlyAdopter || currentTier >= 3) && <BackupSync currentTier={isEarlyAdopter ? 5 : currentTier} />}
+            {activeTab === 'filter-lists' && (isEarlyAdopter || currentTier >= 4) && <FilterListManager currentTier={isEarlyAdopter ? 5 : currentTier} />}
+            {activeTab === 'whitelist-manager' && (isEarlyAdopter || currentTier >= 4) && <WhitelistManager currentTier={isEarlyAdopter ? 5 : currentTier} />}
+            {activeTab === 'regex-patterns' && (isEarlyAdopter || currentTier >= 4) && <RegexPatternManager currentTier={isEarlyAdopter ? 5 : currentTier} />}
+            {activeTab === 'scripts' && (isEarlyAdopter || currentTier >= 4) && <ScriptControlPanel currentTier={isEarlyAdopter ? 5 : currentTier} />}
+            {activeTab === 'network' && (isEarlyAdopter || currentTier >= 4) && <NetworkLogger currentTier={isEarlyAdopter ? 5 : currentTier} />}
             {activeTab === 'security' && (isEarlyAdopter || currentTier >= 4) && <SecuritySettings />}
           </div>
         </div>

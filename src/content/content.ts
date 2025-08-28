@@ -10,6 +10,7 @@ import { ElementPicker } from './element-picker';
 import { PrivacyProtector } from './privacy-protection';
 import { CookieConsentHandler } from './cookie-consent-handler';
 import { FloatingVideoBlocker } from './floating-video-blocker';
+import { imageSwapper } from './image-swap';
 
 class ContentScriptManager {
   private youtubeBlocker?: YouTubeAdBlockerV2;
@@ -100,6 +101,10 @@ class ContentScriptManager {
     
     // Load custom filters
     this.loadCustomFilters();
+    
+    // Image swap feature is initialized automatically through imageSwapper
+    // It loads its own settings from storage
+    console.log('ShieldPro Ultimate - Tier 3 features enabled (Element Picker, Custom Filters, Image Swap)');
   }
 
   private initializeTier4() {

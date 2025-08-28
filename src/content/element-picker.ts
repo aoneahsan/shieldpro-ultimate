@@ -1,101 +1,58 @@
+/**
+ * Element Picker - Allows users to select and block elements on the page
+ * Tier 3+ Feature
+ */
+
 import { StorageManager } from '../shared/utils/storage';
 
-export class ElementPicker {
-  private isActive = false;
-  private overlay: HTMLElement | null = null;
+class ElementPicker {
+  private overlay: HTMLDivElement | null = null;
   private selectedElement: HTMLElement | null = null;
-  private highlightBox: HTMLElement | null = null;
-  private toolbar: HTMLElement | null = null;
-  private storage = StorageManager.getInstance();
-  private customFilters: string[] = [];
-  private tier = 1;
+  private isActive = false;
+  private mouseoverHandler: ((e: MouseEvent) => void) | null = null;
+  private clickHandler: ((e: MouseEvent) => void) | null = null;
+  private keydownHandler: ((e: KeyboardEvent) => void) | null = null;
+  private storage: StorageManager;
 
-  async init(): Promise<void> {
-    const settings = await this.storage.getSettings();
-    this.tier = settings.tier?.level || 1;
+  constructor() {
+    this.storage = StorageManager.getInstance();
+    this.setupMessageListener();
+  }
 
-    // Only available for Tier 3+
-    if (this.tier < 3) {
-      return;
-    }
-
-    // Listen for activation message
-    chrome.runtime.onMessage.addListener((message) => {
-      if (message.action === 'activateElementPicker') {
+  private setupMessageListener() {
+    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+      if (request.action === 'activateElementPicker') {
         this.activate();
-      } else if (message.action === 'deactivateElementPicker') {
+        sendResponse({ success: true });
+      } else if (request.action === 'deactivateElementPicker') {
         this.deactivate();
+        sendResponse({ success: true });
       }
+      return true;
     });
-
-    // Load custom filters
-    this.loadCustomFilters();
   }
 
-  // Enable method for Tier 3 initialization
-  enable(): void {
-    this.init();
-  }
-
-  private async loadCustomFilters(): Promise<void> {
-    try {
-      const result = await chrome.storage.local.get('customFilters');
-      this.customFilters = result.customFilters || [];
-    } catch (error) {
-      console.error('Failed to load custom filters:', error);
-    }
-  }
-
-  private async saveCustomFilter(selector: string): Promise<void> {
-    try {
-      this.customFilters.push(selector);
-      await chrome.storage.local.set({ customFilters: this.customFilters });
-      
-      // Apply the filter immediately
-      this.applyCustomFilter(selector);
-      
-      // Send message to background
-      chrome.runtime.sendMessage({
-        action: 'customFilterAdded',
-        selector: selector
-      });
-    } catch (error) {
-      console.error('Failed to save custom filter:', error);
-    }
-  }
-
-  private applyCustomFilter(selector: string): void {
-    try {
-      const elements = document.querySelectorAll(selector);
-      elements.forEach(el => {
-        (el as HTMLElement).style.display = 'none';
-      });
-    } catch (error) {
-      console.error('Invalid selector:', selector);
-    }
-  }
-
-  activate(): void {
-    if (this.isActive || this.tier < 3) return;
+  activate() {
+    if (this.isActive) return;
     
     this.isActive = true;
     this.createOverlay();
-    this.createToolbar();
     this.attachEventListeners();
-    document.body.style.cursor = 'crosshair';
+    
+    // Show instructions
+    this.showInstructions();
   }
 
-  deactivate(): void {
+  deactivate() {
     if (!this.isActive) return;
     
     this.isActive = false;
     this.removeOverlay();
-    this.removeToolbar();
+    this.removeEventListeners();
     this.removeHighlight();
-    document.body.style.cursor = '';
   }
 
-  private createOverlay(): void {
+  private createOverlay() {
     this.overlay = document.createElement('div');
     this.overlay.id = 'shieldpro-element-picker-overlay';
     this.overlay.style.cssText = `
@@ -104,256 +61,188 @@ export class ElementPicker {
       left: 0;
       width: 100%;
       height: 100%;
-      z-index: 2147483646;
       pointer-events: none;
-      background: rgba(0, 0, 0, 0.1);
+      z-index: 2147483646;
     `;
     document.body.appendChild(this.overlay);
   }
 
-  private removeOverlay(): void {
+  private removeOverlay() {
     if (this.overlay) {
       this.overlay.remove();
       this.overlay = null;
     }
   }
 
-  private createToolbar(): void {
-    this.toolbar = document.createElement('div');
-    this.toolbar.id = 'shieldpro-picker-toolbar';
-    this.toolbar.innerHTML = `
+  private showInstructions() {
+    const instructions = document.createElement('div');
+    instructions.id = 'shieldpro-picker-instructions';
+    instructions.innerHTML = `
       <div style="
         position: fixed;
         top: 20px;
-        right: 20px;
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-        padding: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 15px 25px;
+        border-radius: 10px;
+        font-family: system-ui, -apple-system, sans-serif;
+        font-size: 14px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         z-index: 2147483647;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-        min-width: 320px;
+        pointer-events: auto;
+        animation: slideDown 0.3s ease-out;
       ">
-        <div style="display: flex; align-items: center; margin-bottom: 12px;">
-          <svg style="width: 24px; height: 24px; margin-right: 8px; color: #3b82f6;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-          </svg>
-          <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: #1f2937;">Element Picker</h3>
-          <button id="shieldpro-picker-close" style="
-            margin-left: auto;
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 4px;
-          ">
-            <svg style="width: 20px; height: 20px; color: #6b7280;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-          </button>
-        </div>
-        
-        <div style="margin-bottom: 12px;">
-          <p style="margin: 0 0 8px 0; font-size: 14px; color: #6b7280;">
-            Hover over an element and click to block it
-          </p>
-          <div id="shieldpro-picker-info" style="
-            background: #f3f4f6;
-            border-radius: 8px;
-            padding: 12px;
-            min-height: 60px;
-          ">
-            <p style="margin: 0 0 4px 0; font-size: 12px; color: #9ca3af;">Selected Element:</p>
-            <code id="shieldpro-picker-selector" style="
-              font-size: 12px;
-              color: #1f2937;
-              word-break: break-all;
-            ">None</code>
-          </div>
-        </div>
-        
-        <div style="display: flex; gap: 8px;">
-          <button id="shieldpro-picker-block" style="
-            flex: 1;
-            background: #3b82f6;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 10px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            disabled: true;
-          " disabled>
-            Block Element
-          </button>
-          <button id="shieldpro-picker-block-similar" style="
-            flex: 1;
-            background: #8b5cf6;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 10px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            disabled: true;
-          " disabled>
-            Block Similar
-          </button>
-        </div>
-        
-        <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb;">
-          <p style="margin: 0; font-size: 12px; color: #9ca3af;">
-            Tier 3 Feature • Custom Filters: <span id="shieldpro-filter-count">${this.customFilters.length}</span>
-          </p>
-        </div>
+        <strong>🎯 Element Picker Active</strong><br>
+        Click on any element to block it | Press ESC to cancel
       </div>
     `;
     
-    document.body.appendChild(this.toolbar);
+    // Add animation
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes slideDown {
+        from { transform: translateX(-50%) translateY(-100px); opacity: 0; }
+        to { transform: translateX(-50%) translateY(0); opacity: 1; }
+      }
+    `;
+    document.head.appendChild(style);
     
-    // Add toolbar event listeners
-    const closeBtn = this.toolbar.querySelector('#shieldpro-picker-close');
-    const blockBtn = this.toolbar.querySelector('#shieldpro-picker-block') as HTMLButtonElement;
-    const blockSimilarBtn = this.toolbar.querySelector('#shieldpro-picker-block-similar') as HTMLButtonElement;
+    document.body.appendChild(instructions);
     
-    closeBtn?.addEventListener('click', () => this.deactivate());
-    blockBtn?.addEventListener('click', () => this.blockSelected());
-    blockSimilarBtn?.addEventListener('click', () => this.blockSimilar());
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+      instructions.remove();
+      style.remove();
+    }, 3000);
   }
 
-  private removeToolbar(): void {
-    if (this.toolbar) {
-      this.toolbar.remove();
-      this.toolbar = null;
+  private attachEventListeners() {
+    this.mouseoverHandler = (e: MouseEvent) => this.handleMouseOver(e);
+    this.clickHandler = (e: MouseEvent) => this.handleClick(e);
+    this.keydownHandler = (e: KeyboardEvent) => this.handleKeyDown(e);
+    
+    document.addEventListener('mouseover', this.mouseoverHandler, true);
+    document.addEventListener('click', this.clickHandler, true);
+    document.addEventListener('keydown', this.keydownHandler, true);
+  }
+
+  private removeEventListeners() {
+    if (this.mouseoverHandler) {
+      document.removeEventListener('mouseover', this.mouseoverHandler, true);
+    }
+    if (this.clickHandler) {
+      document.removeEventListener('click', this.clickHandler, true);
+    }
+    if (this.keydownHandler) {
+      document.removeEventListener('keydown', this.keydownHandler, true);
     }
   }
 
-  private attachEventListeners(): void {
-    document.addEventListener('mouseover', this.handleMouseOver);
-    document.addEventListener('mouseout', this.handleMouseOut);
-    document.addEventListener('click', this.handleClick);
-    document.addEventListener('keydown', this.handleKeyDown);
-  }
-
-  private handleMouseOver = (e: MouseEvent): void => {
+  private handleMouseOver(e: MouseEvent) {
     if (!this.isActive) return;
     
     const target = e.target as HTMLElement;
-    if (this.isToolbarElement(target)) return;
+    if (this.shouldIgnoreElement(target)) return;
     
-    this.highlightElement(target);
-  };
-
-  private handleMouseOut = (e: MouseEvent): void => {
-    if (!this.isActive) return;
     this.removeHighlight();
-  };
+    this.highlightElement(target);
+    this.selectedElement = target;
+  }
 
-  private handleClick = (e: MouseEvent): void => {
+  private handleClick(e: MouseEvent) {
     if (!this.isActive) return;
     
     e.preventDefault();
     e.stopPropagation();
     
     const target = e.target as HTMLElement;
-    if (this.isToolbarElement(target)) return;
+    if (this.shouldIgnoreElement(target)) return;
     
-    this.selectElement(target);
-  };
+    this.blockElement(target);
+    this.deactivate();
+    
+    return false;
+  }
 
-  private handleKeyDown = (e: KeyboardEvent): void => {
-    if (!this.isActive) return;
-    
+  private handleKeyDown(e: KeyboardEvent) {
     if (e.key === 'Escape') {
       this.deactivate();
     }
-  };
-
-  private isToolbarElement(element: HTMLElement): boolean {
-    return element.closest('#shieldpro-picker-toolbar') !== null ||
-           element.closest('#shieldpro-element-highlight') !== null;
   }
 
-  private highlightElement(element: HTMLElement): void {
-    this.removeHighlight();
-    
+  private shouldIgnoreElement(element: HTMLElement): boolean {
+    return element.id === 'shieldpro-element-picker-overlay' ||
+           element.id === 'shieldpro-picker-instructions' ||
+           element.id === 'shieldpro-highlight-box';
+  }
+
+  private highlightElement(element: HTMLElement) {
     const rect = element.getBoundingClientRect();
-    
-    this.highlightBox = document.createElement('div');
-    this.highlightBox.id = 'shieldpro-element-highlight';
-    this.highlightBox.style.cssText = `
+    const highlight = document.createElement('div');
+    highlight.id = 'shieldpro-highlight-box';
+    highlight.style.cssText = `
       position: fixed;
       top: ${rect.top}px;
       left: ${rect.left}px;
       width: ${rect.width}px;
       height: ${rect.height}px;
-      background: rgba(59, 130, 246, 0.3);
-      border: 2px solid #3b82f6;
+      background: rgba(102, 126, 234, 0.3);
+      border: 2px solid #667eea;
       pointer-events: none;
-      z-index: 2147483645;
-      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+      z-index: 2147483646;
+      box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
     `;
     
-    document.body.appendChild(this.highlightBox);
-  }
-
-  private removeHighlight(): void {
-    if (this.highlightBox) {
-      this.highlightBox.remove();
-      this.highlightBox = null;
+    if (this.overlay) {
+      this.overlay.appendChild(highlight);
     }
   }
 
-  private selectElement(element: HTMLElement): void {
-    this.selectedElement = element;
-    
-    // Update toolbar info
+  private removeHighlight() {
+    const highlight = document.getElementById('shieldpro-highlight-box');
+    if (highlight) {
+      highlight.remove();
+    }
+  }
+
+  private async blockElement(element: HTMLElement) {
+    // Generate CSS selector for the element
     const selector = this.generateSelector(element);
-    const selectorDisplay = this.toolbar?.querySelector('#shieldpro-picker-selector');
-    const blockBtn = this.toolbar?.querySelector('#shieldpro-picker-block') as HTMLButtonElement;
-    const blockSimilarBtn = this.toolbar?.querySelector('#shieldpro-picker-block-similar') as HTMLButtonElement;
     
-    if (selectorDisplay) {
-      selectorDisplay.textContent = selector;
-    }
+    // Hide element immediately
+    element.style.display = 'none';
     
-    if (blockBtn) {
-      blockBtn.disabled = false;
-      blockBtn.style.opacity = '1';
-      blockBtn.style.cursor = 'pointer';
-    }
+    // Save the custom filter
+    await this.saveCustomFilter(selector);
     
-    if (blockSimilarBtn) {
-      blockSimilarBtn.disabled = false;
-      blockSimilarBtn.style.opacity = '1';
-      blockSimilarBtn.style.cursor = 'pointer';
-    }
+    // Show success notification
+    this.showNotification(`Element blocked! Filter added: ${selector}`);
     
-    // Highlight selected element
-    // const rect = element.getBoundingClientRect();
-    if (this.highlightBox) {
-      this.highlightBox.style.background = 'rgba(239, 68, 68, 0.3)';
-      this.highlightBox.style.borderColor = '#ef4444';
-      this.highlightBox.style.boxShadow = '0 0 0 4px rgba(239, 68, 68, 0.1)';
-    }
+    // Send message to background to update filters
+    chrome.runtime.sendMessage({
+      action: 'addCustomFilter',
+      filter: selector
+    });
   }
 
   private generateSelector(element: HTMLElement): string {
-    // Try to generate a unique selector
+    // Try to generate the most specific selector
     if (element.id) {
       return `#${element.id}`;
     }
     
     if (element.className && typeof element.className === 'string') {
-      const classes = element.className.split(' ').filter(c => c.length > 0);
-      if (classes.length > 0) {
-        return `.${classes.join('.')}`;
+      const classes = element.className.split(' ')
+        .filter(c => c && !c.startsWith('shieldpro'))
+        .join('.');
+      if (classes) {
+        return `.${classes}`;
       }
     }
     
-    // Generate a path selector
+    // Generate path-based selector
     const path: string[] = [];
     let current: HTMLElement | null = element;
     
@@ -365,9 +254,9 @@ export class ElementPicker {
         path.unshift(selector);
         break;
       } else if (current.className && typeof current.className === 'string') {
-        const classes = current.className.split(' ').filter(c => c.length > 0);
-        if (classes.length > 0) {
-          selector += `.${classes[0]}`;
+        const classes = current.className.split(' ').filter(c => c).join('.');
+        if (classes) {
+          selector += `.${classes}`;
         }
       }
       
@@ -378,124 +267,80 @@ export class ElementPicker {
     return path.join(' > ');
   }
 
-  private blockSelected(): void {
-    if (!this.selectedElement) return;
+  private async saveCustomFilter(selector: string) {
+    const result = await chrome.storage.local.get('customFilters');
+    const filters = result.customFilters || [];
     
-    const selector = this.generateSelector(this.selectedElement);
-    this.saveCustomFilter(selector);
-    
-    // Hide the element immediately
-    this.selectedElement.style.display = 'none';
-    
-    // Update filter count
-    const filterCount = this.toolbar?.querySelector('#shieldpro-filter-count');
-    if (filterCount) {
-      filterCount.textContent = String(this.customFilters.length);
-    }
-    
-    // Show confirmation
-    this.showNotification('Element blocked successfully!');
-    
-    // Reset selection
-    this.selectedElement = null;
-    this.removeHighlight();
-  }
-
-  private blockSimilar(): void {
-    if (!this.selectedElement) return;
-    
-    // Generate a more generic selector for similar elements
-    let selector = '';
-    
-    if (this.selectedElement.className && typeof this.selectedElement.className === 'string') {
-      const classes = this.selectedElement.className.split(' ').filter(c => c.length > 0);
-      if (classes.length > 0) {
-        selector = `.${classes[0]}`;
-      }
-    } else {
-      selector = this.selectedElement.tagName.toLowerCase();
-    }
-    
-    // Find and block all similar elements
-    const similarElements = document.querySelectorAll(selector);
-    let blockedCount = 0;
-    
-    similarElements.forEach(el => {
-      (el as HTMLElement).style.display = 'none';
-      blockedCount++;
+    // Add new filter with metadata
+    filters.push({
+      selector,
+      domain: window.location.hostname,
+      created: Date.now(),
+      enabled: true
     });
     
-    // Save the filter
-    this.saveCustomFilter(selector);
-    
-    // Update filter count
-    const filterCount = this.toolbar?.querySelector('#shieldpro-filter-count');
-    if (filterCount) {
-      filterCount.textContent = String(this.customFilters.length);
-    }
-    
-    // Show confirmation
-    this.showNotification(`Blocked ${blockedCount} similar elements!`);
-    
-    // Reset selection
-    this.selectedElement = null;
-    this.removeHighlight();
+    await chrome.storage.local.set({ customFilters: filters });
   }
 
-  private showNotification(message: string): void {
+  private showNotification(message: string) {
     const notification = document.createElement('div');
     notification.style.cssText = `
       position: fixed;
       bottom: 20px;
       right: 20px;
-      background: #10b981;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
       color: white;
-      padding: 12px 20px;
-      border-radius: 8px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 15px 20px;
+      border-radius: 10px;
+      font-family: system-ui, -apple-system, sans-serif;
       font-size: 14px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
       z-index: 2147483647;
-      animation: slideIn 0.3s ease-out;
+      animation: slideUp 0.3s ease-out;
+      max-width: 300px;
     `;
+    
     notification.textContent = message;
-    
-    // Add animation
-    const style = document.createElement('style');
-    style.textContent = `
-      @keyframes slideIn {
-        from {
-          transform: translateX(100%);
-          opacity: 0;
-        }
-        to {
-          transform: translateX(0);
-          opacity: 1;
-        }
-      }
-    `;
-    document.head.appendChild(style);
-    
     document.body.appendChild(notification);
     
     setTimeout(() => {
-      notification.style.animation = 'slideOut 0.3s ease-out';
-      setTimeout(() => {
-        notification.remove();
-        style.remove();
-      }, 300);
+      notification.style.animation = 'fadeOut 0.3s ease-out';
+      setTimeout(() => notification.remove(), 300);
     }, 3000);
+  }
+
+  // Apply saved custom filters on page load
+  async applySavedFilters() {
+    const result = await chrome.storage.local.get('customFilters');
+    const filters = result.customFilters || [];
+    const currentDomain = window.location.hostname;
+    
+    filters.forEach((filter: any) => {
+      if (filter.enabled && (!filter.domain || filter.domain === currentDomain)) {
+        try {
+          const elements = document.querySelectorAll(filter.selector);
+          elements.forEach(el => {
+            (el as HTMLElement).style.display = 'none';
+          });
+        } catch (error) {
+          console.error('Error applying filter:', filter.selector, error);
+        }
+      }
+    });
   }
 }
 
-// Initialize when DOM is ready
+// Initialize element picker
+const elementPicker = new ElementPicker();
+
+// Apply saved filters when DOM is ready
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
-    const picker = new ElementPicker();
-    picker.init();
+    elementPicker.applySavedFilters();
   });
 } else {
-  const picker = new ElementPicker();
-  picker.init();
+  elementPicker.applySavedFilters();
 }
 
-export default ElementPicker;
+// Export both the class and the instance
+export { ElementPicker, elementPicker };
