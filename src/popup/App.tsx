@@ -27,16 +27,63 @@ const App: React.FC = () => {
   const [stats, setStats] = useState<BlockingStats | null>(null);
   const [tabState, setTabState] = useState<TabState | null>(null);
   const [earlyAdopterStatus, setEarlyAdopterStatus] = useState<EarlyAdopterStatus | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [hasNewData, setHasNewData] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
+  // Load cached data immediately on mount for instant display
   useEffect(() => {
-    loadData();
+    // Load cached data first for instant display
+    loadCachedData();
     
-    const interval = setInterval(loadData, 1000);
+    // Then load fresh data in background
+    loadDataInBackground();
+    
+    // Set up background refresh every 5 seconds
+    const interval = setInterval(() => {
+      loadDataInBackground();
+    }, 5000);
+    
     return () => clearInterval(interval);
   }, []);
 
-  const loadData = async () => {
+  const loadCachedData = async () => {
+    try {
+      // Get cached data from chrome storage for instant display
+      const cached = await chrome.storage.local.get(['cachedSettings', 'cachedStats', 'cachedTabState', 'cachedEarlyAdopter']);
+      
+      if (cached.cachedSettings) {
+        let settingsData = cached.cachedSettings;
+        // If early adopter, override tier to 5
+        if (cached.cachedEarlyAdopter?.isEarlyAdopter) {
+          settingsData.tier = {
+            level: 5,
+            name: 'Ultimate',
+            unlockedAt: cached.cachedEarlyAdopter.installDate || Date.now(),
+            progress: 100
+          };
+        }
+        setSettings(settingsData);
+      } else {
+        // Default settings if no cache
+        setSettings({
+          enabled: true,
+          tier: { level: 1, name: 'Basic', unlockedAt: Date.now(), progress: 0 }
+        } as ExtensionSettings);
+      }
+      
+      setStats(cached.cachedStats || { totalBlocked: 0, blockedToday: 0, categoryStats: {} } as BlockingStats);
+      setTabState(cached.cachedTabState || { domain: 'Loading...', blocked: 0, whitelisted: false } as TabState);
+      setEarlyAdopterStatus(cached.cachedEarlyAdopter || null);
+    } catch (error) {
+      console.error('Failed to load cached data:', error);
+      // Set defaults on error
+      setSettings({ enabled: true, tier: { level: 1, name: 'Basic', unlockedAt: Date.now(), progress: 0 } } as ExtensionSettings);
+      setStats({ totalBlocked: 0, blockedToday: 0, categoryStats: {} } as BlockingStats);
+      setTabState({ domain: 'Loading...', blocked: 0, whitelisted: false } as TabState);
+    }
+  };
+
+  const loadDataInBackground = async () => {
     try {
       const [settingsRes, statsRes, tabStateRes, earlyAdopterRes] = await Promise.all([
         chrome.runtime.sendMessage({ action: 'getSettings' }),
@@ -44,6 +91,22 @@ const App: React.FC = () => {
         chrome.runtime.sendMessage({ action: 'getTabState' }),
         chrome.runtime.sendMessage({ action: 'getEarlyAdopterStatus' })
       ]);
+      
+      // Cache the data for next instant load
+      await chrome.storage.local.set({
+        cachedSettings: settingsRes,
+        cachedStats: statsRes,
+        cachedTabState: tabStateRes,
+        cachedEarlyAdopter: earlyAdopterRes
+      });
+      
+      // Check if data has changed
+      const hasChanged = JSON.stringify(stats) !== JSON.stringify(statsRes) ||
+                        JSON.stringify(tabState) !== JSON.stringify(tabStateRes);
+      
+      if (hasChanged) {
+        setHasNewData(true);
+      }
       
       // If early adopter, override tier to 5
       if (earlyAdopterRes?.isEarlyAdopter && settingsRes) {
@@ -55,15 +118,21 @@ const App: React.FC = () => {
         };
       }
       
+      // Update state with fresh data
       setSettings(settingsRes);
       setStats(statsRes);
       setTabState(tabStateRes);
       setEarlyAdopterStatus(earlyAdopterRes);
-      setLoading(false);
     } catch (error) {
-      console.error('Failed to load data:', error);
-      setLoading(false);
+      console.error('Failed to load fresh data:', error);
     }
+  };
+
+  const refreshData = async () => {
+    setIsRefreshing(true);
+    setHasNewData(false);
+    await loadDataInBackground();
+    setTimeout(() => setIsRefreshing(false), 500);
   };
 
   const toggleExtension = async () => {
@@ -133,14 +202,6 @@ const App: React.FC = () => {
     return colors[tier - 1] || 'bg-gray-500';
   };
 
-  if (loading) {
-    return (
-      <div className="popup-container flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-      </div>
-    );
-  }
-
   // Early adopters always have Tier 5!
   const actualTier = earlyAdopterStatus?.isEarlyAdopter ? 5 : (settings?.tier?.level || 1);
   const currentTier = actualTier;
@@ -150,40 +211,114 @@ const App: React.FC = () => {
 
   return (
     <div className="popup-container bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Compact Header with Power Toggle (10% space for our message) */}
+      {/* Compact Header with Power Toggle and Refresh */}
       <div className="bg-gradient-to-r from-primary-600 to-primary-700 px-3 py-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Shield className="w-5 h-5 text-white" />
             <h1 className="text-sm font-bold text-white">ShieldPro</h1>
+            {hasNewData && !isRefreshing && (
+              <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" title="New data available" />
+            )}
           </div>
           
-          {/* Compact Early Adopter/Account Prompt */}
-          {isEarlyAdopter && !earlyAdopterStatus?.hasAccount && (
-            <div className="flex items-center space-x-2 text-white">
-              <Gift className="w-4 h-4" />
-              <span className="text-xs">Secure your lifetime access!</span>
-            </div>
-          )}
-          
-          <button
-            onClick={toggleExtension}
-            className={`flex items-center space-x-2 px-3 py-1 rounded-full transition-all ${
-              settings?.enabled 
-                ? 'bg-green-500 hover:bg-green-600' 
-                : 'bg-red-500 hover:bg-red-600'
-            }`}
-          >
-            <Power className="w-4 h-4 text-white" />
-            <span className="text-xs font-medium text-white">
-              {settings?.enabled ? 'ON' : 'OFF'}
-            </span>
-          </button>
+          <div className="flex items-center space-x-2">
+            {/* Refresh button */}
+            <button
+              onClick={refreshData}
+              className={`p-1.5 rounded-lg hover:bg-white/10 transition-all ${isRefreshing ? 'animate-spin' : ''}`}
+              title="Refresh data"
+            >
+              <RefreshCw className="w-4 h-4 text-white" />
+            </button>
+            
+            {/* Power Toggle */}
+            <button
+              onClick={toggleExtension}
+              className={`flex items-center space-x-2 px-3 py-1 rounded-full transition-all ${
+                settings?.enabled 
+                  ? 'bg-green-500 hover:bg-green-600' 
+                  : 'bg-red-500 hover:bg-red-600'
+              }`}
+            >
+              <Power className="w-4 h-4 text-white" />
+              <span className="text-xs font-medium text-white">
+                {settings?.enabled ? 'ON' : 'OFF'}
+              </span>
+            </button>
+          </div>
         </div>
       </div>
 
       <div className="p-3 space-y-2.5">
-        {/* PRIMARY USER FOCUS - Current Site Stats (Above the fold - 90%) */}
+        {/* TIER STATUS - First thing users see */}
+        {currentTier >= 2 && (
+          <div className={`${currentTier === 5 ? 'bg-gradient-to-r from-yellow-400 to-orange-400' : 'bg-gradient-to-r from-green-500 to-emerald-500'} text-white rounded-lg p-2.5 shadow-lg`}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Activity className="w-5 h-5" />
+                <span className="text-sm font-bold">
+                  Tier {currentTier} Features Active
+                  {currentTier === 5 && ' - ULTIMATE'}
+                </span>
+              </div>
+              {isEarlyAdopter && (
+                <Crown className="w-5 h-5" />
+              )}
+            </div>
+            {currentTier === 5 && (
+              <p className="text-xs mt-1 opacity-90">All premium features unlocked forever!</p>
+            )}
+          </div>
+        )}
+
+        {/* Account prompt for early adopters - compact with proper alignment */}
+        {isEarlyAdopter && !earlyAdopterStatus?.hasAccount && (
+          <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white rounded-lg p-2.5 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Gift className="w-4 h-4 flex-shrink-0" />
+                <span className="text-xs font-bold">
+                  Early Adopter #{earlyAdopterStatus.userNumber.toLocaleString()}
+                </span>
+              </div>
+              <button
+                onClick={() => {
+                  const accountSection = document.getElementById('account-section');
+                  accountSection?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="bg-white/20 hover:bg-white/30 px-2 py-1 rounded text-xs font-medium transition-colors whitespace-nowrap"
+              >
+                Create Account
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Account prompt for non-early adopters - only for tier 1 */}
+        {!isEarlyAdopter && currentTier < 2 && (
+          <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg p-2.5 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 flex-shrink-0" />
+                <span className="text-xs font-medium">
+                  Unlock YouTube blocking & more
+                </span>
+              </div>
+              <button
+                onClick={() => {
+                  const accountSection = document.getElementById('account-section');
+                  accountSection?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="bg-white/20 hover:bg-white/30 px-2 py-1 rounded text-xs font-medium transition-colors whitespace-nowrap"
+              >
+                Upgrade Free
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* PRIMARY USER FOCUS - Current Site Stats */}
         <div className="bg-white rounded-lg p-3 shadow-sm border border-gray-100">
           {/* Big blocking number first - what users care about most */}
           <div className="flex items-center justify-between mb-3">
@@ -208,8 +343,8 @@ const App: React.FC = () => {
           {/* Current site info */}
           <div className="flex items-center justify-between mb-2">
             <div className="flex-1">
-              <div className="flex items-center space-x-2">
-                <Globe className="w-3.5 h-3.5 text-gray-400" />
+              <div className="flex items-center gap-2 mb-1">
+                <Globe className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
                 <span className="text-xs text-gray-500">Current Site</span>
                 {tabState?.whitelisted && (
                   <span className="text-xs bg-yellow-100 text-yellow-600 px-1.5 py-0.5 rounded">
@@ -235,8 +370,8 @@ const App: React.FC = () => {
 
           {/* YouTube indicator inline */}
           {isYouTubeActive && (
-            <div className="flex items-center space-x-1.5 text-red-600 bg-red-50 px-2 py-1 rounded">
-              <Youtube className="w-3.5 h-3.5" />
+            <div className="flex items-center gap-1.5 text-red-600 bg-red-50 px-2 py-1 rounded">
+              <Youtube className="w-3.5 h-3.5 flex-shrink-0" />
               <span className="text-xs font-medium">YouTube Ad Blocking Active</span>
             </div>
           )}
@@ -331,12 +466,10 @@ const App: React.FC = () => {
         
         {/* Category Breakdown - Collapsible */}
         <details className="bg-white rounded-lg shadow-sm border border-gray-100">
-          <summary className="p-3 cursor-pointer hover:bg-gray-50 transition-colors">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <BarChart3 className="w-4 h-4 text-gray-400" />
-                <span className="text-sm font-medium text-gray-700">Detailed Stats</span>
-              </div>
+          <summary className="p-3 cursor-pointer hover:bg-gray-50 transition-colors list-none">
+            <div className="flex items-center gap-2">
+              <BarChart3 className="w-4 h-4 text-gray-400 flex-shrink-0" />
+              <span className="text-sm font-medium text-gray-700">Detailed Stats</span>
             </div>
           </summary>
           <div className="px-3 pb-3 space-y-1.5">
@@ -369,39 +502,6 @@ const App: React.FC = () => {
           </div>
         </details>
 
-        {/* Tier Features - Only show if tier 2+ */}
-        {currentTier >= 2 && (
-          <details className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
-            <summary className="p-3 cursor-pointer">
-              <div className="flex items-center space-x-2">
-                <Activity className="w-4 h-4 text-green-600" />
-                <span className="text-sm font-medium text-green-800">
-                  Tier {currentTier} Features Active
-                </span>
-              </div>
-            </summary>
-            <div className="px-3 pb-3">
-              <div className="grid grid-cols-2 gap-2 text-xs text-green-700">
-                <div className="flex items-center space-x-1">
-                  <Youtube className="w-3 h-3" />
-                  <span>YouTube Blocking</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <Eye className="w-3 h-3" />
-                  <span>Advanced Trackers</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <Share2 className="w-3 h-3" />
-                  <span>Social Trackers</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <BarChart3 className="w-3 h-3" />
-                  <span>Analytics Blocking</span>
-                </div>
-              </div>
-            </div>
-          </details>
-        )}
 
         {/* Account Management Section - Below fold */}
         <div id="account-section">
