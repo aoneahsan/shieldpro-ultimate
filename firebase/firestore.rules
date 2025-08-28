@@ -1,87 +1,329 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper functions
+    // ============================================
+    // HELPER FUNCTIONS
+    // ============================================
+    
+    // Check if user is authenticated
     function isAuthenticated() {
       return request.auth != null;
     }
     
+    // Check if the authenticated user matches the document owner
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
     
-    function hasValidTier() {
-      return request.resource.data.tier.level >= 1 && 
-             request.resource.data.tier.level <= 5;
+    // Check if user is anonymous
+    function isAnonymousUser() {
+      return isAuthenticated() && request.auth.token.firebase.sign_in_provider == 'anonymous';
     }
     
-    // Users collection
+    // Check if user has a real account (not anonymous)
+    function hasRealAccount() {
+      return isAuthenticated() && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+    
+    // Get user's tier level from their document
+    function getUserTier(userId) {
+      return get(/databases/$(database)/documents/users/$(userId)).data.tier.level;
+    }
+    
+    // Get user's current tier from their document
+    function getCurrentUserTier() {
+      return getUserTier(request.auth.uid);
+    }
+    
+    // Check if user has specific tier or higher
+    function hasTierLevel(requiredLevel) {
+      return isAuthenticated() && getCurrentUserTier() >= requiredLevel;
+    }
+    
+    // Validate tier level is within bounds
+    function isValidTierLevel(level) {
+      return level >= 1 && level <= 5;
+    }
+    
+    // Check if user is admin
+    function isAdmin() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Check if user is early adopter
+    function isEarlyAdopter(userId) {
+      return get(/databases/$(database)/documents/users/$(userId)).data.isEarlyAdopter == true;
+    }
+    
+    // Validate timestamp is server timestamp
+    function isValidTimestamp(field) {
+      return field == request.time;
+    }
+    
+    // Check if referral code is being changed (not allowed)
+    function referralCodeUnchanged() {
+      return !('referralCode' in request.resource.data) || 
+             request.resource.data.referralCode == resource.data.referralCode;
+    }
+    
+    // ============================================
+    // USERS COLLECTION
+    // ============================================
     match /users/{userId} {
-      // Users can read their own profile
-      allow read: if isOwner(userId);
+      // Read access
+      allow read: if 
+        // Users can read their own profile
+        isOwner(userId) ||
+        // Admins can read any profile
+        isAdmin() ||
+        // Anonymous users can read their own profile
+        (isAnonymousUser() && isOwner(userId));
       
-      // Users can create their own profile during signup
-      allow create: if isOwner(userId) && hasValidTier();
+      // Create access
+      allow create: if 
+        // Authenticated users can create their own profile
+        isOwner(userId) &&
+        // Required fields must be present
+        request.resource.data.keys().hasAll(['uid', 'createdAt']) &&
+        // UID must match auth UID
+        request.resource.data.uid == request.auth.uid &&
+        // Tier level must be valid
+        (!('tier' in request.resource.data) || isValidTierLevel(request.resource.data.tier.level));
       
-      // Users can update specific fields in their profile
-      allow update: if isOwner(userId) && 
-        request.resource.data.uid == userId &&
-        request.resource.data.email == resource.data.email &&
-        request.resource.data.stats.referralCode == resource.data.stats.referralCode;
+      // Update access
+      allow update: if 
+        // Users can update their own profile
+        isOwner(userId) &&
+        // UID cannot be changed
+        request.resource.data.uid == resource.data.uid &&
+        // Email cannot be changed (must use auth methods)
+        (!('email' in request.resource.data) || request.resource.data.email == resource.data.email) &&
+        // Referral code cannot be changed once set
+        referralCodeUnchanged() &&
+        // Cannot directly modify referral count (only via cloud functions)
+        (!('referralCount' in request.resource.data) || 
+         request.resource.data.referralCount == resource.data.referralCount) &&
+        // Cannot set admin role
+        (!('role' in request.resource.data) || request.resource.data.role != 'admin');
       
-      // No deletes allowed
-      allow delete: if false;
+      // Delete access - only allow cleanup of anonymous users
+      allow delete: if 
+        // Admin can delete users
+        isAdmin() ||
+        // Cloud functions can delete (via service account)
+        false;
     }
     
-    // Statistics collection (aggregated stats)
+    // ============================================
+    // REFERRALS COLLECTION
+    // ============================================
+    match /referrals/{referralCode} {
+      // Read access
+      allow read: if 
+        // Anyone can check if a referral code exists
+        true;
+      
+      // Create access - only via cloud functions
+      allow create: if false;
+      
+      // Update access
+      allow update: if 
+        // Only cloud functions can update (to add usedBy)
+        false;
+      
+      // Delete access
+      allow delete: if 
+        // Admins can delete
+        isAdmin();
+    }
+    
+    // ============================================
+    // STATISTICS COLLECTIONS
+    // ============================================
+    
+    // Global statistics
     match /statistics/{statId} {
-      allow read: if true; // Public statistics
-      allow write: if false; // Only cloud functions can write
+      // Public read access for global stats
+      allow read: if true;
+      // Only cloud functions can write
+      allow write: if false;
     }
     
-    // Referrals collection
-    match /referrals/{referralId} {
-      allow read: if isAuthenticated() && 
-        (resource.data.referrerId == request.auth.uid || 
-         resource.data.referredId == request.auth.uid);
-      allow create: if isAuthenticated() && 
-        request.resource.data.referredId == request.auth.uid;
-      allow update, delete: if false;
+    // Global stats document
+    match /stats/global {
+      // Public read access
+      allow read: if true;
+      // Only cloud functions can write
+      allow write: if false;
     }
     
-    // Filter lists collection (custom filters for Tier 3+)
+    // User blocking statistics
+    match /blockingStats/{userId} {
+      // Users can read their own stats
+      allow read: if isOwner(userId) || isAdmin();
+      // Only cloud functions can write (to ensure accuracy)
+      allow write: if false;
+    }
+    
+    // ============================================
+    // TIER UPGRADES TRACKING
+    // ============================================
+    match /tierUpgrades/{upgradeId} {
+      // Users can read their own upgrade history
+      allow read: if 
+        isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+      // Only cloud functions can create
+      allow create: if false;
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+    
+    // ============================================
+    // CUSTOM FILTERS (Tier 3+ Feature)
+    // ============================================
     match /filters/{userId}/custom/{filterId} {
+      // Read access
+      allow read: if 
+        isOwner(userId) || isAdmin();
+      
+      // Write access - requires Tier 3 or higher
+      allow create, update: if 
+        isOwner(userId) && 
+        hasTierLevel(3) &&
+        // Validate filter data
+        request.resource.data.keys().hasAll(['pattern', 'enabled', 'createdAt']) &&
+        request.resource.data.pattern is string &&
+        request.resource.data.enabled is bool;
+      
+      // Delete access
+      allow delete: if 
+        isOwner(userId) && hasTierLevel(3);
+    }
+    
+    // ============================================
+    // WHITELISTS (Tier 3+ Feature)
+    // ============================================
+    match /whitelists/{userId}/domains/{domainId} {
+      // Read access
+      allow read: if 
+        isOwner(userId) || isAdmin();
+      
+      // Write access - requires Tier 3 or higher
+      allow create, update: if 
+        isOwner(userId) && 
+        hasTierLevel(3) &&
+        // Validate whitelist data
+        request.resource.data.keys().hasAll(['domain', 'enabled']) &&
+        request.resource.data.domain is string &&
+        request.resource.data.enabled is bool;
+      
+      // Delete access
+      allow delete: if 
+        isOwner(userId) && hasTierLevel(3);
+    }
+    
+    // ============================================
+    // EXTENSION SETTINGS SYNC
+    // ============================================
+    match /extensionSettings/{userId} {
+      // Users can read their own settings
       allow read: if isOwner(userId);
-      allow write: if isOwner(userId) && 
-        get(/databases/$(database)/documents/users/$(userId)).data.tier.level >= 3;
+      
+      // Users can write their own settings
+      allow write: if 
+        isOwner(userId) &&
+        // Validate settings structure
+        request.resource.data.keys().hasAll(['updatedAt']);
+      
+      // Delete access
       allow delete: if isOwner(userId);
     }
     
-    // Whitelist collection
-    match /whitelists/{userId}/domains/{domainId} {
-      allow read: if isOwner(userId);
-      allow write: if isOwner(userId);
-    }
-    
-    // Blocking statistics per user
-    match /blockingStats/{userId} {
-      allow read: if isOwner(userId);
-      allow write: if isOwner(userId);
-    }
-    
-    // Feedback and reports
+    // ============================================
+    // FEEDBACK AND REPORTS
+    // ============================================
     match /feedback/{feedbackId} {
-      allow read: if isAuthenticated() && 
-        resource.data.userId == request.auth.uid;
-      allow create: if isAuthenticated() && 
-        request.resource.data.userId == request.auth.uid;
-      allow update, delete: if false;
+      // Users can read their own feedback
+      allow read: if 
+        isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+      
+      // Users can create feedback
+      allow create: if 
+        isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.keys().hasAll(['userId', 'message', 'createdAt']);
+      
+      // No updates allowed by users
+      allow update: if isAdmin();
+      
+      // Only admins can delete
+      allow delete: if isAdmin();
     }
     
-    // Admin access (for dashboard)
+    // ============================================
+    // ADMIN DASHBOARD ACCESS
+    // ============================================
     match /admin/{document=**} {
-      allow read, write: if isAuthenticated() && 
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      // Only admins can access admin documents
+      allow read, write: if isAdmin();
+    }
+    
+    // ============================================
+    // ANALYTICS AND TRACKING
+    // ============================================
+    match /analytics/{eventId} {
+      // Only cloud functions can write analytics
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+    
+    // ============================================
+    // USER SESSIONS (for engagement tracking)
+    // ============================================
+    match /sessions/{userId}/active/{sessionId} {
+      // Users can read their own sessions
+      allow read: if isOwner(userId);
+      
+      // Users can create/update their own sessions
+      allow write: if 
+        isOwner(userId) &&
+        request.resource.data.keys().hasAll(['startTime', 'lastActivity']);
+      
+      // Users can delete their own sessions
+      allow delete: if isOwner(userId);
+    }
+    
+    // ============================================
+    // NOTIFICATION TOKENS
+    // ============================================
+    match /notificationTokens/{userId}/tokens/{tokenId} {
+      // Users can manage their own notification tokens
+      allow read, write: if isOwner(userId);
+    }
+    
+    // ============================================
+    // SUBSCRIPTION MANAGEMENT (Future Premium Features)
+    // ============================================
+    match /subscriptions/{userId} {
+      // Users can read their own subscription
+      allow read: if isOwner(userId);
+      // Only cloud functions can modify subscriptions
+      allow write: if false;
+    }
+    
+    // ============================================
+    // ERROR LOGS (for debugging)
+    // ============================================
+    match /errorLogs/{errorId} {
+      // Users can write error logs
+      allow create: if 
+        isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid;
+      // Only admins can read/update/delete
+      allow read, update, delete: if isAdmin();
     }
   }
 }

@@ -1,0 +1,56 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isValidImageFile() {
+      return request.resource.contentType.matches('image/.*') &&
+             request.resource.size < 5 * 1024 * 1024; // Max 5MB
+    }
+    
+    // User profile pictures
+    match /users/{userId}/profile/{fileName} {
+      allow read: if true; // Public profile pictures
+      allow write: if isOwner(userId) && isValidImageFile();
+      allow delete: if isOwner(userId);
+    }
+    
+    // User uploaded content (filters, etc.)
+    match /users/{userId}/uploads/{allPaths=**} {
+      allow read: if isOwner(userId);
+      allow write: if isOwner(userId) && 
+                      request.resource.size < 10 * 1024 * 1024; // Max 10MB
+      allow delete: if isOwner(userId);
+    }
+    
+    // Shared filter lists (Tier 4+ feature)
+    match /shared/filters/{filterId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && 
+                      request.auth.token.tier >= 4 &&
+                      request.resource.size < 1 * 1024 * 1024; // Max 1MB
+      allow delete: if isAuthenticated() && 
+                       (request.auth.uid == resource.metadata['uploadedBy'] ||
+                        request.auth.token.admin == true);
+    }
+    
+    // Admin uploads
+    match /admin/{allPaths=**} {
+      allow read: if true; // Public admin content
+      allow write: if isAuthenticated() && request.auth.token.admin == true;
+    }
+    
+    // Block all other paths
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

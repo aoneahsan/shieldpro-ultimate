@@ -39,7 +39,14 @@
     "format:check": "prettier --check src/**/*.{ts,tsx,json,css}",
     "prepare": "husky",
     "size": "size-limit",
-    "precommit": "yarn type-check && yarn lint && yarn test:unit"
+    "precommit": "yarn type-check && yarn lint && yarn test:unit",
+    "firebase:deploy:rules": "firebase deploy --only firestore:rules",
+    "firebase:deploy:indexes": "firebase deploy --only firestore:indexes",
+    "firebase:deploy:functions": "firebase deploy --only functions",
+    "firebase:deploy:all": "firebase deploy --only firestore:rules,firestore:indexes,functions",
+    "firebase:emulators": "firebase emulators:start",
+    "firebase:backup": "node scripts/backup-firestore.js",
+    "firebase:setup": "node scripts/setup-firebase.js"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.3",
