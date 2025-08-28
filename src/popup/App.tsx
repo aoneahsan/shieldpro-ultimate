@@ -263,7 +263,14 @@ const App: React.FC = () => {
                 </span>
               </div>
               {isEarlyAdopter && (
-                <Crown className="w-5 h-5" />
+                <div className="flex items-center gap-2">
+                  <Crown className="w-5 h-5" />
+                  {earlyAdopterStatus && (
+                    <span className="text-xs">
+                      #{earlyAdopterStatus.userNumber.toLocaleString()}
+                    </span>
+                  )}
+                </div>
               )}
             </div>
             {currentTier === 5 && (
@@ -272,14 +279,14 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {/* Account prompt for early adopters - compact with proper alignment */}
+        {/* Account prompt for early adopters - only show if no account */}
         {isEarlyAdopter && !earlyAdopterStatus?.hasAccount && (
-          <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white rounded-lg p-2.5 shadow-sm">
+          <div className="bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-lg p-2.5 shadow-sm">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Gift className="w-4 h-4 flex-shrink-0" />
-                <span className="text-xs font-bold">
-                  Early Adopter #{earlyAdopterStatus.userNumber.toLocaleString()}
+                <span className="text-xs font-medium">
+                  Secure your lifetime benefits!
                 </span>
               </div>
               <button
