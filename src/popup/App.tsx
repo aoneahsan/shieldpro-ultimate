@@ -150,312 +150,303 @@ const App: React.FC = () => {
 
   return (
     <div className="popup-container bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-primary-600 to-primary-700 p-4 text-white">
-        <div className="flex items-center justify-between mb-3">
+      {/* Compact Header with Power Toggle (10% space for our message) */}
+      <div className="bg-gradient-to-r from-primary-600 to-primary-700 px-3 py-2">
+        <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Shield className="w-6 h-6" />
-            <h1 className="text-lg font-bold">ShieldPro Ultimate</h1>
-          </div>
-          <button
-            onClick={openSettings}
-            className="p-1.5 rounded-lg hover:bg-white/10 transition-colors"
-          >
-            <Settings className="w-5 h-5" />
-          </button>
-        </div>
-        
-        {/* Power Toggle */}
-        <button
-          onClick={toggleExtension}
-          className={`w-full flex items-center justify-between p-3 rounded-lg transition-all ${
-            settings?.enabled 
-              ? 'bg-white/10 hover:bg-white/20' 
-              : 'bg-red-500/20 hover:bg-red-500/30'
-          }`}
-        >
-          <div className="flex items-center space-x-3">
-            <Power className={`w-5 h-5 ${settings?.enabled ? 'text-green-300' : 'text-red-300'}`} />
-            <span className="font-medium">
-              {settings?.enabled ? 'Protection Active' : 'Protection Disabled'}
-            </span>
-          </div>
-          <div className={`w-12 h-6 rounded-full transition-colors ${
-            settings?.enabled ? 'bg-green-400' : 'bg-gray-400'
-          }`}>
-            <div className={`w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${
-              settings?.enabled ? 'translate-x-6' : 'translate-x-0.5'
-            } mt-0.5`} />
-          </div>
-        </button>
-      </div>
-
-      <div className="p-4 space-y-3">
-        {/* Early Adopter Banner */}
-        {earlyAdopterStatus && (
-          <div className={`rounded-lg p-3 ${
-            earlyAdopterStatus.isEarlyAdopter 
-              ? 'bg-gradient-to-r from-yellow-400 to-orange-400' 
-              : 'bg-gradient-to-r from-blue-400 to-purple-400'
-          } text-white shadow-lg`}>
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="flex items-center space-x-2 mb-1">
-                  <Crown className="w-5 h-5" />
-                  <span className="font-bold">
-                    {earlyAdopterStatus.isEarlyAdopter 
-                      ? `Early Adopter #${earlyAdopterStatus.userNumber.toLocaleString()}`
-                      : `User #${earlyAdopterStatus.userNumber.toLocaleString()}`}
-                  </span>
-                </div>
-                
-                {earlyAdopterStatus.isEarlyAdopter && !earlyAdopterStatus.hasAccount && (
-                  <div className="flex items-start space-x-1 mt-2 p-2 bg-white/20 rounded">
-                    <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                    <div className="text-xs">
-                      <p className="font-semibold mb-1">Secure your lifetime benefits!</p>
-                      <p>Create an account to keep all Tier 5 features forever.</p>
-                    </div>
-                  </div>
-                )}
-                
-                {earlyAdopterStatus.hasAccount && (
-                  <div className="flex items-center space-x-1 mt-1">
-                    <CheckCircle className="w-4 h-4" />
-                    <span className="text-xs">Lifetime Premium Secured</span>
-                  </div>
-                )}
-              </div>
-            </div>
-            
-            <a
-              href={chrome.runtime.getURL('early-adopter.html')}
-              target="_blank"
-              className="inline-flex items-center space-x-1 mt-2 text-xs text-white/90 hover:text-white"
-            >
-              <span>Learn about your benefits</span>
-              <Share2 className="w-3 h-3" />
-            </a>
-          </div>
-        )}
-
-        {/* Tier Badge */}
-        <div className={`${getTierColor(currentTier)} text-white rounded-lg p-3`}>
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-xs opacity-80">
-                {isEarlyAdopter ? '🌟 Ultimate Access' : 'Current Tier'}
-              </div>
-              <div className="text-xl font-bold">
-                {isEarlyAdopter ? 'Ultimate' : (settings?.tier?.name || 'Basic')}
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="text-2xl font-bold">{currentTier}</div>
-              <div className="text-xs opacity-80">
-                {isEarlyAdopter ? 'MAX' : 'Level'}
-              </div>
-            </div>
-          </div>
-          <div className="mt-2 bg-white/20 rounded-full h-2">
-            <div 
-              className="bg-white rounded-full h-2 transition-all duration-500"
-              style={{ width: isEarlyAdopter ? '100%' : `${(settings?.tier?.progress || 0)}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Account Creation Prompt for Early Adopters */}
-        {isEarlyAdopter && !earlyAdopterStatus?.hasAccount && (
-          <div className="bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-lg p-3 animate-pulse">
-            <div className="flex items-start space-x-2">
-              <Gift className="w-5 h-5 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="font-bold text-sm mb-1">🎉 Secure Your FREE Benefits!</p>
-                <p className="text-xs opacity-95 mb-2">
-                  Create a free account to:
-                  • Save & sync settings across all devices
-                  • Keep all 5 tiers unlocked forever  
-                  • Never lose your early adopter status
-                </p>
-                <AccountManager 
-                  currentTier={5}
-                  onTierUpgrade={handleTierUpgrade}
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Account Manager for non-early adopters */}
-        {!isEarlyAdopter && currentTier < 2 && (
-          <AccountManager 
-            currentTier={currentTier}
-            onTierUpgrade={handleTierUpgrade}
-          />
-        )}
-
-        {/* Current Site */}
-        <div className="bg-white rounded-lg p-3 shadow-sm">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center space-x-2">
-              <Globe className="w-4 h-4 text-gray-400" />
-              <span className="text-sm font-medium text-gray-600">Current Site</span>
-            </div>
-            {tabState?.whitelisted && (
-              <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded">
-                Whitelisted
-              </span>
-            )}
+            <Shield className="w-5 h-5 text-white" />
+            <h1 className="text-sm font-bold text-white">ShieldPro</h1>
           </div>
           
-          <div className="text-sm font-medium text-gray-900 truncate mb-2">
-            {tabState?.domain || 'No active tab'}
-          </div>
-          
-          {/* YouTube Indicator for Tier 2+ */}
-          {isYouTubeActive && (
-            <div className="flex items-center space-x-2 mb-2 p-2 bg-red-50 rounded">
-              <Youtube className="w-4 h-4 text-red-600" />
-              <span className="text-xs text-red-600 font-medium">YouTube Ad Blocking Active</span>
+          {/* Compact Early Adopter/Account Prompt */}
+          {isEarlyAdopter && !earlyAdopterStatus?.hasAccount && (
+            <div className="flex items-center space-x-2 text-white">
+              <Gift className="w-4 h-4" />
+              <span className="text-xs">Secure your lifetime access!</span>
             </div>
           )}
           
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <div className={`w-2 h-2 rounded-full ${
-                tabState?.whitelisted ? 'bg-yellow-400' : 
-                settings?.enabled ? 'bg-green-500' : 'bg-gray-400'
-              } animate-pulse`} />
-              <span className="text-2xl font-bold text-primary-600">
-                {tabState?.blocked || 0}
-              </span>
-              <span className="text-sm text-gray-500">blocked</span>
+          <button
+            onClick={toggleExtension}
+            className={`flex items-center space-x-2 px-3 py-1 rounded-full transition-all ${
+              settings?.enabled 
+                ? 'bg-green-500 hover:bg-green-600' 
+                : 'bg-red-500 hover:bg-red-600'
+            }`}
+          >
+            <Power className="w-4 h-4 text-white" />
+            <span className="text-xs font-medium text-white">
+              {settings?.enabled ? 'ON' : 'OFF'}
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <div className="p-3 space-y-2.5">
+        {/* PRIMARY USER FOCUS - Current Site Stats (Above the fold - 90%) */}
+        <div className="bg-white rounded-lg p-3 shadow-sm border border-gray-100">
+          {/* Big blocking number first - what users care about most */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center space-x-3">
+              <div className={`relative ${settings?.enabled ? 'animate-pulse' : ''}`}>
+                <div className={`w-3 h-3 rounded-full ${
+                  settings?.enabled ? 'bg-green-500' : 'bg-gray-400'
+                }`} />
+                {settings?.enabled && (
+                  <div className="absolute inset-0 w-3 h-3 rounded-full bg-green-400 animate-ping" />
+                )}
+              </div>
+              <div>
+                <span className="text-3xl font-bold text-primary-600">
+                  {tabState?.blocked || 0}
+                </span>
+                <span className="text-sm text-gray-500 ml-2">blocked on this page</span>
+              </div>
             </div>
-            
+          </div>
+
+          {/* Current site info */}
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex-1">
+              <div className="flex items-center space-x-2">
+                <Globe className="w-3.5 h-3.5 text-gray-400" />
+                <span className="text-xs text-gray-500">Current Site</span>
+                {tabState?.whitelisted && (
+                  <span className="text-xs bg-yellow-100 text-yellow-600 px-1.5 py-0.5 rounded">
+                    Whitelisted
+                  </span>
+                )}
+              </div>
+              <div className="text-sm font-medium text-gray-900 truncate">
+                {tabState?.domain || 'No active tab'}
+              </div>
+            </div>
             <button
               onClick={toggleWhitelist}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
                 tabState?.whitelisted
                   ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
-              {tabState?.whitelisted ? (
-                <>
-                  <CheckCircle className="w-3.5 h-3.5 inline mr-1" />
-                  Remove Whitelist
-                </>
-              ) : (
-                <>
-                  <ListX className="w-3.5 h-3.5 inline mr-1" />
-                  Add Whitelist
-                </>
-              )}
+              {tabState?.whitelisted ? 'Remove' : 'Whitelist'}
             </button>
           </div>
+
+          {/* YouTube indicator inline */}
+          {isYouTubeActive && (
+            <div className="flex items-center space-x-1.5 text-red-600 bg-red-50 px-2 py-1 rounded">
+              <Youtube className="w-3.5 h-3.5" />
+              <span className="text-xs font-medium">YouTube Ad Blocking Active</span>
+            </div>
+          )}
         </div>
 
-        {/* Statistics */}
-        <div className="bg-white rounded-lg p-3 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center space-x-2">
-              <BarChart3 className="w-4 h-4 text-gray-400" />
-              <span className="text-sm font-medium text-gray-600">Statistics</span>
-            </div>
-            <button
-              onClick={clearStats}
-              className="text-xs text-gray-500 hover:text-gray-700"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-            </button>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-3">
+        {/* Overall Statistics - Compact */}
+        <div className="bg-white rounded-lg p-3 shadow-sm border border-gray-100">
+          <div className="grid grid-cols-3 gap-3">
             <div>
-              <div className="text-xs text-gray-500">Total Blocked</div>
-              <div className="text-xl font-bold text-gray-900">
+              <div className="text-2xl font-bold text-gray-900">
                 {formatNumber(stats?.totalBlocked || 0)}
               </div>
+              <div className="text-xs text-gray-500">Total</div>
             </div>
             <div>
-              <div className="text-xs text-gray-500">Today</div>
-              <div className="text-xl font-bold text-primary-600">
+              <div className="text-2xl font-bold text-primary-600">
                 {formatNumber(stats?.blockedToday || 0)}
               </div>
+              <div className="text-xs text-gray-500">Today</div>
             </div>
-          </div>
-          
-          {/* Category Breakdown */}
-          <div className="mt-3 pt-3 border-t border-gray-100">
-            <div className="text-xs text-gray-500 mb-2">Category Breakdown</div>
-            <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-600">Ads</span>
-                <span className="text-xs font-medium">{stats?.categoryStats?.ads || 0}</span>
+            <div>
+              <div className="text-2xl font-bold text-green-600">
+                {currentTier}
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-600">Trackers</span>
-                <span className="text-xs font-medium">{stats?.categoryStats?.trackers || 0}</span>
-              </div>
-              {hasYouTubeAccess && (
-                <>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-600">YouTube</span>
-                    <span className="text-xs font-medium text-red-600">
-                      {stats?.categoryStats?.youtube || 0}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-600">Social</span>
-                    <span className="text-xs font-medium">{stats?.categoryStats?.social || 0}</span>
-                  </div>
-                </>
-              )}
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-600">Other</span>
-                <span className="text-xs font-medium">{stats?.categoryStats?.other || 0}</span>
-              </div>
+              <div className="text-xs text-gray-500">Tier</div>
             </div>
           </div>
         </div>
 
-        {/* Tier 2+ Features Indicator */}
-        {currentTier >= 2 && (
-          <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-3 border border-green-200">
-            <div className="flex items-center space-x-2 mb-2">
-              <Activity className="w-4 h-4 text-green-600" />
-              <span className="text-sm font-medium text-green-800">Tier 2 Features Active</span>
-            </div>
-            <div className="grid grid-cols-2 gap-2 text-xs text-green-700">
-              <div className="flex items-center space-x-1">
-                <Youtube className="w-3 h-3" />
-                <span>YouTube Blocking</span>
+        {/* Account prompt for early adopters - compact */}
+        {isEarlyAdopter && !earlyAdopterStatus?.hasAccount && (
+          <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white rounded-lg p-2.5 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Crown className="w-4 h-4" />
+                <span className="text-xs font-bold">
+                  Early Adopter #{earlyAdopterStatus.userNumber.toLocaleString()}
+                </span>
               </div>
-              <div className="flex items-center space-x-1">
-                <Eye className="w-3 h-3" />
-                <span>Advanced Trackers</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <Share2 className="w-3 h-3" />
-                <span>Social Trackers</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <BarChart3 className="w-3 h-3" />
-                <span>Analytics Blocking</span>
-              </div>
+              <button
+                onClick={() => {
+                  const accountSection = document.getElementById('account-section');
+                  accountSection?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="bg-white/20 hover:bg-white/30 px-2 py-1 rounded text-xs font-medium transition-colors"
+              >
+                Create Account
+              </button>
             </div>
           </div>
         )}
 
-        {/* Settings Button */}
-        <button
-          onClick={openSettings}
-          className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 px-4 rounded-lg transition-colors text-sm font-medium flex items-center justify-center space-x-2"
-        >
-          <Settings className="w-4 h-4" />
-          <span>Advanced Settings</span>
-        </button>
+        {/* Account prompt for non-early adopters - compact */}
+        {!isEarlyAdopter && currentTier < 2 && (
+          <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg p-2.5 shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium">
+                Unlock YouTube blocking & more
+              </span>
+              <button
+                onClick={() => {
+                  const accountSection = document.getElementById('account-section');
+                  accountSection?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="bg-white/20 hover:bg-white/30 px-2 py-1 rounded text-xs font-medium transition-colors"
+              >
+                Upgrade Free
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Quick Actions */}
+        <div className="flex gap-2">
+          <button
+            onClick={openSettings}
+            className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded-lg transition-colors text-xs font-medium flex items-center justify-center space-x-1.5"
+          >
+            <Settings className="w-3.5 h-3.5" />
+            <span>Settings</span>
+          </button>
+          <button
+            onClick={clearStats}
+            className="bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded-lg transition-colors text-xs font-medium flex items-center justify-center"
+            title="Clear Statistics"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {/* BELOW THE FOLD - Additional details */}
+        
+        {/* Category Breakdown - Collapsible */}
+        <details className="bg-white rounded-lg shadow-sm border border-gray-100">
+          <summary className="p-3 cursor-pointer hover:bg-gray-50 transition-colors">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <BarChart3 className="w-4 h-4 text-gray-400" />
+                <span className="text-sm font-medium text-gray-700">Detailed Stats</span>
+              </div>
+            </div>
+          </summary>
+          <div className="px-3 pb-3 space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-gray-600">Ads Blocked</span>
+              <span className="text-xs font-medium">{stats?.categoryStats?.ads || 0}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-gray-600">Trackers</span>
+              <span className="text-xs font-medium">{stats?.categoryStats?.trackers || 0}</span>
+            </div>
+            {hasYouTubeAccess && (
+              <>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-600">YouTube</span>
+                  <span className="text-xs font-medium text-red-600">
+                    {stats?.categoryStats?.youtube || 0}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-600">Social</span>
+                  <span className="text-xs font-medium">{stats?.categoryStats?.social || 0}</span>
+                </div>
+              </>
+            )}
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-gray-600">Other</span>
+              <span className="text-xs font-medium">{stats?.categoryStats?.other || 0}</span>
+            </div>
+          </div>
+        </details>
+
+        {/* Tier Features - Only show if tier 2+ */}
+        {currentTier >= 2 && (
+          <details className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
+            <summary className="p-3 cursor-pointer">
+              <div className="flex items-center space-x-2">
+                <Activity className="w-4 h-4 text-green-600" />
+                <span className="text-sm font-medium text-green-800">
+                  Tier {currentTier} Features Active
+                </span>
+              </div>
+            </summary>
+            <div className="px-3 pb-3">
+              <div className="grid grid-cols-2 gap-2 text-xs text-green-700">
+                <div className="flex items-center space-x-1">
+                  <Youtube className="w-3 h-3" />
+                  <span>YouTube Blocking</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <Eye className="w-3 h-3" />
+                  <span>Advanced Trackers</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <Share2 className="w-3 h-3" />
+                  <span>Social Trackers</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <BarChart3 className="w-3 h-3" />
+                  <span>Analytics Blocking</span>
+                </div>
+              </div>
+            </div>
+          </details>
+        )}
+
+        {/* Account Management Section - Below fold */}
+        <div id="account-section">
+          {isEarlyAdopter && !earlyAdopterStatus?.hasAccount && (
+            <div className="bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-lg p-3">
+              <div className="flex items-start space-x-2">
+                <Gift className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-bold text-sm mb-1">🎉 Secure Your FREE Benefits!</p>
+                  <p className="text-xs opacity-95 mb-2">
+                    Create a free account to:
+                    • Save & sync settings across all devices
+                    • Keep all 5 tiers unlocked forever  
+                    • Never lose your early adopter status
+                  </p>
+                  <AccountManager 
+                    currentTier={5}
+                    onTierUpgrade={handleTierUpgrade}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {!isEarlyAdopter && currentTier < 2 && (
+            <AccountManager 
+              currentTier={currentTier}
+              onTierUpgrade={handleTierUpgrade}
+            />
+          )}
+        </div>
+
+        {/* Early Adopter full details - if applicable */}
+        {earlyAdopterStatus && earlyAdopterStatus.isEarlyAdopter && (
+          <div className="text-center">
+            <a
+              href={chrome.runtime.getURL('early-adopter.html')}
+              target="_blank"
+              className="inline-flex items-center space-x-1 text-xs text-primary-600 hover:text-primary-700"
+            >
+              <span>View all early adopter benefits</span>
+              <Share2 className="w-3 h-3" />
+            </a>
+          </div>
+        )}
       </div>
     </div>
   );
