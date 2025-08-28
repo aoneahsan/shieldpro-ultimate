@@ -65,6 +65,7 @@ class AuthService {
   private authInitialized: boolean = false;
   private authStatePromise: Promise<void>;
   private authStateResolve: (() => void) | null = null;
+  private isSigningOut: boolean = false;
 
   constructor() {
     // Create a promise that resolves when auth state is first loaded
@@ -72,7 +73,40 @@ class AuthService {
       this.authStateResolve = resolve;
     });
 
+    // Check if we have a logout flag in storage
+    this.initializeAuthListener();
+  }
+
+  private async initializeAuthListener() {
+    // Check if we're supposed to be logged out
+    try {
+      if (chrome?.storage?.local) {
+        const { forceLoggedOut } = await chrome.storage.local.get('forceLoggedOut');
+        if (forceLoggedOut) {
+          // Clear the flag and don't set up auth listener
+          await chrome.storage.local.remove('forceLoggedOut');
+          this.currentUser = null;
+          this.userProfile = null;
+          this.authInitialized = true;
+          if (this.authStateResolve) {
+            this.authStateResolve();
+          }
+          return;
+        }
+      }
+    } catch (error) {
+      console.error('Error checking logout flag:', error);
+    }
+
     onAuthStateChanged(auth, async (user) => {
+      console.log('Auth state changed:', user?.email || 'null', 'isSigningOut:', this.isSigningOut);
+      
+      // If we're signing out, ignore any auth state changes
+      if (this.isSigningOut) {
+        console.log('Ignoring auth state change during sign out');
+        return;
+      }
+      
       this.currentUser = user;
       if (user) {
         await this.loadUserProfile(user.uid);
@@ -304,15 +338,42 @@ class AuthService {
   // Sign out
   async signOut(): Promise<void> {
     try {
-      // Using the imported signOut function from Firebase
-      await firebaseSignOut(auth);
+      console.log('AuthService: Starting sign out');
+      // Set flag to prevent auth state reload
+      this.isSigningOut = true;
+      
       // Clear local state immediately
       this.currentUser = null;
       this.userProfile = null;
+      
       // Clear the cache immediately
       await this.clearAuthCache();
+      console.log('AuthService: Cleared auth cache');
+      
+      // Set a flag to prevent auth reload on next popup open
+      if (chrome?.storage?.local) {
+        await chrome.storage.local.set({ forceLoggedOut: true });
+        // Remove it after a delay
+        setTimeout(async () => {
+          try {
+            await chrome.storage.local.remove('forceLoggedOut');
+          } catch (error) {
+            console.error('Error removing logout flag:', error);
+          }
+        }, 5000);
+      }
+      
+      // Using the imported signOut function from Firebase
+      await firebaseSignOut(auth);
+      console.log('AuthService: Firebase sign out complete');
+      
+      // Keep the flag set for longer to ensure state doesn't reload
+      setTimeout(() => {
+        this.isSigningOut = false;
+      }, 2000);
     } catch (error: any) {
       console.error('Sign out error:', error);
+      this.isSigningOut = false;
       throw new Error(error.message);
     }
   }

@@ -25,6 +25,20 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
   useEffect(() => {
     // Check auth state asynchronously
     const checkAuth = async () => {
+      // Check if we just logged out
+      try {
+        const { forceLoggedOut } = await chrome.storage.local.get('forceLoggedOut');
+        if (forceLoggedOut) {
+          console.log('Force logged out flag detected, skipping auth check');
+          setCurrentUser(null);
+          setUserProfile(null);
+          setAuthLoading(false);
+          return;
+        }
+      } catch (error) {
+        console.error('Error checking logout flag:', error);
+      }
+      
       setAuthLoading(true);
       try {
         // Wait for Firebase auth to initialize first
@@ -33,6 +47,8 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
         // Now get the actual auth state
         const user = authService.getCurrentUser();
         const profile = authService.getUserProfile();
+        
+        console.log('Auth check result:', user?.email || 'null');
         
         setCurrentUser(user);
         setUserProfile(profile);
@@ -147,18 +163,20 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
 
   const handleSignOut = async () => {
     try {
-      await authService.signOut();
+      console.log('Starting sign out...');
       
-      // Update local state immediately
+      // First clear local state immediately for instant UI update
       setCurrentUser(null);
       setUserProfile(null);
-      onTierUpgrade(1);
-      
-      // Force component to show signup form
       setShowSignup(false);
       setShowLogin(false);
+      setAuthLoading(false);
       
-      // Update local storage
+      // Clear chrome storage auth cache FIRST
+      await chrome.storage.local.remove(['authUser', 'authProfile']);
+      console.log('Cleared chrome storage auth cache');
+      
+      // Update tier in storage
       const storage = StorageManager.getInstance();
       await storage.setSettings({
         tier: {
@@ -169,13 +187,32 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
         }
       });
       
-      // Send message to background to update tier rules
-      await chrome.runtime.sendMessage({ 
+      // Update tier immediately for UI
+      onTierUpgrade(1);
+      
+      // Send message to background to update tier rules (no await to make it faster)
+      chrome.runtime.sendMessage({ 
         action: 'tierUpgraded', 
         tier: 1
-      });
+      }).catch(() => {}); // Ignore errors
+      
+      // Sign out from Firebase (will set forceLoggedOut flag)
+      await authService.signOut();
+      console.log('Signed out from Firebase');
+      
+      // Force clear any remaining auth state
+      setCurrentUser(null);
+      setUserProfile(null);
+      
+      // Show success message
+      setSuccess('Signed out successfully');
+      setTimeout(() => setSuccess(''), 2000);
     } catch (err: any) {
+      console.error('Sign out error:', err);
       setError(err.message || 'Failed to sign out.');
+      // Still clear local state on error
+      setCurrentUser(null);
+      setUserProfile(null);
     }
   };
 
