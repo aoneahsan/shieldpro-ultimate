@@ -29,6 +29,7 @@ const App: React.FC = () => {
   const [earlyAdopterStatus, setEarlyAdopterStatus] = useState<EarlyAdopterStatus | null>(null);
   const [hasNewData, setHasNewData] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
 
   // Load cached data immediately on mount for instant display
   useEffect(() => {
@@ -49,7 +50,7 @@ const App: React.FC = () => {
   const loadCachedData = async () => {
     try {
       // Get cached data from chrome storage for instant display
-      const cached = await chrome.storage.local.get(['cachedSettings', 'cachedStats', 'cachedTabState', 'cachedEarlyAdopter']);
+      const cached = await chrome.storage.local.get(['cachedSettings', 'cachedStats', 'cachedTabState', 'cachedEarlyAdopter', 'authUser', 'authProfile']);
       
       if (cached.cachedSettings) {
         let settingsData = cached.cachedSettings;
@@ -61,6 +62,10 @@ const App: React.FC = () => {
             unlockedAt: cached.cachedEarlyAdopter.installDate || Date.now(),
             progress: 100
           };
+        }
+        // But if user is authenticated, use their tier
+        else if (cached.authProfile?.tier?.level) {
+          settingsData.tier = cached.authProfile.tier;
         }
         setSettings(settingsData);
       } else {
@@ -74,6 +79,11 @@ const App: React.FC = () => {
       setStats(cached.cachedStats || { totalBlocked: 0, blockedToday: 0, categoryStats: {} } as BlockingStats);
       setTabState(cached.cachedTabState || { domain: 'Loading...', blocked: 0, whitelisted: false } as TabState);
       setEarlyAdopterStatus(cached.cachedEarlyAdopter || null);
+      
+      // Mark auth as checked if we have cache
+      if ('authUser' in cached) {
+        setAuthChecked(true);
+      }
     } catch (error) {
       console.error('Failed to load cached data:', error);
       // Set defaults on error

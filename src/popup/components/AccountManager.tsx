@@ -20,18 +20,55 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
   const [success, setSuccess] = useState('');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [authLoading, setAuthLoading] = useState(true); // Add loading state for auth check
 
   useEffect(() => {
-    // Check if user is already logged in
-    const user = authService.getCurrentUser();
-    const profile = authService.getUserProfile();
-    if (user) {
-      setCurrentUser(user);
-      setUserProfile(profile);
-      if (profile?.tier?.level) {
-        onTierUpgrade(profile.tier.level);
+    // Check auth state asynchronously
+    const checkAuth = async () => {
+      setAuthLoading(true);
+      try {
+        // Give Firebase time to initialize
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Check cached auth state first
+        const cachedAuth = await chrome.storage.local.get(['authUser', 'authProfile']);
+        if (cachedAuth.authUser) {
+          setCurrentUser(cachedAuth.authUser);
+          setUserProfile(cachedAuth.authProfile);
+          if (cachedAuth.authProfile?.tier?.level) {
+            onTierUpgrade(cachedAuth.authProfile.tier.level);
+          }
+        }
+        
+        // Then check with Firebase
+        const user = authService.getCurrentUser();
+        const profile = authService.getUserProfile();
+        
+        if (user) {
+          setCurrentUser(user);
+          setUserProfile(profile);
+          if (profile?.tier?.level) {
+            onTierUpgrade(profile.tier.level);
+          }
+          // Update cache
+          await chrome.storage.local.set({
+            authUser: user,
+            authProfile: profile
+          });
+        } else {
+          // Clear cache if no user
+          await chrome.storage.local.remove(['authUser', 'authProfile']);
+          setCurrentUser(null);
+          setUserProfile(null);
+        }
+      } catch (error) {
+        console.error('Failed to check auth:', error);
+      } finally {
+        setAuthLoading(false);
       }
-    }
+    };
+    
+    checkAuth();
   }, [onTierUpgrade]);
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -134,6 +171,9 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
       setUserProfile(null);
       onTierUpgrade(1);
       
+      // Clear auth cache immediately
+      await chrome.storage.local.remove(['authUser', 'authProfile']);
+      
       // Update local storage
       const storage = StorageManager.getInstance();
       await storage.setSettings({
@@ -150,10 +190,25 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
         action: 'tierUpgraded', 
         tier: 1
       });
+      
+      // Force component to show signup form
+      setShowSignup(false);
+      setShowLogin(false);
     } catch (err: any) {
       setError(err.message || 'Failed to sign out.');
     }
   };
+
+  // Show loading skeleton while checking auth
+  if (authLoading) {
+    return (
+      <div className="bg-gray-100 rounded-lg p-4 animate-pulse">
+        <div className="h-5 bg-gray-200 rounded w-3/4 mb-2"></div>
+        <div className="h-4 bg-gray-200 rounded w-1/2 mb-3"></div>
+        <div className="h-10 bg-gray-200 rounded w-full"></div>
+      </div>
+    );
+  }
 
   if (currentUser && currentTier >= 2) {
     return (
