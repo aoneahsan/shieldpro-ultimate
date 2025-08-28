@@ -45,8 +45,8 @@ class EarlyAdopterService {
     // Determine if user is an early adopter
     const isEarlyAdopter = userNumber <= MARKETING_CONFIG.EARLY_ADOPTER_LIMIT;
     
-    // Calculate initial tier based on user number
-    const initialTier = this.calculateInitialTier(userNumber, false);
+    // Early adopters get Tier 5 immediately, others get calculated tier
+    const initialTier = isEarlyAdopter ? 5 : this.calculateInitialTier(userNumber, false);
     
     // Create user status
     this.userStatus = {
@@ -55,7 +55,7 @@ class EarlyAdopterService {
       installDate,
       userNumber,
       hasAccount: false,
-      currentTier: initialTier,
+      currentTier: initialTier,  // Tier 5 for early adopters!
       lockedTier: isEarlyAdopter ? 5 : initialTier,
       benefits: this.getBenefitsForUser(userNumber, false)
     };

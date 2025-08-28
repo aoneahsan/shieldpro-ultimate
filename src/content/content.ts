@@ -9,6 +9,7 @@ import { AggressivePopupBlocker } from './aggressive-popup-blocker';
 import { ElementPicker } from './element-picker';
 import { PrivacyProtector } from './privacy-protection';
 import { CookieConsentHandler } from './cookie-consent-handler';
+import { FloatingVideoBlocker } from './floating-video-blocker';
 
 class ContentScriptManager {
   private youtubeBlocker?: YouTubeAdBlockerV2;
@@ -17,6 +18,7 @@ class ContentScriptManager {
   private elementPicker: ElementPicker;
   private privacyProtector: PrivacyProtector;
   private cookieConsentHandler: CookieConsentHandler;
+  private floatingVideoBlocker: FloatingVideoBlocker;
   private currentTier: number = 1;
   private isEarlyAdopter: boolean = false;
 
@@ -27,6 +29,7 @@ class ContentScriptManager {
     this.elementPicker = new ElementPicker();
     this.privacyProtector = new PrivacyProtector();
     this.cookieConsentHandler = new CookieConsentHandler();
+    this.floatingVideoBlocker = new FloatingVideoBlocker();
     
     this.initialize();
   }
@@ -60,8 +63,11 @@ class ContentScriptManager {
     // Popup blocking
     this.popupBlocker.init();
     
-    // Cookie consent auto-rejection
+    // Cookie consent auto-rejection (FREE - competitors charge $40/year!)
     this.cookieConsentHandler.init();
+    
+    // Floating video blocking (FREE - AdBlock Plus Premium feature!)
+    this.floatingVideoBlocker.init();
     
     // Basic element hiding
     this.injectBasicStyles();

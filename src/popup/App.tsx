@@ -44,6 +44,16 @@ const App: React.FC = () => {
         chrome.runtime.sendMessage({ action: 'getEarlyAdopterStatus' })
       ]);
       
+      // If early adopter, override tier to 5
+      if (earlyAdopterRes?.isEarlyAdopter && settingsRes) {
+        settingsRes.tier = {
+          level: 5,
+          name: 'Ultimate',
+          unlockedAt: earlyAdopterRes.installDate || Date.now(),
+          progress: 100
+        };
+      }
+      
       setSettings(settingsRes);
       setStats(statsRes);
       setTabState(tabStateRes);
@@ -130,7 +140,9 @@ const App: React.FC = () => {
     );
   }
 
-  const currentTier = settings?.tier?.level || 1;
+  // Early adopters always have Tier 5!
+  const actualTier = earlyAdopterStatus?.isEarlyAdopter ? 5 : (settings?.tier?.level || 1);
+  const currentTier = actualTier;
   const isEarlyAdopter = earlyAdopterStatus?.isEarlyAdopter || false;
   const hasYouTubeAccess = isEarlyAdopter || currentTier >= 2;
   const isYouTubeActive = hasYouTubeAccess && tabState?.domain?.includes('youtube.com');
@@ -230,24 +242,52 @@ const App: React.FC = () => {
         <div className={`${getTierColor(currentTier)} text-white rounded-lg p-3`}>
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-xs opacity-80">Current Tier</div>
-              <div className="text-xl font-bold">{settings?.tier?.name || 'Basic'}</div>
+              <div className="text-xs opacity-80">
+                {isEarlyAdopter ? '🌟 Ultimate Access' : 'Current Tier'}
+              </div>
+              <div className="text-xl font-bold">
+                {isEarlyAdopter ? 'Ultimate' : (settings?.tier?.name || 'Basic')}
+              </div>
             </div>
             <div className="text-right">
               <div className="text-2xl font-bold">{currentTier}</div>
-              <div className="text-xs opacity-80">Level</div>
+              <div className="text-xs opacity-80">
+                {isEarlyAdopter ? 'MAX' : 'Level'}
+              </div>
             </div>
           </div>
           <div className="mt-2 bg-white/20 rounded-full h-2">
             <div 
               className="bg-white rounded-full h-2 transition-all duration-500"
-              style={{ width: `${(settings?.tier?.progress || 0)}%` }}
+              style={{ width: isEarlyAdopter ? '100%' : `${(settings?.tier?.progress || 0)}%` }}
             />
           </div>
         </div>
 
-        {/* Account Manager for Tier 2 */}
-        {currentTier < 2 && (
+        {/* Account Creation Prompt for Early Adopters */}
+        {isEarlyAdopter && !earlyAdopterStatus?.hasAccount && (
+          <div className="bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-lg p-3 animate-pulse">
+            <div className="flex items-start space-x-2">
+              <Gift className="w-5 h-5 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="font-bold text-sm mb-1">🎉 Secure Your FREE Benefits!</p>
+                <p className="text-xs opacity-95 mb-2">
+                  Create a free account to:
+                  • Save & sync settings across all devices
+                  • Keep all 5 tiers unlocked forever  
+                  • Never lose your early adopter status
+                </p>
+                <AccountManager 
+                  currentTier={5}
+                  onTierUpgrade={handleTierUpgrade}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Account Manager for non-early adopters */}
+        {!isEarlyAdopter && currentTier < 2 && (
           <AccountManager 
             currentTier={currentTier}
             onTierUpgrade={handleTierUpgrade}
