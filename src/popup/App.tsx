@@ -18,7 +18,8 @@ import {
   Eye,
   Share2,
   Crown,
-  AlertCircle
+  AlertCircle,
+  Gift
 } from 'lucide-react';
 
 const App: React.FC = () => {
