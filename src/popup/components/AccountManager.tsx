@@ -27,42 +27,23 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
     const checkAuth = async () => {
       setAuthLoading(true);
       try {
-        // Give Firebase time to initialize
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // Wait for Firebase auth to initialize first
+        await authService.waitForAuth();
         
-        // Check cached auth state first
-        const cachedAuth = await chrome.storage.local.get(['authUser', 'authProfile']);
-        if (cachedAuth.authUser) {
-          setCurrentUser(cachedAuth.authUser);
-          setUserProfile(cachedAuth.authProfile);
-          if (cachedAuth.authProfile?.tier?.level) {
-            onTierUpgrade(cachedAuth.authProfile.tier.level);
-          }
-        }
-        
-        // Then check with Firebase
+        // Now get the actual auth state
         const user = authService.getCurrentUser();
         const profile = authService.getUserProfile();
         
-        if (user) {
-          setCurrentUser(user);
-          setUserProfile(profile);
-          if (profile?.tier?.level) {
-            onTierUpgrade(profile.tier.level);
-          }
-          // Update cache
-          await chrome.storage.local.set({
-            authUser: user,
-            authProfile: profile
-          });
-        } else {
-          // Clear cache if no user
-          await chrome.storage.local.remove(['authUser', 'authProfile']);
-          setCurrentUser(null);
-          setUserProfile(null);
+        setCurrentUser(user);
+        setUserProfile(profile);
+        
+        if (user && profile?.tier?.level) {
+          onTierUpgrade(profile.tier.level);
         }
       } catch (error) {
         console.error('Failed to check auth:', error);
+        setCurrentUser(null);
+        setUserProfile(null);
       } finally {
         setAuthLoading(false);
       }
@@ -167,12 +148,15 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
   const handleSignOut = async () => {
     try {
       await authService.signOut();
+      
+      // Update local state immediately
       setCurrentUser(null);
       setUserProfile(null);
       onTierUpgrade(1);
       
-      // Clear auth cache immediately
-      await chrome.storage.local.remove(['authUser', 'authProfile']);
+      // Force component to show signup form
+      setShowSignup(false);
+      setShowLogin(false);
       
       // Update local storage
       const storage = StorageManager.getInstance();
@@ -190,10 +174,6 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
         action: 'tierUpgraded', 
         tier: 1
       });
-      
-      // Force component to show signup form
-      setShowSignup(false);
-      setShowLogin(false);
     } catch (err: any) {
       setError(err.message || 'Failed to sign out.');
     }

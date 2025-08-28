@@ -62,16 +62,71 @@ export interface UserProfile {
 class AuthService {
   private currentUser: User | null = null;
   private userProfile: UserProfile | null = null;
+  private authInitialized: boolean = false;
+  private authStatePromise: Promise<void>;
+  private authStateResolve: (() => void) | null = null;
 
   constructor() {
+    // Create a promise that resolves when auth state is first loaded
+    this.authStatePromise = new Promise((resolve) => {
+      this.authStateResolve = resolve;
+    });
+
     onAuthStateChanged(auth, async (user) => {
       this.currentUser = user;
       if (user) {
         await this.loadUserProfile(user.uid);
+        // Cache the auth state
+        await this.cacheAuthState(user, this.userProfile);
       } else {
         this.userProfile = null;
+        // Clear cached auth state
+        await this.clearAuthCache();
+      }
+      
+      // Mark as initialized and resolve the promise
+      if (!this.authInitialized) {
+        this.authInitialized = true;
+        if (this.authStateResolve) {
+          this.authStateResolve();
+        }
       }
     });
+  }
+
+  // Wait for auth to be initialized
+  async waitForAuth(): Promise<void> {
+    return this.authStatePromise;
+  }
+
+  // Cache auth state for instant loading
+  private async cacheAuthState(user: User | null, profile: UserProfile | null): Promise<void> {
+    try {
+      if (chrome?.storage?.local) {
+        await chrome.storage.local.set({
+          authUser: user ? {
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName,
+            photoURL: user.photoURL
+          } : null,
+          authProfile: profile
+        });
+      }
+    } catch (error) {
+      console.error('Failed to cache auth state:', error);
+    }
+  }
+
+  // Clear auth cache
+  private async clearAuthCache(): Promise<void> {
+    try {
+      if (chrome?.storage?.local) {
+        await chrome.storage.local.remove(['authUser', 'authProfile']);
+      }
+    } catch (error) {
+      console.error('Failed to clear auth cache:', error);
+    }
   }
 
   // Generate unique referral code
@@ -252,6 +307,8 @@ class AuthService {
       await signOut(auth);
       this.currentUser = null;
       this.userProfile = null;
+      // Clear the cache immediately
+      await this.clearAuthCache();
     } catch (error: any) {
       throw new Error(error.message);
     }
@@ -399,6 +456,11 @@ class AuthService {
   // Check if user is logged in
   isAuthenticated(): boolean {
     return !!this.currentUser;
+  }
+  
+  // Check if auth state has been initialized
+  isAuthInitialized(): boolean {
+    return this.authInitialized;
   }
 
   // Get user tier
