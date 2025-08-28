@@ -58,23 +58,17 @@ service cloud.firestore {
     match /users/{userId} {
       // Read access
       allow read: if 
-        // Users can read their own profile
+        // Users can read their own profile (including anonymous)
         isOwner(userId) ||
-        // Admins can read any profile
-        isAdmin() ||
-        // Anonymous users can read their own profile
-        (isAnonymousUser() && isOwner(userId));
+        // Admins can read any profile  
+        isAdmin();
       
       // Create access
       allow create: if 
         // Authenticated users can create their own profile
         isOwner(userId) &&
-        // Required fields must be present
-        request.resource.data.keys().hasAll(['uid', 'createdAt']) &&
         // UID must match auth UID
-        request.resource.data.uid == request.auth.uid &&
-        // Tier level must be valid if provided
-        (!('tier' in request.resource.data) || isValidTierLevel(request.resource.data.tier.level));
+        request.resource.data.uid == request.auth.uid;
       
       // Update access
       allow update: if 

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Firebase Connection</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4f4dd; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f5f5f5; padding: 10px; overflow: auto; }
+    </style>
+</head>
+<body>
+    <h1>Firebase Connection Test</h1>
+    <div id="status"></div>
+    
+    <button onclick="testAnonymousAuth()">Test Anonymous Auth</button>
+    <button onclick="testUserCreation()">Test User Creation</button>
+    <button onclick="testFirestoreRead()">Test Firestore Read</button>
+    <button onclick="clearStatus()">Clear</button>
+    
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, doc, setDoc, getDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        
+        // Your Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyCPaLxIRR0r5YJAJytYTKcWaFO-WVj9vZo",
+            authDomain: "shieldpro-ultimate.firebaseapp.com",
+            projectId: "shieldpro-ultimate",
+            storageBucket: "shieldpro-ultimate.firebasestorage.app",
+            messagingSenderId: "959439973287",
+            appId: "1:959439973287:web:d982bb6f9f892c60a51797",
+            measurementId: "G-TGKM6X1NYW"
+        };
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        let currentUser = null;
+        
+        // Monitor auth state
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            if (user) {
+                addStatus(`Authenticated as: ${user.uid} (Anonymous: ${user.isAnonymous})`, 'info');
+            } else {
+                addStatus('Not authenticated', 'info');
+            }
+        });
+        
+        function addStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${message}`;
+            statusDiv.appendChild(div);
+        }
+        
+        window.clearStatus = function() {
+            document.getElementById('status').innerHTML = '';
+        }
+        
+        window.testAnonymousAuth = async function() {
+            try {
+                addStatus('Testing anonymous authentication...', 'info');
+                const result = await signInAnonymously(auth);
+                addStatus(`✅ Anonymous auth successful! UID: ${result.user.uid}`, 'success');
+            } catch (error) {
+                addStatus(`❌ Anonymous auth failed: ${error.message}`, 'error');
+            }
+        }
+        
+        window.testUserCreation = async function() {
+            if (!currentUser) {
+                addStatus('Please authenticate first', 'error');
+                return;
+            }
+            
+            try {
+                addStatus('Creating user document...', 'info');
+                const userDoc = {
+                    uid: currentUser.uid,
+                    isAnonymous: currentUser.isAnonymous,
+                    createdAt: serverTimestamp(),
+                    tier: {
+                        level: 1,
+                        name: 'Basic',
+                        progress: 0
+                    }
+                };
+                
+                await setDoc(doc(db, 'users', currentUser.uid), userDoc);
+                addStatus(`✅ User document created successfully!`, 'success');
+            } catch (error) {
+                addStatus(`❌ User creation failed: ${error.message}`, 'error');
+            }
+        }
+        
+        window.testFirestoreRead = async function() {
+            if (!currentUser) {
+                addStatus('Please authenticate first', 'error');
+                return;
+            }
+            
+            try {
+                addStatus('Reading user document...', 'info');
+                const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+                
+                if (userDoc.exists()) {
+                    addStatus(`✅ User document read successful!`, 'success');
+                    addStatus(`<pre>${JSON.stringify(userDoc.data(), null, 2)}</pre>`, 'info');
+                } else {
+                    addStatus('User document does not exist', 'info');
+                }
+            } catch (error) {
+                addStatus(`❌ Firestore read failed: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>
