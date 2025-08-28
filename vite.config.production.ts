@@ -15,6 +15,10 @@ export default defineConfig(() => {
 		
 		define: {
 			'process.env.NODE_ENV': JSON.stringify('production'),
+			'import.meta.env.MODE': JSON.stringify('production'),
+			'import.meta.env.DEV': 'false',
+			'import.meta.env.PROD': 'true',
+			__DEV__: 'false',
 			'import.meta.env.VITE_FIREBASE_API_KEY': JSON.stringify(env.VITE_FIREBASE_API_KEY),
 			'import.meta.env.VITE_FIREBASE_AUTH_DOMAIN': JSON.stringify(env.VITE_FIREBASE_AUTH_DOMAIN),
 			'import.meta.env.VITE_FIREBASE_PROJECT_ID': JSON.stringify(env.VITE_FIREBASE_PROJECT_ID),
@@ -29,8 +33,12 @@ export default defineConfig(() => {
 			react({
 				jsxRuntime: 'automatic',
 				jsxImportSource: 'react',
+				jsxDev: false, // Force production JSX
 				fastRefresh: false,
-				tsDecorators: true
+				tsDecorators: true,
+				babel: {
+					plugins: [['@babel/plugin-transform-react-jsx', { runtime: 'automatic', development: false }]]
+				}
 			}),
 			tsconfigPaths(),
 			crx({

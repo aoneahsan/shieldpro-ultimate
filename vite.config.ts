@@ -23,9 +23,13 @@ export default defineConfig(({ mode }) => {
 			react({
 				jsxRuntime: 'automatic',
 				jsxImportSource: 'react',
+				jsxDev: false, // Force production JSX transform
 				fastRefresh: !isProd,
 				// Ensure production mode
-				tsDecorators: true
+				tsDecorators: true,
+				babel: {
+					plugins: isProd ? [['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }]] : []
+				}
 			}),
 
 			// TypeScript path resolution
@@ -162,6 +166,10 @@ export default defineConfig(({ mode }) => {
 		// Environment variables
 		define: {
 			'process.env.NODE_ENV': JSON.stringify(isProd ? 'production' : mode),
+			'import.meta.env.MODE': JSON.stringify(isProd ? 'production' : mode),
+			'import.meta.env.DEV': JSON.stringify(!isProd),
+			'import.meta.env.PROD': JSON.stringify(isProd),
+			__DEV__: JSON.stringify(!isProd),
 			'process.env': JSON.stringify({
 				REACT_APP_FIREBASE_API_KEY: env.REACT_APP_FIREBASE_API_KEY || env.VITE_FIREBASE_API_KEY,
 				REACT_APP_FIREBASE_AUTH_DOMAIN: env.REACT_APP_FIREBASE_AUTH_DOMAIN || env.VITE_FIREBASE_AUTH_DOMAIN,
