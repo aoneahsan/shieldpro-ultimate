@@ -1,7 +1,7 @@
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  signOut,
+  signOut as firebaseSignOut,
   sendPasswordResetEmail,
   updateProfile,
   User,
@@ -304,12 +304,15 @@ class AuthService {
   // Sign out
   async signOut(): Promise<void> {
     try {
-      await signOut(auth);
+      // Using the imported signOut function from Firebase
+      await firebaseSignOut(auth);
+      // Clear local state immediately
       this.currentUser = null;
       this.userProfile = null;
       // Clear the cache immediately
       await this.clearAuthCache();
     } catch (error: any) {
+      console.error('Sign out error:', error);
       throw new Error(error.message);
     }
   }

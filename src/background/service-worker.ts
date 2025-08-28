@@ -376,13 +376,15 @@ async function handleMessage(request: MessageRequest, sender: chrome.runtime.Mes
             }
           });
           
-          // Show notification
-          chrome.notifications.create({
-            type: 'basic',
-            iconUrl: chrome.runtime.getURL('icons/icon-128.png'),
-            title: `Tier ${newTier} Unlocked!`,
-            message: getTierMessage(newTier)
-          });
+          // Show notification only for upgrades, not downgrades to tier 1
+          if (newTier > 1) {
+            chrome.notifications.create({
+              type: 'basic',
+              iconUrl: chrome.runtime.getURL('icons/icon-128.png'),
+              title: `Tier ${newTier} Unlocked!`,
+              message: getTierMessage(newTier)
+            });
+          }
           
           sendResponse({ success: true, tier: newTier });
         } else {
