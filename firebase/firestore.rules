@@ -20,17 +20,12 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.token.firebase.sign_in_provider == 'anonymous';
     }
     
-    // Check if user has a real account (not anonymous)
-    function hasRealAccount() {
-      return isAuthenticated() && request.auth.token.firebase.sign_in_provider != 'anonymous';
-    }
-    
     // Get user's tier level from their document
     function getUserTier(userId) {
       return get(/databases/$(database)/documents/users/$(userId)).data.tier.level;
     }
     
-    // Get user's current tier from their document
+    // Get current user's tier from their document
     function getCurrentUserTier() {
       return getUserTier(request.auth.uid);
     }
@@ -49,16 +44,6 @@ service cloud.firestore {
     function isAdmin() {
       return isAuthenticated() && 
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-    
-    // Check if user is early adopter
-    function isEarlyAdopter(userId) {
-      return get(/databases/$(database)/documents/users/$(userId)).data.isEarlyAdopter == true;
-    }
-    
-    // Validate timestamp is server timestamp
-    function isValidTimestamp(field) {
-      return field == request.time;
     }
     
     // Check if referral code is being changed (not allowed)
@@ -88,7 +73,7 @@ service cloud.firestore {
         request.resource.data.keys().hasAll(['uid', 'createdAt']) &&
         // UID must match auth UID
         request.resource.data.uid == request.auth.uid &&
-        // Tier level must be valid
+        // Tier level must be valid if provided
         (!('tier' in request.resource.data) || isValidTierLevel(request.resource.data.tier.level));
       
       // Update access
@@ -119,23 +104,17 @@ service cloud.firestore {
     // REFERRALS COLLECTION
     // ============================================
     match /referrals/{referralCode} {
-      // Read access
-      allow read: if 
-        // Anyone can check if a referral code exists
-        true;
+      // Read access - anyone can check if a referral code exists
+      allow read: if true;
       
       // Create access - only via cloud functions
       allow create: if false;
       
-      // Update access
-      allow update: if 
-        // Only cloud functions can update (to add usedBy)
-        false;
+      // Update access - only cloud functions can update (to add usedBy)
+      allow update: if false;
       
-      // Delete access
-      allow delete: if 
-        // Admins can delete
-        isAdmin();
+      // Delete access - admins can delete
+      allow delete: if isAdmin();
     }
     
     // ============================================
@@ -185,8 +164,7 @@ service cloud.firestore {
     // ============================================
     match /filters/{userId}/custom/{filterId} {
       // Read access
-      allow read: if 
-        isOwner(userId) || isAdmin();
+      allow read: if isOwner(userId) || isAdmin();
       
       // Write access - requires Tier 3 or higher
       allow create, update: if 
@@ -198,8 +176,7 @@ service cloud.firestore {
         request.resource.data.enabled is bool;
       
       // Delete access
-      allow delete: if 
-        isOwner(userId) && hasTierLevel(3);
+      allow delete: if isOwner(userId) && hasTierLevel(3);
     }
     
     // ============================================
@@ -207,8 +184,7 @@ service cloud.firestore {
     // ============================================
     match /whitelists/{userId}/domains/{domainId} {
       // Read access
-      allow read: if 
-        isOwner(userId) || isAdmin();
+      allow read: if isOwner(userId) || isAdmin();
       
       // Write access - requires Tier 3 or higher
       allow create, update: if 
@@ -220,8 +196,7 @@ service cloud.firestore {
         request.resource.data.enabled is bool;
       
       // Delete access
-      allow delete: if 
-        isOwner(userId) && hasTierLevel(3);
+      allow delete: if isOwner(userId) && hasTierLevel(3);
     }
     
     // ============================================
