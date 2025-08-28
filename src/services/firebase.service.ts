@@ -306,16 +306,24 @@ class FirebaseService {
     const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
     const profile = await this.getUserProfile(uid);
     
-    if (!profile) return;
+    if (!profile) {
+      console.log('User profile does not exist, skipping weekly engagement update');
+      return;
+    }
 
     const weeklyEngagement = profile.stats.weeklyEngagement || {};
     weeklyEngagement[today] = true;
 
-    await updateDoc(doc(db, 'users', uid), {
-      [`stats.weeklyEngagement.${today}`]: true,
-      'stats.lastActive': serverTimestamp(),
+    // Use setDoc with merge to handle non-existent documents
+    await setDoc(doc(db, 'users', uid), {
+      stats: {
+        weeklyEngagement: {
+          [today]: true
+        },
+        lastActive: serverTimestamp()
+      },
       updatedAt: serverTimestamp()
-    });
+    }, { merge: true });
 
     // Check for Tier 5 eligibility
     const daysActive = Object.values(weeklyEngagement).filter(Boolean).length;
@@ -335,10 +343,11 @@ class FirebaseService {
    * Sync extension settings
    */
   async syncSettings(uid: string, settings: any): Promise<void> {
-    await updateDoc(doc(db, 'users', uid), {
+    // Use setDoc with merge to handle non-existent documents
+    await setDoc(doc(db, 'users', uid), {
       extensionSettings: settings,
       updatedAt: serverTimestamp()
-    });
+    }, { merge: true });
   }
 
   /**

@@ -298,12 +298,45 @@ class AuthService {
       5: 80
     };
 
-    await updateDoc(doc(db, 'users', uid), {
-      'tier.level': newTier,
-      'tier.name': tierNames[newTier],
-      'tier.unlockedAt': Date.now(),
-      'tier.progress': tierProgress[newTier]
-    });
+    // Check if document exists first
+    const userRef = doc(db, 'users', uid);
+    const userSnap = await getDoc(userRef);
+    
+    if (userSnap.exists()) {
+      await updateDoc(userRef, {
+        'tier.level': newTier,
+        'tier.name': tierNames[newTier],
+        'tier.unlockedAt': Date.now(),
+        'tier.progress': tierProgress[newTier]
+      });
+    } else {
+      // Create a basic user profile if it doesn't exist
+      const userProfile: UserProfile = {
+        uid,
+        email: '',
+        tier: {
+          level: newTier,
+          name: tierNames[newTier],
+          unlockedAt: Date.now(),
+          progress: tierProgress[newTier]
+        },
+        stats: {
+          totalBlocked: 0,
+          joinedAt: Date.now(),
+          lastActive: Date.now(),
+          referralCode: this.generateReferralCode(uid),
+          referralCount: 0,
+          weeklyEngagement: [0]
+        },
+        preferences: {
+          notifications: true,
+          autoUpdate: true,
+          theme: 'system',
+          language: navigator.language || 'en'
+        }
+      };
+      await setDoc(userRef, userProfile);
+    }
 
     // Send message to extension to update rules
     if (chrome?.runtime?.sendMessage) {
@@ -316,8 +349,13 @@ class AuthService {
 
   // Check and update weekly engagement for Tier 5
   async updateWeeklyEngagement(uid: string): Promise<void> {
-    const userDoc = await getDoc(doc(db, 'users', uid));
-    if (!userDoc.exists()) return;
+    const userRef = doc(db, 'users', uid);
+    const userDoc = await getDoc(userRef);
+    
+    if (!userDoc.exists()) {
+      console.log('User document does not exist, skipping weekly engagement update');
+      return;
+    }
 
     const userData = userDoc.data() as UserProfile;
     const weeklyEngagement = userData.stats.weeklyEngagement || [];
@@ -333,7 +371,7 @@ class AuthService {
       weeklyEngagement.push(today);
     }
 
-    await updateDoc(doc(db, 'users', uid), {
+    await updateDoc(userRef, {
       'stats.weeklyEngagement': weeklyEngagement,
       'stats.lastActive': serverTimestamp()
     });
