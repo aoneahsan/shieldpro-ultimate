@@ -169,6 +169,16 @@ export const ThemeManager: React.FC<ThemeManagerProps> = ({ currentTier }) => {
     loadThemeSettings();
   }, []);
 
+  useEffect(() => {
+    // Apply the loaded theme
+    if (selectedTheme && selectedTheme !== 'default') {
+      const theme = themes.find(t => t.id === selectedTheme);
+      if (theme && currentTier >= theme.requiredTier) {
+        applyThemeColors(theme.colors);
+      }
+    }
+  }, [selectedTheme, currentTier]);
+
   const loadThemeSettings = async () => {
     const storage = StorageManager.getInstance();
     const settings = await storage.getSettings();
@@ -189,8 +199,9 @@ export const ThemeManager: React.FC<ThemeManagerProps> = ({ currentTier }) => {
 
     setSelectedTheme(themeId);
     
+    // Save theme to storage
     const storage = StorageManager.getInstance();
-    await storage.setSettings({
+    await storage.updateSettings({
       theme: {
         id: themeId,
         colors: theme.colors,
@@ -199,42 +210,94 @@ export const ThemeManager: React.FC<ThemeManagerProps> = ({ currentTier }) => {
       }
     });
 
-    // Apply theme to extension UI
-    chrome.runtime.sendMessage({
-      action: 'applyTheme',
-      theme: theme.colors
-    });
-
-    // Apply to current page
-    if (theme.id === 'custom') {
-      applyThemeColors(customColors);
+    // Apply theme immediately
+    if (themeId === 'dark') {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
     } else {
-      applyThemeColors(theme.colors);
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', themeId);
+    }
+
+    // Apply color scheme
+    applyThemeColors(theme.colors);
+
+    // Notify other parts of the extension
+    try {
+      chrome.runtime.sendMessage({
+        action: 'applyTheme',
+        theme: {
+          id: themeId,
+          colors: theme.colors
+        }
+      });
+    } catch (error) {
+      console.log('Could not send theme message:', error);
     }
   };
 
   const applyThemeColors = (colors: any) => {
     const root = document.documentElement;
+    
+    // Apply CSS custom properties
     Object.entries(colors).forEach(([key, value]) => {
       if (typeof value === 'string') {
         root.style.setProperty(`--theme-${key}`, value);
+      }
+    });
+
+    // Apply specific styles based on theme
+    if (colors.background === '#1f2937' || colors.background === '#000000' || colors.background === '#18181b') {
+      // Dark themes
+      document.documentElement.classList.add('dark');
+      document.body.style.backgroundColor = colors.background;
+      document.body.style.color = colors.text;
+    } else if (colors.background && colors.background.includes('gradient')) {
+      // Gradient theme
+      document.body.style.background = colors.background;
+      document.body.style.color = colors.text;
+    } else {
+      // Light themes
+      document.documentElement.classList.remove('dark');
+      document.body.style.backgroundColor = colors.background;
+      document.body.style.color = colors.text;
+    }
+
+    // Apply primary color to key elements
+    const primaryElements = document.querySelectorAll('.text-primary-600, .bg-primary-600, .border-primary-500');
+    primaryElements.forEach(el => {
+      if (el.classList.contains('text-primary-600')) {
+        (el as HTMLElement).style.color = colors.primary;
+      }
+      if (el.classList.contains('bg-primary-600')) {
+        (el as HTMLElement).style.backgroundColor = colors.primary;
+      }
+      if (el.classList.contains('border-primary-500')) {
+        (el as HTMLElement).style.borderColor = colors.primary;
       }
     });
   };
 
   const handleFontSizeChange = async (size: string) => {
     setFontSize(size);
-    document.documentElement.style.setProperty('--font-size', 
-      size === 'small' ? '14px' : 
-      size === 'large' ? '18px' : '16px'
-    );
+    
+    // Apply font size immediately
+    const sizeMap = {
+      'small': '14px',
+      'medium': '16px', 
+      'large': '18px'
+    };
+    
+    document.documentElement.style.fontSize = sizeMap[size as keyof typeof sizeMap];
+    document.body.style.fontSize = sizeMap[size as keyof typeof sizeMap];
     
     const storage = StorageManager.getInstance();
-    await storage.setSettings({
+    await storage.updateSettings({
       theme: {
         id: selectedTheme,
         fontSize: size,
-        fontFamily
+        fontFamily,
+        colors: themes.find(t => t.id === selectedTheme)?.colors
       }
     });
   };
@@ -249,14 +312,17 @@ export const ThemeManager: React.FC<ThemeManagerProps> = ({ currentTier }) => {
       'dyslexic': 'OpenDyslexic, sans-serif'
     };
     
-    document.documentElement.style.setProperty('--font-family', fontMap[family]);
+    // Apply font family immediately
+    document.documentElement.style.fontFamily = fontMap[family];
+    document.body.style.fontFamily = fontMap[family];
     
     const storage = StorageManager.getInstance();
-    await storage.setSettings({
+    await storage.updateSettings({
       theme: {
         id: selectedTheme,
         fontSize,
-        fontFamily: family
+        fontFamily: family,
+        colors: themes.find(t => t.id === selectedTheme)?.colors
       }
     });
   };
