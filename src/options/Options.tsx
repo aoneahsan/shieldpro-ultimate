@@ -1038,41 +1038,41 @@ function SecuritySettings() {
 
       {/* Threat Statistics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+        <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg border border-red-200 dark:border-red-800">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-red-600 font-medium">Total Threats</p>
-              <p className="text-2xl font-bold text-red-900">{threatStats.totalThreats}</p>
+              <p className="text-2xl font-bold text-red-900 dark:text-red-100">{threatStats.totalThreats}</p>
             </div>
             <Shield className="w-8 h-8 text-red-500" />
           </div>
         </div>
 
-        <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+        <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg border border-orange-200 dark:border-orange-800">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-orange-600 font-medium">Malware Blocked</p>
-              <p className="text-2xl font-bold text-orange-900">{threatStats.malwareBlocked}</p>
+              <p className="text-2xl font-bold text-orange-900 dark:text-orange-100">{threatStats.malwareBlocked}</p>
             </div>
             <ShieldX className="w-8 h-8 text-orange-500" />
           </div>
         </div>
 
-        <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-yellow-600 font-medium">Phishing Blocked</p>
-              <p className="text-2xl font-bold text-yellow-900">{threatStats.phishingBlocked}</p>
+              <p className="text-2xl font-bold text-yellow-900 dark:text-yellow-100">{threatStats.phishingBlocked}</p>
             </div>
             <Lock className="w-8 h-8 text-yellow-500" />
           </div>
         </div>
 
-        <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+        <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg border border-purple-200 dark:border-purple-800">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-purple-600 font-medium">Cryptomining</p>
-              <p className="text-2xl font-bold text-purple-900">{threatStats.cryptominingBlocked}</p>
+              <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">{threatStats.cryptominingBlocked}</p>
             </div>
             <Zap className="w-8 h-8 text-purple-500" />
           </div>
@@ -1083,7 +1083,7 @@ function SecuritySettings() {
       <div className="space-y-4">
         <h3 className="text-lg font-medium text-gray-900 dark:text-white">Threat Protection</h3>
         
-        <label className="flex items-center justify-between p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200">
+        <label className="flex items-center justify-between p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
           <div>
             <p className="font-medium text-gray-900 dark:text-white">Malware Blocking</p>
             <p className="text-sm text-gray-500 dark:text-gray-400">Block known malicious domains and files</p>
@@ -1096,7 +1096,7 @@ function SecuritySettings() {
           />
         </label>
 
-        <label className="flex items-center justify-between p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200">
+        <label className="flex items-center justify-between p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
           <div>
             <p className="font-medium text-gray-900 dark:text-white">Phishing Protection</p>
             <p className="text-sm text-gray-500 dark:text-gray-400">Detect and block phishing attempts</p>
@@ -1109,7 +1109,7 @@ function SecuritySettings() {
           />
         </label>
 
-        <label className="flex items-center justify-between p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200">
+        <label className="flex items-center justify-between p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
           <div>
             <p className="font-medium text-gray-900 dark:text-white">Cryptomining Prevention</p>
             <p className="text-sm text-gray-500 dark:text-gray-400">Block cryptocurrency mining scripts</p>
@@ -1122,7 +1122,7 @@ function SecuritySettings() {
           />
         </label>
 
-        <label className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200">
+        <label className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
           <div>
             <p className="font-medium text-gray-900 dark:text-white">Advanced Threat Detection</p>
             <p className="text-sm text-gray-500 dark:text-gray-400">Use heuristic analysis for unknown threats</p>
@@ -1199,8 +1199,8 @@ function SecuritySettings() {
         </div>
 
         {threatStats.lastThreatDetected && (
-          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <p className="text-sm text-yellow-800">
+          <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+            <p className="text-sm text-yellow-800 dark:text-yellow-200">
               Last threat detected: {new Date(threatStats.lastThreatDetected).toLocaleString()}
             </p>
           </div>

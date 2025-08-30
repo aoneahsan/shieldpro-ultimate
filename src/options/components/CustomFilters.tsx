@@ -303,7 +303,7 @@ export const CustomFilters: React.FC<CustomFiltersProps> = ({ currentTier }) => 
 
       {/* Add Filter Form */}
       {showAddFilter && (
-        <div className="bg-white border rounded-lg p-6">
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
           <h3 className="text-lg font-semibold mb-4">Create New Filter</h3>
           
           <div className="grid grid-cols-2 gap-4">
@@ -393,7 +393,7 @@ export const CustomFilters: React.FC<CustomFiltersProps> = ({ currentTier }) => 
 
           {/* Schedule Settings */}
           {newFilter.isScheduled && (
-            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+            <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
               <h4 className="text-sm font-medium text-gray-700 mb-3">Schedule Settings</h4>
               
               <div className="space-y-3">
@@ -476,7 +476,7 @@ export const CustomFilters: React.FC<CustomFiltersProps> = ({ currentTier }) => 
       {/* Filters List */}
       <div className="space-y-3">
         {filters.length === 0 ? (
-          <div className="text-center py-12 bg-gray-50 rounded-lg">
+          <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg">
             <Filter className="w-12 h-12 text-gray-400 mx-auto mb-3" />
             <p className="text-gray-600">No custom filters yet</p>
             <p className="text-sm text-gray-500 mt-1">
@@ -485,7 +485,7 @@ export const CustomFilters: React.FC<CustomFiltersProps> = ({ currentTier }) => 
           </div>
         ) : (
           filters.map(filter => (
-            <div key={filter.id} className="bg-white border rounded-lg p-4">
+            <div key={filter.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center space-x-2">
@@ -569,7 +569,7 @@ export const CustomFilters: React.FC<CustomFiltersProps> = ({ currentTier }) => 
 
       {/* Stats */}
       {filters.length > 0 && (
-        <div className="bg-blue-50 rounded-lg p-4">
+        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <CheckCircle className="w-5 h-5 text-blue-600" />

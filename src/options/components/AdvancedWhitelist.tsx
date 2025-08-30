@@ -261,7 +261,7 @@ export const AdvancedWhitelist: React.FC<AdvancedWhitelistProps> = ({ currentTie
 
       {/* Add Entry Form */}
       {showAddEntry && (
-        <div className="bg-white border rounded-lg p-6">
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
           <h3 className="text-lg font-semibold mb-4">Add Whitelist Entry</h3>
           
           <div className="grid grid-cols-2 gap-4">
@@ -413,7 +413,7 @@ export const AdvancedWhitelist: React.FC<AdvancedWhitelistProps> = ({ currentTie
       {/* Whitelist Entries */}
       <div className="space-y-3">
         {filteredWhitelist.length === 0 ? (
-          <div className="text-center py-12 bg-gray-50 rounded-lg">
+          <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg">
             <Globe className="w-12 h-12 text-gray-400 mx-auto mb-3" />
             <p className="text-gray-600">No whitelist entries yet</p>
             <p className="text-sm text-gray-500 mt-1">
@@ -422,7 +422,7 @@ export const AdvancedWhitelist: React.FC<AdvancedWhitelistProps> = ({ currentTie
           </div>
         ) : (
           filteredWhitelist.map(entry => (
-            <div key={entry.id} className="bg-white border rounded-lg p-4">
+            <div key={entry.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center space-x-2">
@@ -509,7 +509,7 @@ export const AdvancedWhitelist: React.FC<AdvancedWhitelistProps> = ({ currentTie
 
       {/* Stats */}
       {whitelist.length > 0 && (
-        <div className="bg-green-50 rounded-lg p-4">
+        <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <Shield className="w-5 h-5 text-green-600" />

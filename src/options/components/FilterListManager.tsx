@@ -479,7 +479,7 @@ export const FilterListManager: React.FC<FilterListManagerProps> = ({ currentTie
 
       {/* Add List Form */}
       {showAddList && (
-        <div className="bg-white border rounded-lg p-6">
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
           <h3 className="text-lg font-semibold mb-4">Add Custom Filter List</h3>
           
           <div className="grid grid-cols-2 gap-4">
@@ -616,13 +616,13 @@ export const FilterListManager: React.FC<FilterListManagerProps> = ({ currentTie
       {/* Filter Lists */}
       <div className="space-y-3">
         {filteredLists.length === 0 ? (
-          <div className="text-center py-12 bg-gray-50 rounded-lg">
+          <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg">
             <Database className="w-12 h-12 text-gray-400 mx-auto mb-3" />
             <p className="text-gray-600">No filter lists found</p>
           </div>
         ) : (
           filteredLists.map(list => (
-            <div key={list.id} className="bg-white border rounded-lg p-4">
+            <div key={list.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center space-x-2">
@@ -713,7 +713,7 @@ export const FilterListManager: React.FC<FilterListManagerProps> = ({ currentTie
                   <button
                     onClick={() => updateFilterList(list.id)}
                     disabled={isUpdating === list.id}
-                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50"
+                    className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors disabled:opacity-50"
                     title="Update now"
                   >
                     <RefreshCw className={`w-4 h-4 ${isUpdating === list.id ? 'animate-spin' : ''}`} />
@@ -751,7 +751,7 @@ export const FilterListManager: React.FC<FilterListManagerProps> = ({ currentTie
           <h3 className="text-lg font-semibold mb-4">Available Community Lists</h3>
           <div className="space-y-3">
             {COMMUNITY_LISTS.filter(cl => !lists.find(l => l.id === cl.id)).map(list => (
-              <div key={list.id} className="bg-gray-50 border rounded-lg p-4">
+              <div key={list.id} className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center space-x-2">
@@ -781,7 +781,7 @@ export const FilterListManager: React.FC<FilterListManagerProps> = ({ currentTie
       )}
 
       {/* Stats */}
-      <div className="bg-purple-50 rounded-lg p-4">
+      <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
         <div className="grid grid-cols-3 gap-4">
           <div className="text-center">
             <div className="text-2xl font-bold text-purple-600">

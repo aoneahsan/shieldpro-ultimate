@@ -412,29 +412,29 @@ export const RegexPatternManager: React.FC<RegexPatternManagerProps> = ({ curren
 
       {/* Help Section */}
       {showHelp && (
-        <div className="bg-blue-50 rounded-lg p-4">
+        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
           <h3 className="font-semibold text-blue-900 mb-2">Regex Quick Reference</h3>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <p className="font-medium text-blue-800">Common Patterns:</p>
               <ul className="mt-1 space-y-1 text-blue-700">
-                <li><code className="bg-white px-1">.</code> - Any character</li>
-                <li><code className="bg-white px-1">*</code> - 0 or more</li>
-                <li><code className="bg-white px-1">+</code> - 1 or more</li>
-                <li><code className="bg-white px-1">?</code> - 0 or 1</li>
-                <li><code className="bg-white px-1">[abc]</code> - Character set</li>
-                <li><code className="bg-white px-1">^</code> - Start of string</li>
-                <li><code className="bg-white px-1">$</code> - End of string</li>
+                <li><code className="bg-white dark:bg-gray-700 px-1">.</code> - Any character</li>
+                <li><code className="bg-white dark:bg-gray-700 px-1">*</code> - 0 or more</li>
+                <li><code className="bg-white dark:bg-gray-700 px-1">+</code> - 1 or more</li>
+                <li><code className="bg-white dark:bg-gray-700 px-1">?</code> - 0 or 1</li>
+                <li><code className="bg-white dark:bg-gray-700 px-1">[abc]</code> - Character set</li>
+                <li><code className="bg-white dark:bg-gray-700 px-1">^</code> - Start of string</li>
+                <li><code className="bg-white dark:bg-gray-700 px-1">$</code> - End of string</li>
               </ul>
             </div>
             <div>
               <p className="font-medium text-blue-800">Flags:</p>
               <ul className="mt-1 space-y-1 text-blue-700">
-                <li><code className="bg-white px-1">g</code> - Global match</li>
-                <li><code className="bg-white px-1">i</code> - Case insensitive</li>
-                <li><code className="bg-white px-1">m</code> - Multiline</li>
-                <li><code className="bg-white px-1">s</code> - Dot matches newline</li>
-                <li><code className="bg-white px-1">u</code> - Unicode</li>
+                <li><code className="bg-white dark:bg-gray-700 px-1">g</code> - Global match</li>
+                <li><code className="bg-white dark:bg-gray-700 px-1">i</code> - Case insensitive</li>
+                <li><code className="bg-white dark:bg-gray-700 px-1">m</code> - Multiline</li>
+                <li><code className="bg-white dark:bg-gray-700 px-1">s</code> - Dot matches newline</li>
+                <li><code className="bg-white dark:bg-gray-700 px-1">u</code> - Unicode</li>
               </ul>
             </div>
           </div>
@@ -471,7 +471,7 @@ export const RegexPatternManager: React.FC<RegexPatternManagerProps> = ({ curren
       </div>
 
       {/* Pattern Tester */}
-      <div className="bg-purple-50 rounded-lg p-4">
+      <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
         <h3 className="text-sm font-semibold text-purple-900 mb-2">Test Patterns</h3>
         <div className="flex space-x-2">
           <input
@@ -500,7 +500,7 @@ export const RegexPatternManager: React.FC<RegexPatternManagerProps> = ({ curren
 
       {/* Add Pattern Form */}
       {showAddPattern && (
-        <div className="bg-white border rounded-lg p-6">
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
           <h3 className="text-lg font-semibold mb-4">Create Regex Pattern</h3>
 
           {/* Templates */}
@@ -680,7 +680,7 @@ export const RegexPatternManager: React.FC<RegexPatternManagerProps> = ({ curren
       {/* Patterns List */}
       <div className="space-y-3">
         {filteredPatterns.length === 0 ? (
-          <div className="text-center py-12 bg-gray-50 rounded-lg">
+          <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg">
             <Code className="w-12 h-12 text-gray-400 mx-auto mb-3" />
             <p className="text-gray-600">No regex patterns found</p>
             <p className="text-sm text-gray-500 mt-1">
@@ -689,7 +689,7 @@ export const RegexPatternManager: React.FC<RegexPatternManagerProps> = ({ curren
           </div>
         ) : (
           filteredPatterns.map(pattern => (
-            <div key={pattern.id} className="bg-white border rounded-lg p-4">
+            <div key={pattern.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center space-x-2">
@@ -731,7 +731,7 @@ export const RegexPatternManager: React.FC<RegexPatternManagerProps> = ({ curren
                     <p className="text-sm text-gray-600 mt-1">{pattern.description}</p>
                   )}
 
-                  <div className="mt-2 bg-gray-50 rounded p-2">
+                  <div className="mt-2 bg-gray-50 dark:bg-gray-700 rounded p-2">
                     <code className="text-xs text-gray-700 font-mono break-all">
                       /{pattern.pattern}/{pattern.flags}
                     </code>
