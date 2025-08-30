@@ -2,6 +2,7 @@ import { storage } from '../shared/utils/storage';
 import { TabState, UserTier, BlockingStats } from '../shared/types';
 import { earlyAdopterService } from '../shared/services/early-adopter.service';
 import { firebaseUserTracking } from '../shared/services/firebase-user-tracking.service';
+import './auth-handler'; // Import auth message handler
 
 console.warn('ShieldPro Ultimate - Background Service Worker Started');
 

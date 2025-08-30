@@ -179,7 +179,7 @@ class AuthService {
   }
 
   // Create user profile in Firestore
-  private async createUserProfile(user: User, referralCode?: string): Promise<void> {
+  private async createUserProfileInternal(user: User, referralCode?: string): Promise<void> {
     let uniqueReferralCode = this.generateReferralCode(user.uid);
     
     // Ensure referral code is unique
@@ -272,7 +272,7 @@ class AuthService {
         await updateProfile(user, { displayName });
       }
 
-      await this.createUserProfile(user, referralCode);
+      await this.createUserProfileInternal(user, referralCode);
       await sendEmailVerification(user);
 
       // Automatically upgrade to Tier 2 upon account creation
@@ -325,7 +325,7 @@ class AuthService {
       const docSnap = await getDoc(docRef);
       
       if (!docSnap.exists()) {
-        await this.createUserProfile(user);
+        await this.createUserProfileInternal(user);
         // Automatically upgrade to Tier 2 for social sign-ups
         await this.upgradeTier(user.uid, 2);
       }
@@ -516,6 +516,28 @@ class AuthService {
   // Get user profile
   getUserProfile(): UserProfile | null {
     return this.userProfile;
+  }
+
+  // Public wrapper for createUserProfile
+  async createUserProfile(user: User, referralCode?: string): Promise<void> {
+    return this.createUserProfileInternal(user, referralCode);
+  }
+
+  // Ensure user profile exists
+  async ensureUserProfile(user: User): Promise<void> {
+    if (!user) return;
+    
+    // Check if profile exists
+    const docRef = doc(db, 'users', user.uid);
+    const docSnap = await getDoc(docRef);
+    
+    if (!docSnap.exists()) {
+      // Create profile if it doesn't exist
+      await this.createUserProfileInternal(user);
+    } else {
+      // Load existing profile
+      await this.loadUserProfile(user.uid);
+    }
   }
 
   // Check if user is logged in

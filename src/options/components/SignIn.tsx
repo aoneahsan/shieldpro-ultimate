@@ -17,12 +17,21 @@ export const SignIn: React.FC = () => {
     try {
       setIsLoading(true);
       setMessage(null);
-      await authService.signInWithGoogle();
-      setMessage({ type: 'success', text: 'Successfully signed in with Google!' });
-      // Reload the page to show profile
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
+      
+      // Use message passing to background script for OAuth
+      const response = await chrome.runtime.sendMessage({ 
+        type: 'SIGN_IN_WITH_GOOGLE' 
+      });
+      
+      if (response.success) {
+        setMessage({ type: 'success', text: 'Successfully signed in with Google!' });
+        // Reload the page to show profile
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      } else {
+        setMessage({ type: 'error', text: response.error || 'Failed to sign in with Google' });
+      }
     } catch (error: any) {
       setMessage({ type: 'error', text: error.message || 'Failed to sign in with Google' });
     } finally {
@@ -42,18 +51,29 @@ export const SignIn: React.FC = () => {
       setIsLoading(true);
       setMessage(null);
 
-      if (isSignUp) {
-        await authService.signUp(email, password, displayName, referralCode);
-        setMessage({ type: 'success', text: 'Account created successfully! Please check your email to verify.' });
-      } else {
-        await authService.signIn(email, password);
-        setMessage({ type: 'success', text: 'Successfully signed in!' });
-      }
+      const response = await chrome.runtime.sendMessage({
+        type: isSignUp ? 'SIGN_UP_WITH_EMAIL' : 'SIGN_IN_WITH_EMAIL',
+        email,
+        password,
+        displayName: isSignUp ? displayName : undefined,
+        referralCode: isSignUp ? referralCode : undefined
+      });
 
-      // Reload the page to show profile
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
+      if (response.success) {
+        setMessage({ 
+          type: 'success', 
+          text: isSignUp 
+            ? 'Account created successfully! Please check your email to verify.' 
+            : 'Successfully signed in!' 
+        });
+        
+        // Reload the page to show profile
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+      } else {
+        setMessage({ type: 'error', text: response.error || 'Authentication failed' });
+      }
     } catch (error: any) {
       setMessage({ type: 'error', text: error.message || 'Authentication failed' });
     } finally {
@@ -69,8 +89,16 @@ export const SignIn: React.FC = () => {
 
     try {
       setIsLoading(true);
-      await authService.resetPassword(email);
-      setMessage({ type: 'success', text: 'Password reset email sent! Check your inbox.' });
+      const response = await chrome.runtime.sendMessage({
+        type: 'RESET_PASSWORD',
+        email
+      });
+      
+      if (response.success) {
+        setMessage({ type: 'success', text: 'Password reset email sent! Check your inbox.' });
+      } else {
+        setMessage({ type: 'error', text: response.error || 'Failed to send reset email' });
+      }
     } catch (error: any) {
       setMessage({ type: 'error', text: error.message || 'Failed to send reset email' });
     } finally {
