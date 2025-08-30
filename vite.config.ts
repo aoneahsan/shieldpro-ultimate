@@ -21,15 +21,13 @@ export default defineConfig(({ mode }) => {
 		plugins: [
 			// React with SWC for faster builds - FIXED FOR PRODUCTION
 			react({
-				jsxRuntime: 'automatic',
-				jsxImportSource: 'react',
+				jsxRuntime: isProd ? 'classic' : 'automatic',
+				jsxImportSource: isProd ? undefined : 'react',
 				jsxDev: false, // Force production JSX transform
-				fastRefresh: !isProd,
+				fastRefresh: false, // Disable fast refresh in production
 				// Ensure production mode
 				tsDecorators: true,
-				babel: {
-					plugins: isProd ? [['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }]] : []
-				}
+				babel: false // Disable babel to prevent JSX dev runtime
 			}),
 
 			// TypeScript path resolution
@@ -46,9 +44,13 @@ export default defineConfig(({ mode }) => {
 
 		// ESBuild configuration to prevent jsxDEV
 		esbuild: {
-			jsx: 'automatic',
+			jsx: 'transform',
+			jsxFactory: 'React.createElement',
+			jsxFragment: 'React.Fragment',
+			jsxInject: `import React from 'react'`,
 			minify: isProd,
 			drop: isProd ? ['console', 'debugger'] : [],
+			jsxSideEffects: false,
 		},
 		
 		// Build optimizations
