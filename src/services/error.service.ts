@@ -84,7 +84,7 @@ class ErrorService {
       if (stored.errorLog) {
         this.errorLog = stored.errorLog;
       }
-    } catch (_error) {
+    } catch (error) {
       console.error('Failed to load error log:', error);
     }
   }
@@ -96,7 +96,7 @@ class ErrorService {
         this.errorLog = this.errorLog.slice(-this.maxLogSize);
       }
       await chrome.storage.local.set({ errorLog: this.errorLog });
-    } catch (_error) {
+    } catch (error) {
       console.error('Failed to save error log:', error);
     }
   }
@@ -322,7 +322,7 @@ class ErrorService {
       const result = await operation();
       this.retryAttempts.delete(_errorCode);
       return result;
-    } catch (_error) {
+    } catch (error) {
       const errorDetails = this.handleError(error, errorCode);
       
       if (errorDetails.retryable && attempts < maxAttempts) {
@@ -376,7 +376,7 @@ class ErrorService {
       // Send to Firebase or bug tracking service
       console.log('Bug report:', _report);
       return { success: true };
-    } catch (_error) {
+    } catch (error) {
       this.handleError(error, 'BUG_REPORT');
       return { success: false };
     }

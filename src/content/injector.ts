@@ -48,7 +48,7 @@
           loadYouTubeBlocker();
         }
       }
-    } catch (_error) {
+    } catch (error) {
       console.error('ShieldPro: Failed to check settings', error);
     }
   }
@@ -62,10 +62,10 @@
   function hideElements() {
     if (!isEnabled || isWhitelisted) return;
     
-    COMMON_AD_SELECTORS.forEach(selector => {
+    COMMON_AD_SELECTORS.forEach(_selector => {
       try {
         const elements = document.querySelectorAll(_selector);
-        elements.forEach(element => {
+        elements.forEach(_element => {
           if (!hiddenElements.has(_element)) {
             (element as HTMLElement).style.display = 'none';
             hiddenElements.add(_element);
@@ -120,7 +120,7 @@
       '#gdpr-banner'
     ];
     
-    cookieSelectors.forEach(selector => {
+    cookieSelectors.forEach(_selector => {
       try {
         const elements = document.querySelectorAll(_selector);
         elements.forEach(el => el.remove());
@@ -155,7 +155,7 @@
     }
     
     // Show hidden elements
-    hiddenElements.forEach(element => {
+    hiddenElements.forEach(_element => {
       (element as HTMLElement).style.display = '';
     });
     hiddenElements.clear();

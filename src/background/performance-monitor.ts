@@ -65,7 +65,7 @@ export class PerformanceMonitor {
           this.metrics.overall.memoryUsage = usagePercent;
         });
       }
-    } catch (_error) {
+    } catch (error) {
       console.error('Failed to get memory usage:', error);
     }
   }

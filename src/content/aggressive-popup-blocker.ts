@@ -436,7 +436,7 @@ export class AggressivePopupBlocker {
       });
       
       // Remove suspicious event listeners from body and document
-      ['click', 'mousedown', 'mouseup', 'contextmenu'].forEach(eventType => {
+      ['click', 'mousedown', 'mouseup', 'contextmenu'].forEach(_eventType => {
         document.body.onclick = null;
         document.onclick = null;
       });
@@ -446,15 +446,15 @@ export class AggressivePopupBlocker {
     removeHandlers();
     
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', _removeHandlers);
+      document.addEventListener('DOMContentLoaded', removeHandlers);
     }
     
     // Also run periodically to catch dynamically added handlers
-    setInterval(_removeHandlers, 1000);
+    setInterval(removeHandlers, 1000);
   }
 
   private monitorDOMChanges() {
-    const observer = new MutationObserver((_mutations) => {
+    const observer = new MutationObserver((mutations) => {
       mutations.forEach(mutation => {
         mutation.addedNodes.forEach(node => {
           if (node.nodeType === 1) { // Element node

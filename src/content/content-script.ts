@@ -75,12 +75,12 @@ function applyBlockingRules(rules: BlockingRule[]) {
   }
 }
 
-chrome.storage.local.get(['enabled', 'tier'], (_data) => {
+chrome.storage.local.get(['enabled', 'tier'], (data) => {
   if (data.enabled) {
-    applyBlockingRules(_basicBlockingRules);
+    applyBlockingRules(basicBlockingRules);
     
     const observer = new MutationObserver(() => {
-      applyBlockingRules(_basicBlockingRules);
+      applyBlockingRules(basicBlockingRules);
     });
     
     observer.observe(document.body, {
@@ -92,9 +92,9 @@ chrome.storage.local.get(['enabled', 'tier'], (_data) => {
 
 document.addEventListener('DOMContentLoaded', () => {
   console.warn('DOM Content Loaded - Applying blocking rules');
-  chrome.storage.local.get(['enabled'], (_data) => {
+  chrome.storage.local.get(['enabled'], (data) => {
     if (data.enabled) {
-      applyBlockingRules(_basicBlockingRules);
+      applyBlockingRules(basicBlockingRules);
     }
   });
 });

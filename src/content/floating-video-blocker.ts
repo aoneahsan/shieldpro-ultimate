@@ -115,16 +115,16 @@ export class FloatingVideoBlocker {
       '.revcontent-video-float'
     ];
 
-    selectors.forEach(selector => {
+    selectors.forEach(_selector => {
       try {
         const elements = document.querySelectorAll(_selector);
-        elements.forEach(element => {
+        elements.forEach(_element => {
           if (!this.processedElements.has(_element) && this.isFloatingVideo(_element)) {
             this.processedElements.add(_element);
             this.removeFloatingVideo(_element);
           }
         });
-      } catch (__e) {
+      } catch (_e) {
         // Ignore selector errors
       }
     });
@@ -165,7 +165,7 @@ export class FloatingVideoBlocker {
     // Find all videos and iframes
     const mediaElements = document.querySelectorAll('video, iframe');
     
-    mediaElements.forEach(element => {
+    mediaElements.forEach(_element => {
       const parent = element.parentElement;
       if (parent && !this.processedElements.has(_parent)) {
         if (this.isFloatingVideo(_parent)) {

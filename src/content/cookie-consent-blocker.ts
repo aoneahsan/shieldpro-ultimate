@@ -94,19 +94,19 @@ export class CookieConsentBlocker {
 
     rejectSelectors.forEach(selector => {
       try {
-        const elements = document.querySelectorAll(_selector);
+        const elements = document.querySelectorAll(selector);
         elements.forEach(element => {
-          if (!this.processedElements.has(_element)) {
-            this.processedElements.add(_element);
+          if (!this.processedElements.has(element)) {
+            this.processedElements.add(element);
             
             // Check if it's actually a reject button
             const text = element.textContent?.toLowerCase() || '';
             const rejectKeywords = ['reject', 'decline', 'deny', 'refuse', 'no thanks', 'necessary', 'essential', 'dismiss'];
             
-            if (rejectKeywords.some(keyword => text.includes(_keyword))) {
+            if (rejectKeywords.some(keyword => text.includes(keyword))) {
               // Click the reject button
               (element as HTMLElement).click();
-              console.warn('ShieldPro: Auto-rejected cookies via', _selector);
+              console.warn('ShieldPro: Auto-rejected cookies via', selector);
               
               // Track rejection
               chrome.runtime.sendMessage({
@@ -117,7 +117,9 @@ export class CookieConsentBlocker {
             }
           }
         });
-      } catch (_e) {}
+      } catch (_e) {
+        // Silently ignore errors
+      }
     });
 
     // Handle "only necessary cookies" options
@@ -140,7 +142,7 @@ export class CookieConsentBlocker {
 
     checkboxSelectors.forEach(selector => {
       try {
-        const checkboxes = document.querySelectorAll(_selector);
+        const checkboxes = document.querySelectorAll(selector);
         checkboxes.forEach(checkbox => {
           if ((checkbox as HTMLInputElement).checked) {
             (checkbox as HTMLInputElement).checked = false;
@@ -148,7 +150,9 @@ export class CookieConsentBlocker {
             checkbox.dispatchEvent(new Event('change', { bubbles: true }));
           }
         });
-      } catch (_e) {}
+      } catch (_e) {
+        // Silently ignore errors
+      }
     });
 
     // Click save/confirm after unchecking
@@ -163,12 +167,14 @@ export class CookieConsentBlocker {
     setTimeout(() => {
       saveSelectors.forEach(selector => {
         try {
-          const saveButton = document.querySelector(_selector) as HTMLElement;
-          if (saveButton && !this.processedElements.has(_saveButton)) {
+          const saveButton = document.querySelector(selector) as HTMLElement;
+          if (saveButton && !this.processedElements.has(saveButton)) {
             saveButton.click();
-            this.processedElements.add(_saveButton);
+            this.processedElements.add(saveButton);
           }
-        } catch (_e) {}
+        } catch (_e) {
+        // Silently ignore errors
+      }
       });
     }, 500);
   }
@@ -221,13 +227,13 @@ export class CookieConsentBlocker {
 
     bannerSelectors.forEach(selector => {
       try {
-        const elements = document.querySelectorAll(_selector);
+        const elements = document.querySelectorAll(selector);
         elements.forEach(element => {
           // Check if it's likely a cookie banner
           const text = element.textContent?.toLowerCase() || '';
           const cookieKeywords = ['cookie', 'consent', 'privacy', 'gdpr', 'data protection', 'personalised ads'];
           
-          if (cookieKeywords.some(keyword => text.includes(_keyword))) {
+          if (cookieKeywords.some(keyword => text.includes(keyword))) {
             (element as HTMLElement).style.display = 'none';
             element.remove();
             
@@ -240,7 +246,9 @@ export class CookieConsentBlocker {
             document.documentElement.style.overflow = '';
           }
         });
-      } catch (_e) {}
+      } catch (_e) {
+        // Silently ignore errors
+      }
     });
   }
 
@@ -271,7 +279,7 @@ export class CookieConsentBlocker {
 
         // Didomi
         if (window.didomiOnReady) {
-          window.didomiOnReady.push(function(_Didomi) {
+          window.didomiOnReady.push(function(Didomi) {
             Didomi.setUserDisagreeToAll();
             console.warn('ShieldPro: Didomi cookies rejected');
           });

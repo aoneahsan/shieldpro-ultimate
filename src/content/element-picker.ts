@@ -20,7 +20,7 @@ class ElementPicker {
   }
 
   private setupMessageListener() {
-    chrome.runtime.onMessage.addListener((_request, sender, _sendResponse) => {
+    chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
       if (request.action === 'activateElementPicker') {
         this.activate();
         sendResponse({ success: true });
@@ -119,24 +119,24 @@ class ElementPicker {
   }
 
   private attachEventListeners() {
-    this.mouseoverHandler = (e: MouseEvent) => this.handleMouseOver(_e);
-    this.clickHandler = (e: MouseEvent) => this.handleClick(_e);
-    this.keydownHandler = (e: KeyboardEvent) => this.handleKeyDown(_e);
+    this.mouseoverHandler = (e: MouseEvent) => this.handleMouseOver(e);
+    this.clickHandler = (e: MouseEvent) => this.handleClick(e);
+    this.keydownHandler = (e: KeyboardEvent) => this.handleKeyDown(e);
     
-    document.addEventListener('mouseover', this.mouseoverHandler, _true);
-    document.addEventListener('click', this.clickHandler, _true);
-    document.addEventListener('keydown', this.keydownHandler, _true);
+    document.addEventListener('mouseover', this.mouseoverHandler, true);
+    document.addEventListener('click', this.clickHandler, true);
+    document.addEventListener('keydown', this.keydownHandler, true);
   }
 
   private removeEventListeners() {
     if (this.mouseoverHandler) {
-      document.removeEventListener('mouseover', this.mouseoverHandler, _true);
+      document.removeEventListener('mouseover', this.mouseoverHandler, true);
     }
     if (this.clickHandler) {
-      document.removeEventListener('click', this.clickHandler, _true);
+      document.removeEventListener('click', this.clickHandler, true);
     }
     if (this.keydownHandler) {
-      document.removeEventListener('keydown', this.keydownHandler, _true);
+      document.removeEventListener('keydown', this.keydownHandler, true);
     }
   }
 
@@ -322,7 +322,7 @@ class ElementPicker {
           elements.forEach(el => {
             (el as HTMLElement).style.display = 'none';
           });
-        } catch (_error) {
+        } catch (error) {
           console.error('Error applying filter:', filter.selector, error);
         }
       }

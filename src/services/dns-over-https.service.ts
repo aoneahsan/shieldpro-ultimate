@@ -216,7 +216,7 @@ export class DNSOverHTTPSService {
       }
 
       return response;
-    } catch (_error) {
+    } catch (error) {
       query.error = error instanceof Error ? error.message : 'Unknown error';
       query.duration = Date.now() - startTime;
 
@@ -368,7 +368,7 @@ export class DNSOverHTTPSService {
         success: response.Status === 0 && response.Answer && response.Answer.length > 0,
         latency
       };
-    } catch (_error) {
+    } catch (error) {
       return {
         success: false,
         latency: Date.now() - startTime,

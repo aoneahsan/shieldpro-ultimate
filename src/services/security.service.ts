@@ -131,7 +131,7 @@ export class SecurityService {
       }
 
       return null;
-    } catch (_error) {
+    } catch (error) {
       console.error('Error checking URL:', error);
       return null;
     }
@@ -153,7 +153,7 @@ export class SecurityService {
         await chrome.tabs.update(_tabId, {
           url: chrome.runtime.getURL(`/blocked.html?reason=${threat.type}&url=${encodeURIComponent(threat.url)}`)
         });
-      } catch (_error) {
+      } catch (error) {
         console.error('Failed to redirect blocked page:', error);
       }
     }
@@ -291,7 +291,7 @@ export class SecurityService {
       });
 
       console.log('Security database updated successfully');
-    } catch (_error) {
+    } catch (error) {
       console.error('Failed to update security database:', error);
     }
   }

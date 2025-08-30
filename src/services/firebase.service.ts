@@ -296,7 +296,7 @@ class FirebaseService {
       }
 
       return true;
-    } catch (_error) {
+    } catch (error) {
       console.error('Failed to apply referral code:', error);
       return false;
     }

@@ -298,11 +298,11 @@ class ContentScriptManager {
         
         // Apply regex to current page content
         if (pattern.category === 'content') {
-          this.applyContentRegex(_regex, pattern.action);
+          this.applyContentRegex(regex, pattern.action);
         } else if (pattern.category === 'url') {
-          this.applyUrlRegex(_regex, pattern.action);
+          this.applyUrlRegex(regex, pattern.action);
         }
-      } catch (_error) {
+      } catch (error) {
         console.error('Invalid regex pattern:', pattern.pattern);
       }
     });
@@ -338,7 +338,7 @@ class ContentScriptManager {
   }
 
   private listenForTierUpdates() {
-    chrome.runtime.onMessage.addListener((_request, sender, _sendResponse) => {
+    chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
       if (request.action === 'tierUpdated') {
         this.currentTier = request.tier;
         this.initialize(); // Reinitialize with new tier
@@ -401,7 +401,7 @@ ytd-rich-item-renderer:has(ytd-in-feed-ad-layout-renderer) { display: none !impo
 }
 
 // Initialize content script manager
-const contentManager = new ContentScriptManager();
+new ContentScriptManager();
 
 // Report to background script when ads are blocked
 let blockedCount = 0;
@@ -432,7 +432,7 @@ if (document.body) {
   // If body is not ready yet, wait for it
   const waitForBody = setInterval(() => {
     if (document.body) {
-      clearInterval(_waitForBody);
+      clearInterval(waitForBody);
       observer.observe(document.body, {
         childList: true,
         subtree: true

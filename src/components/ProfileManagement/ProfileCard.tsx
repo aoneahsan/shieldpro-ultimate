@@ -75,9 +75,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
 
   if (!profile) return null;
 
-  const initials = profile.displayName
-    ? profile.displayName.split(' ').map(n => n[0]).join('').toUpperCase()
-    : profile.email[0].toUpperCase();
+  // Removed unused initials variable - using User icon instead in AvatarFallback
 
   return (
     <Card>

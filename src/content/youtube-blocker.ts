@@ -140,7 +140,7 @@ class YouTubeAdBlocker {
 
   private removeAds(): void {
     // Remove all types of ads
-    Object.values(this.adSelectors).flat().forEach(selector => {
+    Object.values(this.adSelectors).flat().forEach(_selector => {
       const elements = document.querySelectorAll(_selector);
       elements.forEach(el => {
         if (_el) {

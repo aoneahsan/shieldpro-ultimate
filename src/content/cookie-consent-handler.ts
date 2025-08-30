@@ -158,7 +158,7 @@ export class CookieConsentHandler {
       if (selector.includes(':contains')) {
         const [baseSelector, text] = selector.split(':contains');
         const cleanText = text.replace(/[()'"]/g, '');
-        const elements = document.querySelectorAll(_baseSelector);
+        const elements = document.querySelectorAll(baseSelector);
         
         for (const element of elements) {
           if (element.textContent?.toLowerCase().includes(cleanText.toLowerCase())) {
@@ -186,7 +186,7 @@ export class CookieConsentHandler {
         bubbles: true,
         cancelable: true
       });
-      element.dispatchEvent(_clickEvent);
+      element.dispatchEvent(clickEvent);
       
       // Save that we've rejected cookies for this domain
       this.saveRejectedDomain(window.location.hostname);
@@ -202,7 +202,7 @@ export class CookieConsentHandler {
       this.stopObserver();
       
       console.warn(`ShieldPro: Auto-rejected cookies via ${platform}`);
-    } catch (_error) {
+    } catch (error) {
       console.error('Failed to reject cookies:', error);
     }
   }

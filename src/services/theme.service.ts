@@ -378,7 +378,7 @@ class ThemeService {
         action: 'broadcastTheme',
         theme
       });
-    } catch (_error) {
+    } catch (error) {
       console.log('Could not broadcast theme:', error);
     }
 

@@ -166,15 +166,15 @@ class ImageSwapper {
       'iframe[src=""]'
     ];
 
-    adSelectors.forEach(selector => {
+    adSelectors.forEach(_selector => {
       try {
         const elements = document.querySelectorAll(_selector);
-        elements.forEach(element => {
+        elements.forEach(_element => {
           if (element instanceof HTMLElement && this.shouldReplaceElement(_element)) {
             this.replaceWithImage(_element);
           }
         });
-      } catch (_error) {
+      } catch (error) {
         console.error('Error with selector:', _selector, error);
       }
     });
@@ -187,7 +187,7 @@ class ImageSwapper {
     // Look for elements that were likely hidden by ad blocking
     const allElements = document.querySelectorAll('div, _iframe, ins');
     
-    allElements.forEach(element => {
+    allElements.forEach(_element => {
       if (element instanceof HTMLElement) {
         const computed = window.getComputedStyle(_element);
         const rect = element.getBoundingClientRect();

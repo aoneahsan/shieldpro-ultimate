@@ -3,7 +3,7 @@
  * Real-time monitoring and logging of network requests
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   Network, 
   ShieldX, 
@@ -121,13 +121,13 @@ export const NetworkLogger: React.FC<NetworkLoggerProps> = () => {
         // Remove listeners
       }
     };
-  }, []); // Empty dependency array for mount only
+  }, [startNetworkMonitoring]); // Add startNetworkMonitoring as dependency
 
   useEffect(() => {
     if (isRecording) {
       startNetworkMonitoring();
     }
-  }, [isRecording]); // Re-run when isRecording changes
+  }, [isRecording, startNetworkMonitoring]); // Re-run when isRecording or startNetworkMonitoring changes
 
   useEffect(() => {
     if (autoScroll && requestsEndRef.current) {
@@ -136,7 +136,7 @@ export const NetworkLogger: React.FC<NetworkLoggerProps> = () => {
   }, [requests, autoScroll]);
 
 
-  const startNetworkMonitoring = () => {
+  const startNetworkMonitoring = useCallback(() => {
     // Listen for messages from background script about network events
     chrome.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
       if (message.type === 'networkRequest') {
@@ -146,7 +146,7 @@ export const NetworkLogger: React.FC<NetworkLoggerProps> = () => {
 
     // Send message to background script to start monitoring
     chrome.runtime.sendMessage({ action: 'startNetworkMonitoring' });
-  };
+  }, []);
 
   const stopNetworkMonitoring = () => {
     chrome.runtime.sendMessage({ action: 'stopNetworkMonitoring' });

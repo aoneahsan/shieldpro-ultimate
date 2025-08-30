@@ -138,7 +138,7 @@ export class YouTubeAdBlockerV2 {
   private removeExistingAds(): void {
     // Process all ad categories
     Object.entries(this.adSelectors).forEach(([category, selectors]) => {
-      selectors.forEach(selector => {
+      selectors.forEach(_selector => {
         this.removeAdElements(_selector, category);
       });
     });
@@ -148,7 +148,7 @@ export class YouTubeAdBlockerV2 {
     try {
       const elements = document.querySelectorAll(_selector);
       
-      elements.forEach(element => {
+      elements.forEach(_element => {
         // Safety check - never block essential elements
         if (this.isSafeElement(_element)) return;
         
@@ -165,7 +165,7 @@ export class YouTubeAdBlockerV2 {
       if (elements.length > 0) {
         console.warn(`🚫 Blocked ${elements.length} ${category} ad(_s)`);
       }
-    } catch (_error) {
+    } catch (error) {
       // Fail silently to avoid breaking the page
       console.debug(`Error removing ${selector}:`, error);
     }
@@ -211,7 +211,7 @@ export class YouTubeAdBlockerV2 {
         element.style.display = 'none';
         element.remove();
       }
-    } catch (_error) {
+    } catch (error) {
       console.debug('Safe removal failed:', error);
     }
   }
@@ -270,7 +270,7 @@ export class YouTubeAdBlockerV2 {
   }
 
   private checkForSkipButton(): void {
-    this.skipButtonSelectors.forEach(selector => {
+    this.skipButtonSelectors.forEach(_selector => {
       const skipButton = document.querySelector(_selector) as HTMLElement;
       
       if (skipButton && skipButton.offsetParent !== null) {

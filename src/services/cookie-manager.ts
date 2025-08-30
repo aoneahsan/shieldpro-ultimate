@@ -246,7 +246,7 @@ export class CookieManager {
         url: `http${cookie.secure ? 's' : ''}://${cookie.domain}${cookie.path}`,
         name: cookie.name
       });
-    } catch (_error) {
+    } catch (error) {
       console.error('Failed to block cookie:', error);
     }
   }
@@ -265,7 +265,7 @@ export class CookieManager {
           sameSite: cookie.sameSite as any,
           // Remove expiration to make it session-only
         });
-      } catch (_error) {
+      } catch (error) {
         console.error('Failed to make cookie session-only:', error);
       }
     }
@@ -285,7 +285,7 @@ export class CookieManager {
           sameSite: cookie.sameSite as any,
           expirationDate: cookie.expirationDate,
         });
-      } catch (_error) {
+      } catch (error) {
         console.error('Failed to make cookie secure-only:', error);
       }
     }
