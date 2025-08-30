@@ -112,7 +112,7 @@ export const HeaderLayout: React.FC<LayoutProps> = ({ tabs, activeTab, onTabChan
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto p-6">
+      <main className="p-6">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
           {children}
         </div>

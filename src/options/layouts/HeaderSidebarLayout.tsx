@@ -206,10 +206,8 @@ export const HeaderSidebarLayout: React.FC<LayoutProps> = ({ tabs, activeTab, on
 
         {/* Main Content */}
         <main className="flex-1 p-6">
-          <div className="max-w-7xl mx-auto">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-              {children}
-            </div>
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+            {children}
           </div>
         </main>
       </div>

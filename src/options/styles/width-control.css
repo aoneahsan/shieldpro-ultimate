@@ -1,0 +1,68 @@
+/* Custom slider styles for width control */
+.slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  outline: none;
+  transition: opacity 0.2s;
+}
+
+.slider:hover {
+  opacity: 0.9;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #3b82f6;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s;
+}
+
+.slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.5);
+}
+
+.slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #3b82f6;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s;
+  border: none;
+}
+
+.slider::-moz-range-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.5);
+}
+
+/* Dark mode adjustments */
+.dark .slider {
+  background: linear-gradient(to right, rgb(59, 130, 246) 0%, rgb(59, 130, 246) var(--progress), rgb(55, 65, 81) var(--progress), rgb(55, 65, 81) 100%);
+}
+
+.dark .slider::-webkit-slider-thumb {
+  background: #60a5fa;
+}
+
+.dark .slider::-moz-range-thumb {
+  background: #60a5fa;
+}
+
+/* Responsive adjustments for width control */
+@media (max-width: 768px) {
+  /* On mobile, always use full width */
+  [data-width-control] {
+    max-width: 100% !important;
+  }
+}

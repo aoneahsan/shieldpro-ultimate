@@ -13,7 +13,9 @@ import { ImageSwap } from './components/ImageSwap';
 import { BackupSync } from './components/BackupSync';
 import { StorageManager } from '../shared/utils/storage';
 import { TabsLayout, SidebarLayout, HeaderLayout, HeaderSidebarLayout } from './layouts';
+import './styles/width-control.css';
 import { LayoutSwitcher } from './components/LayoutSwitcher';
+import { WidthControl } from './components/WidthControl';
 import type { LayoutType, TabItem } from './layouts/types';
 
 function Options() {
@@ -29,11 +31,20 @@ function Options() {
   const [isEarlyAdopter, setIsEarlyAdopter] = useState(false);
   const [userNumber, setUserNumber] = useState(0);
   const [layoutType, setLayoutType] = useState<LayoutType>('tabs');
+  const [contentWidth, setContentWidth] = useState<string>('wide');
 
   useEffect(() => {
     loadCurrentTier();
     checkEarlyAdopterStatus();
     loadLayoutPreference();
+    loadWidthPreference();
+    
+    // Listen for window resize to adjust width on mobile
+    const handleResize = () => {
+      // Force re-render on resize to update width
+      setContentWidth(prev => prev);
+    };
+    window.addEventListener('resize', handleResize);
     
     // Handle browser back/forward navigation and hash changes
     const handleNavigation = () => {
@@ -50,6 +61,7 @@ function Options() {
     return () => {
       window.removeEventListener('popstate', handleNavigation);
       window.removeEventListener('hashchange', handleNavigation);
+      window.removeEventListener('resize', handleResize);
     };
   }, []);
 
@@ -69,6 +81,47 @@ function Options() {
   const handleLayoutChange = async (layout: LayoutType) => {
     setLayoutType(layout);
     await chrome.storage.local.set({ optionsLayoutType: layout });
+  };
+
+  const loadWidthPreference = async () => {
+    const result = await chrome.storage.local.get(['optionsContentWidth']);
+    if (result.optionsContentWidth) {
+      setContentWidth(result.optionsContentWidth);
+    } else {
+      // Set default based on screen resolution
+      const screenWidth = window.screen.width;
+      const screenHeight = window.screen.height;
+      if (screenWidth < 1920 || screenHeight < 1080) {
+        setContentWidth('wide'); // 80% for smaller screens
+      } else {
+        setContentWidth('standard'); // 70% for larger screens
+      }
+    }
+  };
+
+  const handleWidthChange = async (width: string) => {
+    setContentWidth(width);
+    await chrome.storage.local.set({ optionsContentWidth: width });
+  };
+
+  // Calculate actual width percentage
+  const getContentWidthStyle = () => {
+    // On mobile devices, always use full width
+    if (window.innerWidth < 768) {
+      return '100%';
+    }
+    
+    if (contentWidth.startsWith('custom-')) {
+      return `${contentWidth.replace('custom-', '')}%`;
+    }
+    const widthMap: Record<string, string> = {
+      'full': '100%',
+      'extra-wide': '90%',
+      'wide': '80%',
+      'standard': '70%',
+      'compact': '60%'
+    };
+    return widthMap[contentWidth] || '80%';
   };
 
   const checkEarlyAdopterStatus = async () => {
@@ -136,6 +189,9 @@ function Options() {
             <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
               <LayoutSwitcher currentLayout={layoutType} onLayoutChange={handleLayoutChange} />
             </div>
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+              <WidthControl currentWidth={contentWidth} onWidthChange={handleWidthChange} />
+            </div>
           </div>
         )}
         {activeTab === 'filters' && <FilterSettings />}
@@ -169,7 +225,13 @@ function Options() {
       {/* Early Adopter Banner */}
       {isEarlyAdopter && userNumber > 0 && (
         <div className="bg-gradient-to-r from-purple-600 via-pink-500 to-orange-500 text-white">
-          <div className="max-w-7xl mx-auto px-6 py-4">
+          <div 
+            className="mx-auto px-6 py-4 transition-all duration-300"
+            style={{ 
+              maxWidth: getContentWidthStyle(),
+              width: '100%'
+            }}
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <Sparkles className="w-6 h-6" />
@@ -197,7 +259,14 @@ function Options() {
         </div>
       )}
       
-      <div className="max-w-7xl mx-auto p-6">
+      <div 
+        className="mx-auto p-6 transition-all duration-300"
+        style={{ 
+          maxWidth: getContentWidthStyle(),
+          width: '100%'
+        }}
+        data-width-control
+      >
         <div className="flex items-center space-x-4 mb-8">
           <Shield className="w-10 h-10 text-primary-600" />
           <div>
