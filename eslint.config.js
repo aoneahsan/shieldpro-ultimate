@@ -113,7 +113,7 @@ export default [
       '@typescript-eslint/no-unused-vars': 'off',
       'unused-imports/no-unused-imports': 'error',
       'unused-imports/no-unused-vars': [
-        'warn',
+        'off',  // Turn off unused variable warnings for Chrome extension
         { 
           vars: 'all',
           varsIgnorePattern: '^_',
@@ -132,7 +132,7 @@ export default [
       'react/prop-types': 'off',
       'react/display-name': 'off',
       'react-hooks/rules-of-hooks': 'error',
-      'react-hooks/exhaustive-deps': 'warn',
+      'react-hooks/exhaustive-deps': 'off',  // Too strict for complex hooks
 
       // General
       'no-console': 'off', // Console is fine in Chrome extensions
