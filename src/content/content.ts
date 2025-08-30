@@ -30,7 +30,7 @@ class ContentScriptManager {
     this.privacyProtector = new PrivacyProtector();
     this.cookieConsentHandler = new CookieConsentHandler();
     this.floatingVideoBlocker = new FloatingVideoBlocker();
-    
+
     this.initialize();
   }
 
@@ -62,13 +62,13 @@ class ContentScriptManager {
     // Basic ad blocking (handled by declarativeNetRequest)
     // Popup blocking
     this.popupBlocker.init();
-    
+
     // Cookie consent auto-rejection (FREE - competitors charge $40/year!)
     this.cookieConsentHandler.init();
-    
+
     // Floating video blocking (FREE - AdBlock Plus Premium feature!)
     this.floatingVideoBlocker.init();
-    
+
     // Basic element hiding
     this.injectBasicStyles();
   }
@@ -78,7 +78,7 @@ class ContentScriptManager {
     if (window.location.hostname.includes('youtube.com')) {
       // Inject YouTube-specific CSS
       this.injectYouTubeStyles();
-      
+
       this.youtubeBlocker = new YouTubeAdBlockerV2();
       // Initialize after DOM is ready
       if (document.readyState === 'loading') {
@@ -97,19 +97,21 @@ class ContentScriptManager {
   private initializeTier3() {
     // Enable element picker
     this.elementPicker.enable();
-    
+
     // Load custom filters
     this.loadCustomFilters();
-    
+
     // Image swap feature is initialized automatically through imageSwapper
     // It loads its own settings from storage
-    console.warn('ShieldPro Ultimate - Tier 3 features enabled (Element Picker, Custom Filters, Image Swap)');
+    console.warn(
+      'ShieldPro Ultimate - Tier 3 features enabled (Element Picker, Custom Filters, Image Swap)'
+    );
   }
 
   private initializeTier4() {
     // Enhanced privacy features
     this.privacyProtector.enableAdvancedProtection();
-    
+
     // Load regex patterns
     this.loadRegexPatterns();
   }
@@ -257,15 +259,15 @@ class ContentScriptManager {
         display: none !important;
       }
     `;
-    
+
     // Inject style as early as possible
     if (document.head) {
-      document.head.insertBefore(_style, document.head.firstChild);
+      document.head.insertBefore(style, document.head.firstChild);
     } else {
       // If head doesn't exist yet, wait for it
       const observer = new MutationObserver(() => {
         if (document.head) {
-          document.head.insertBefore(_style, document.head.firstChild);
+          document.head.insertBefore(style, document.head.firstChild);
           observer.disconnect();
         }
       });
@@ -276,7 +278,7 @@ class ContentScriptManager {
   private async loadCustomFilters() {
     const result = await chrome.storage.local.get(['customFilters']);
     const filters = result.customFilters || [];
-    
+
     if (filters.length > 0) {
       const style = document.createElement('style');
       style.id = 'shieldpro-custom-filters';
@@ -284,28 +286,30 @@ class ContentScriptManager {
         .filter((f: any) => f.enabled)
         .map((f: any) => `${f.selector} { display: none !important; }`)
         .join('\n');
-      document.head.appendChild(_style);
+      document.head.appendChild(style);
     }
   }
 
   private async loadRegexPatterns() {
     const result = await chrome.storage.local.get(['regexPatterns']);
     const patterns = result.regexPatterns || [];
-    
-    patterns.filter((p: any) => p.enabled).forEach((pattern: any) => {
-      try {
-        const regex = new RegExp(pattern.pattern, pattern.flags);
-        
-        // Apply regex to current page content
-        if (pattern.category === 'content') {
-          this.applyContentRegex(regex, pattern.action);
-        } else if (pattern.category === 'url') {
-          this.applyUrlRegex(regex, pattern.action);
+
+    patterns
+      .filter((p: any) => p.enabled)
+      .forEach((pattern: any) => {
+        try {
+          const regex = new RegExp(pattern.pattern, pattern.flags);
+
+          // Apply regex to current page content
+          if (pattern.category === 'content') {
+            this.applyContentRegex(regex, pattern.action);
+          } else if (pattern.category === 'url') {
+            this.applyUrlRegex(regex, pattern.action);
+          }
+        } catch {
+          console.error('Invalid regex pattern:', pattern.pattern);
         }
-      } catch (error) {
-        console.error('Invalid regex pattern:', pattern.pattern);
-      }
-    });
+      });
   }
 
   private applyContentRegex(regex: RegExp, action: string) {
@@ -327,7 +331,7 @@ class ContentScriptManager {
 
   private applyUrlRegex(regex: RegExp, action: string) {
     // Check all links and iframes
-    document.querySelectorAll('a[href], iframe[src]').forEach(element => {
+    document.querySelectorAll('a[href], iframe[src]').forEach((element) => {
       const url = element.getAttribute('href') || element.getAttribute('src');
       if (url && regex.test(url)) {
         if (action === 'block') {
@@ -387,11 +391,11 @@ ytd-rich-item-renderer:has(ytd-in-feed-ad-layout-renderer) { display: none !impo
 #movie_player, .html5-video-container, .video-stream, .ytp-chrome-bottom,
 .ytp-chrome-top, .ytp-progress-bar-container { display: block !important; visibility: visible !important; }
     `;
-    
+
     const style = document.createElement('style');
     style.id = 'shieldpro-youtube-blocker';
     style.textContent = youtubeCSS;
-    document.head.appendChild(_style);
+    document.head.appendChild(style);
   }
 
   // Public method to get blocked count
@@ -410,15 +414,17 @@ const observer = new MutationObserver(() => {
   if (hiddenElements.length > blockedCount) {
     const newBlocks = hiddenElements.length - blockedCount;
     blockedCount = hiddenElements.length;
-    
-    chrome.runtime.sendMessage({
-      action: 'adBlocked',
-      count: newBlocks,
-      domain: window.location.hostname,
-      category: 'ads'
-    }).catch(() => {
-      // Ignore errors if extension context is invalidated
-    });
+
+    chrome.runtime
+      .sendMessage({
+        action: 'adBlocked',
+        count: newBlocks,
+        domain: window.location.hostname,
+        category: 'ads',
+      })
+      .catch(() => {
+        // Ignore errors if extension context is invalidated
+      });
   }
 });
 
@@ -426,7 +432,7 @@ const observer = new MutationObserver(() => {
 if (document.body) {
   observer.observe(document.body, {
     childList: true,
-    subtree: true
+    subtree: true,
   });
 } else {
   // If body is not ready yet, wait for it
@@ -435,7 +441,7 @@ if (document.body) {
       clearInterval(waitForBody);
       observer.observe(document.body, {
         childList: true,
-        subtree: true
+        subtree: true,
       });
     }
   }, 100);

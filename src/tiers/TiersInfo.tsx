@@ -34,121 +34,126 @@ const TiersInfo: React.FC = () => {
     profileCompletion: 0,
     referralsCount: 0,
     weeklyEngagement: 0,
-    isAuthenticated: false
+    isAuthenticated: false,
   });
   const [loading, setLoading] = useState(true);
 
   const tiers: TierInfo[] = [
     {
       id: 1,
-      name: "Basic Shield",
-      subtitle: "Essential Ad Blocking",
-      description: "Get started with fundamental ad blocking and popup protection. Perfect for everyday browsing without distractions.",
-      unlockRequirement: "Available immediately - no login required",
-      unlockProgress: "Active",
+      name: 'Basic Shield',
+      subtitle: 'Essential Ad Blocking',
+      description:
+        'Get started with fundamental ad blocking and popup protection. Perfect for everyday browsing without distractions.',
+      unlockRequirement: 'Available immediately - no login required',
+      unlockProgress: 'Active',
       features: [
-        "Advanced Filter Engine with 1,000+ blocking rules",
-        "50+ Ad Networks blocked (Google AdSense, DoubleClick, Facebook Ads)",
-        "Smart Popup Management with rate limiting",
-        "Cookie Consent Auto-Rejection for 40+ platforms",
-        "Network-level blocking (<1ms response time)",
-        "Per-site whitelist management",
-        "Real-time blocking counter",
-        "Lightweight operation (<5MB RAM)"
+        'Advanced Filter Engine with 1,000+ blocking rules',
+        '50+ Ad Networks blocked (Google AdSense, DoubleClick, Facebook Ads)',
+        'Smart Popup Management with rate limiting',
+        'Cookie Consent Auto-Rejection for 40+ platforms',
+        'Network-level blocking (<1ms response time)',
+        'Per-site whitelist management',
+        'Real-time blocking counter',
+        'Lightweight operation (<5MB RAM)',
       ],
-      color: "bg-blue-500",
-      icon: "🛡️"
+      color: 'bg-blue-500',
+      icon: '🛡️',
     },
     {
       id: 2,
-      name: "Enhanced Protection",
-      subtitle: "Account-Based Features",
-      description: "Unlock advanced tracking protection and YouTube ad blocking by creating a free account. Includes cloud sync across devices.",
-      unlockRequirement: "Create a free account (Google, Email, or GitHub)",
-      unlockProgress: "Complete account creation",
+      name: 'Enhanced Protection',
+      subtitle: 'Account-Based Features',
+      description:
+        'Unlock advanced tracking protection and YouTube ad blocking by creating a free account. Includes cloud sync across devices.',
+      unlockRequirement: 'Create a free account (Google, Email, or GitHub)',
+      unlockProgress: 'Complete account creation',
       features: [
-        "Complete YouTube Ad Blocking (pre-roll, mid-roll, banners)",
-        "Advanced Tracking Protection (40+ tracker networks)",
-        "Social Media Filtering (Facebook, Twitter widgets)",
-        "Session Recording Prevention (Hotjar, FullStory)",
-        "Third-party Cookie Blocking",
-        "Firebase Cloud Sync across devices",
-        "Personal Dashboard with detailed statistics",
-        "Referral System for sharing"
+        'Complete YouTube Ad Blocking (pre-roll, mid-roll, banners)',
+        'Advanced Tracking Protection (40+ tracker networks)',
+        'Social Media Filtering (Facebook, Twitter widgets)',
+        'Session Recording Prevention (Hotjar, FullStory)',
+        'Third-party Cookie Blocking',
+        'Firebase Cloud Sync across devices',
+        'Personal Dashboard with detailed statistics',
+        'Referral System for sharing',
       ],
-      color: "bg-green-500",
-      icon: "⚡"
+      color: 'bg-green-500',
+      icon: '⚡',
     },
     {
       id: 3,
-      name: "Professional Suite",
-      subtitle: "Custom Filtering Power",
-      description: "Professional-grade tools for power users. Create custom filters, use element picker, and advanced whitelist management.",
-      unlockRequirement: "Complete your profile (display name, photo, preferences)",
-      unlockProgress: "Fill profile completion",
+      name: 'Professional Suite',
+      subtitle: 'Custom Filtering Power',
+      description:
+        'Professional-grade tools for power users. Create custom filters, use element picker, and advanced whitelist management.',
+      unlockRequirement: 'Complete your profile (display name, photo, preferences)',
+      unlockProgress: 'Fill profile completion',
       features: [
-        "Visual CSS Selector Builder with point-and-click",
-        "Element Picker Tool for blocking specific elements",
-        "Custom Filter Editor with RegEx support",
-        "Advanced Whitelist Management (patterns, wildcards)",
-        "100+ Additional Professional Rules",
-        "Custom CSS Injection capabilities",
-        "Basic JavaScript Control",
-        "Import/Export filters and settings",
-        "Scheduled Blocking with time-based rules",
-        "Comprehensive backup and restore"
+        'Visual CSS Selector Builder with point-and-click',
+        'Element Picker Tool for blocking specific elements',
+        'Custom Filter Editor with RegEx support',
+        'Advanced Whitelist Management (patterns, wildcards)',
+        '100+ Additional Professional Rules',
+        'Custom CSS Injection capabilities',
+        'Basic JavaScript Control',
+        'Import/Export filters and settings',
+        'Scheduled Blocking with time-based rules',
+        'Comprehensive backup and restore',
       ],
-      color: "bg-purple-500",
-      icon: "⭐"
+      color: 'bg-purple-500',
+      icon: '⭐',
     },
     {
       id: 4,
-      name: "Premium Power",
-      subtitle: "Ultimate Security Suite",
-      description: "Enterprise-level security with malware protection, privacy features, and advanced cookie management. Requires community engagement.",
-      unlockRequirement: "Generate 30 referrals through sharing",
-      unlockProgress: "Share with friends and family",
+      name: 'Premium Power',
+      subtitle: 'Ultimate Security Suite',
+      description:
+        'Enterprise-level security with malware protection, privacy features, and advanced cookie management. Requires community engagement.',
+      unlockRequirement: 'Generate 30 referrals through sharing',
+      unlockProgress: 'Share with friends and family',
       features: [
-        "Real-time Malware Domain Blocking",
-        "Advanced Phishing Protection with URL reputation",
-        "Canvas Fingerprinting Protection",
-        "WebRTC Leak Protection for IP privacy",
-        "Advanced Cookie Management with categories",
-        "Audio Fingerprinting Prevention",
-        "Font Fingerprinting Protection",
-        "Security Threat Dashboard",
-        "Custom Security Rules",
-        "Encrypted DNS-over-HTTPS (DoH)",
-        "Granular Script Control Panel",
-        "Network Request Logger for developers"
+        'Real-time Malware Domain Blocking',
+        'Advanced Phishing Protection with URL reputation',
+        'Canvas Fingerprinting Protection',
+        'WebRTC Leak Protection for IP privacy',
+        'Advanced Cookie Management with categories',
+        'Audio Fingerprinting Prevention',
+        'Font Fingerprinting Protection',
+        'Security Threat Dashboard',
+        'Custom Security Rules',
+        'Encrypted DNS-over-HTTPS (DoH)',
+        'Granular Script Control Panel',
+        'Network Request Logger for developers',
       ],
-      color: "bg-red-500",
-      icon: "🔥"
+      color: 'bg-red-500',
+      icon: '🔥',
     },
     {
       id: 5,
-      name: "Ultimate Champion",
-      subtitle: "Elite Features & Priority",
-      description: "The ultimate ad blocking experience with AI-powered features, priority support, and exclusive access to beta features.",
-      unlockRequirement: "Maintain weekly engagement (visit 5 times per week)",
-      unlockProgress: "Stay active to maintain access",
+      name: 'Ultimate Champion',
+      subtitle: 'Elite Features & Priority',
+      description:
+        'The ultimate ad blocking experience with AI-powered features, priority support, and exclusive access to beta features.',
+      unlockRequirement: 'Maintain weekly engagement (visit 5 times per week)',
+      unlockProgress: 'Stay active to maintain access',
       features: [
-        "AI-Powered Content Analysis",
-        "Intelligent Ad Pattern Recognition",
-        "Predictive Blocking Technology",
-        "Advanced Behavioral Analytics",
-        "Custom AI Filter Generation",
-        "Priority Customer Support",
-        "Beta Feature Access",
-        "Advanced Reporting Dashboard",
-        "API Access for developers",
-        "White-label Options",
-        "Enterprise-grade Performance",
-        "24/7 Monitoring and Updates"
+        'AI-Powered Content Analysis',
+        'Intelligent Ad Pattern Recognition',
+        'Predictive Blocking Technology',
+        'Advanced Behavioral Analytics',
+        'Custom AI Filter Generation',
+        'Priority Customer Support',
+        'Beta Feature Access',
+        'Advanced Reporting Dashboard',
+        'API Access for developers',
+        'White-label Options',
+        'Enterprise-grade Performance',
+        '24/7 Monitoring and Updates',
       ],
-      color: "bg-gradient-to-r from-yellow-400 to-orange-500",
-      icon: "👑"
-    }
+      color: 'bg-gradient-to-r from-yellow-400 to-orange-500',
+      icon: '👑',
+    },
   ];
 
   useEffect(() => {
@@ -168,13 +173,13 @@ const TiersInfo: React.FC = () => {
             profileCompletion: calculateProfileCompletion(profile),
             referralsCount: (profile as any).referrals?.totalReferrals || 0,
             weeklyEngagement: (profile as any).engagement?.weeklyVisits || 0,
-            isAuthenticated: true
+            isAuthenticated: true,
           });
         }
       } else {
-        setTierData(prev => ({ ...prev, isAuthenticated: false }));
+        setTierData((prev) => ({ ...prev, isAuthenticated: false }));
       }
-    } catch (error) {
+    } catch {
       console.error('Error loading user data:', error);
     } finally {
       setLoading(false);
@@ -191,7 +196,7 @@ const TiersInfo: React.FC = () => {
 
   const getTierStatus = (tier: TierInfo): 'active' | 'available' | 'locked' => {
     if (tier.id <= tierData.currentTier) return 'active';
-    
+
     switch (tier.id) {
       case 2:
         return tierData.isAuthenticated ? 'active' : 'available';
@@ -212,28 +217,28 @@ const TiersInfo: React.FC = () => {
         return {
           current: tierData.isAuthenticated ? 1 : 0,
           total: 1,
-          label: tierData.isAuthenticated ? "Account Created" : "Create Account"
+          label: tierData.isAuthenticated ? 'Account Created' : 'Create Account',
         };
       case 3:
         return {
           current: tierData.profileCompletion,
           total: 100,
-          label: `Profile ${tierData.profileCompletion}% Complete`
+          label: `Profile ${tierData.profileCompletion}% Complete`,
         };
       case 4:
         return {
           current: tierData.referralsCount,
           total: 30,
-          label: `${tierData.referralsCount}/30 Referrals`
+          label: `${tierData.referralsCount}/30 Referrals`,
         };
       case 5:
         return {
           current: tierData.weeklyEngagement,
           total: 5,
-          label: `${tierData.weeklyEngagement}/5 Weekly Visits`
+          label: `${tierData.weeklyEngagement}/5 Weekly Visits`,
         };
       default:
-        return { current: 1, total: 1, label: "Active" };
+        return { current: 1, total: 1, label: 'Active' };
     }
   };
 
@@ -253,7 +258,9 @@ const TiersInfo: React.FC = () => {
         break;
       case 5:
         // Show engagement tips
-        alert("Keep using ShieldPro regularly! Visit at least 5 times per week to maintain Tier 5 access.");
+        alert(
+          'Keep using ShieldPro regularly! Visit at least 5 times per week to maintain Tier 5 access.'
+        );
         break;
     }
   };
@@ -278,13 +285,15 @@ const TiersInfo: React.FC = () => {
             🛡️ ShieldPro Ultimate - Tier System
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Progressive feature unlocking system with 5 tiers of ad blocking power. 
-            Each tier builds upon the previous one, giving you more control and protection.
+            Progressive feature unlocking system with 5 tiers of ad blocking power. Each tier builds
+            upon the previous one, giving you more control and protection.
           </p>
           {user && (
             <div className="mt-6 inline-flex items-center px-4 py-2 bg-white rounded-lg shadow">
               <span className="text-sm text-gray-600 mr-2">Current Tier:</span>
-              <span className={`px-3 py-1 rounded-full text-white font-medium ${tiers[tierData.currentTier - 1]?.color}`}>
+              <span
+                className={`px-3 py-1 rounded-full text-white font-medium ${tiers[tierData.currentTier - 1]?.color}`}
+              >
                 Tier {tierData.currentTier}: {tiers[tierData.currentTier - 1]?.name}
               </span>
             </div>
@@ -296,13 +305,16 @@ const TiersInfo: React.FC = () => {
           {tiers.map((tier) => {
             const status = getTierStatus(tier);
             const progress = getProgressInfo(tier);
-            
+
             return (
               <div
                 key={tier.id}
                 className={`bg-white rounded-xl shadow-lg overflow-hidden border-2 ${
-                  status === 'active' ? 'border-green-500' : 
-                  status === 'available' ? 'border-blue-500' : 'border-gray-300'
+                  status === 'active'
+                    ? 'border-green-500'
+                    : status === 'available'
+                      ? 'border-blue-500'
+                      : 'border-gray-300'
                 } transition-all hover:shadow-xl`}
               >
                 <div className="flex">
@@ -317,13 +329,20 @@ const TiersInfo: React.FC = () => {
                         <p className="text-lg text-gray-600">{tier.subtitle}</p>
                       </div>
                       <div className="ml-auto">
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          status === 'active' ? 'bg-green-100 text-green-800' :
-                          status === 'available' ? 'bg-blue-100 text-blue-800' :
-                          'bg-gray-100 text-gray-600'
-                        }`}>
-                          {status === 'active' ? 'ACTIVE' : 
-                           status === 'available' ? 'AVAILABLE' : 'LOCKED'}
+                        <span
+                          className={`px-3 py-1 rounded-full text-sm font-medium ${
+                            status === 'active'
+                              ? 'bg-green-100 text-green-800'
+                              : status === 'available'
+                                ? 'bg-blue-100 text-blue-800'
+                                : 'bg-gray-100 text-gray-600'
+                          }`}
+                        >
+                          {status === 'active'
+                            ? 'ACTIVE'
+                            : status === 'available'
+                              ? 'AVAILABLE'
+                              : 'LOCKED'}
                         </span>
                       </div>
                     </div>
@@ -334,12 +353,14 @@ const TiersInfo: React.FC = () => {
                     <div className="mb-6">
                       <h3 className="font-semibold text-gray-900 mb-2">Unlock Requirement:</h3>
                       <p className="text-gray-600">{tier.unlockRequirement}</p>
-                      
+
                       {tier.id > 1 && status !== 'active' && (
                         <div className="mt-4">
                           <div className="flex justify-between text-sm text-gray-600 mb-2">
                             <span>{progress.label}</span>
-                            <span>{progress.current}/{progress.total}</span>
+                            <span>
+                              {progress.current}/{progress.total}
+                            </span>
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2">
                             <div
@@ -352,9 +373,13 @@ const TiersInfo: React.FC = () => {
                               onClick={() => handleUnlockAction(tier)}
                               className={`mt-3 px-4 py-2 rounded-lg text-white font-medium ${tier.color} hover:opacity-90 transition-opacity`}
                             >
-                              {tier.id === 2 ? 'Sign In' : 
-                               tier.id === 3 ? 'Complete Profile' :
-                               tier.id === 4 ? 'View Referrals' : 'Learn More'}
+                              {tier.id === 2
+                                ? 'Sign In'
+                                : tier.id === 3
+                                  ? 'Complete Profile'
+                                  : tier.id === 4
+                                    ? 'View Referrals'
+                                    : 'Learn More'}
                             </button>
                           )}
                         </div>
@@ -391,23 +416,37 @@ const TiersInfo: React.FC = () => {
               <ul className="space-y-3 text-gray-700">
                 <li className="flex items-start">
                   <span className="text-blue-500 mr-2">1.</span>
-                  <span><strong>Start Free:</strong> Tier 1 is available immediately with no registration required</span>
+                  <span>
+                    <strong>Start Free:</strong> Tier 1 is available immediately with no
+                    registration required
+                  </span>
                 </li>
                 <li className="flex items-start">
                   <span className="text-blue-500 mr-2">2.</span>
-                  <span><strong>Account Benefits:</strong> Create an account to unlock Tier 2 YouTube blocking</span>
+                  <span>
+                    <strong>Account Benefits:</strong> Create an account to unlock Tier 2 YouTube
+                    blocking
+                  </span>
                 </li>
                 <li className="flex items-start">
                   <span className="text-blue-500 mr-2">3.</span>
-                  <span><strong>Profile Power:</strong> Complete your profile for Tier 3 professional tools</span>
+                  <span>
+                    <strong>Profile Power:</strong> Complete your profile for Tier 3 professional
+                    tools
+                  </span>
                 </li>
                 <li className="flex items-start">
                   <span className="text-blue-500 mr-2">4.</span>
-                  <span><strong>Community Sharing:</strong> Refer 30 friends for Tier 4 security features</span>
+                  <span>
+                    <strong>Community Sharing:</strong> Refer 30 friends for Tier 4 security
+                    features
+                  </span>
                 </li>
                 <li className="flex items-start">
                   <span className="text-blue-500 mr-2">5.</span>
-                  <span><strong>Stay Active:</strong> Regular usage maintains Tier 5 elite status</span>
+                  <span>
+                    <strong>Stay Active:</strong> Regular usage maintains Tier 5 elite status
+                  </span>
                 </li>
               </ul>
             </div>
@@ -416,23 +455,34 @@ const TiersInfo: React.FC = () => {
               <ul className="space-y-3 text-gray-700">
                 <li className="flex items-start">
                   <span className="text-green-500 mr-2">✓</span>
-                  <span><strong>No Payment Required:</strong> All features unlock through engagement</span>
+                  <span>
+                    <strong>No Payment Required:</strong> All features unlock through engagement
+                  </span>
                 </li>
                 <li className="flex items-start">
                   <span className="text-green-500 mr-2">✓</span>
-                  <span><strong>Cumulative Features:</strong> Higher tiers include all previous tier features</span>
+                  <span>
+                    <strong>Cumulative Features:</strong> Higher tiers include all previous tier
+                    features
+                  </span>
                 </li>
                 <li className="flex items-start">
                   <span className="text-green-500 mr-2">✓</span>
-                  <span><strong>Cloud Sync:</strong> Settings sync across devices for account holders</span>
+                  <span>
+                    <strong>Cloud Sync:</strong> Settings sync across devices for account holders
+                  </span>
                 </li>
                 <li className="flex items-start">
                   <span className="text-green-500 mr-2">✓</span>
-                  <span><strong>Regular Updates:</strong> New features added to existing tiers</span>
+                  <span>
+                    <strong>Regular Updates:</strong> New features added to existing tiers
+                  </span>
                 </li>
                 <li className="flex items-start">
                   <span className="text-green-500 mr-2">✓</span>
-                  <span><strong>Privacy First:</strong> Your data stays secure and private</span>
+                  <span>
+                    <strong>Privacy First:</strong> Your data stays secure and private
+                  </span>
                 </li>
               </ul>
             </div>
@@ -448,29 +498,48 @@ const TiersInfo: React.FC = () => {
             <div className="space-y-4">
               <div>
                 <h3 className="font-semibold text-gray-900">Can I lose access to higher tiers?</h3>
-                <p className="text-gray-600">Only Tier 5 requires ongoing engagement. Tiers 2-4 are permanent once unlocked.</p>
+                <p className="text-gray-600">
+                  Only Tier 5 requires ongoing engagement. Tiers 2-4 are permanent once unlocked.
+                </p>
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900">Do I need to pay for any features?</h3>
-                <p className="text-gray-600">No! All tiers unlock through free actions like account creation and sharing.</p>
+                <p className="text-gray-600">
+                  No! All tiers unlock through free actions like account creation and sharing.
+                </p>
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900">How long does it take to unlock all tiers?</h3>
-                <p className="text-gray-600">Tiers 1-3 can be unlocked in minutes. Tier 4 depends on referral success, Tier 5 on usage.</p>
+                <h3 className="font-semibold text-gray-900">
+                  How long does it take to unlock all tiers?
+                </h3>
+                <p className="text-gray-600">
+                  Tiers 1-3 can be unlocked in minutes. Tier 4 depends on referral success, Tier 5
+                  on usage.
+                </p>
               </div>
             </div>
             <div className="space-y-4">
               <div>
                 <h3 className="font-semibold text-gray-900">What data do you collect?</h3>
-                <p className="text-gray-600">Only basic usage statistics and tier progression. No browsing data or personal information.</p>
+                <p className="text-gray-600">
+                  Only basic usage statistics and tier progression. No browsing data or personal
+                  information.
+                </p>
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900">Can I use ShieldPro on multiple devices?</h3>
-                <p className="text-gray-600">Yes! Account holders get cloud sync across unlimited devices.</p>
+                <h3 className="font-semibold text-gray-900">
+                  Can I use ShieldPro on multiple devices?
+                </h3>
+                <p className="text-gray-600">
+                  Yes! Account holders get cloud sync across unlimited devices.
+                </p>
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900">Is my referral information private?</h3>
-                <p className="text-gray-600">Absolutely. We only track referral counts, not personal information of referred users.</p>
+                <p className="text-gray-600">
+                  Absolutely. We only track referral counts, not personal information of referred
+                  users.
+                </p>
               </div>
             </div>
           </div>
@@ -479,7 +548,9 @@ const TiersInfo: React.FC = () => {
         {/* Footer */}
         <div className="mt-12 text-center text-gray-600">
           <p>Have questions? Contact us through the extension popup or visit our support page.</p>
-          <p className="mt-2 text-sm">ShieldPro Ultimate - Your Privacy, Your Control, Your Choice</p>
+          <p className="mt-2 text-sm">
+            ShieldPro Ultimate - Your Privacy, Your Control, Your Choice
+          </p>
         </div>
       </div>
     </div>

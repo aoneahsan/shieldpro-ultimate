@@ -37,7 +37,7 @@ export class CookieManager {
       allowedCookies: 0,
       sessionCookies: 0,
       categoryCounts: {},
-      domainStats: {}
+      domainStats: {},
     };
     this.initialize();
   }
@@ -68,7 +68,7 @@ export class CookieManager {
 
   private async loadRulesAndStats(): Promise<void> {
     const data = await chrome.storage.local.get(['cookieRules', 'cookieStats']);
-    
+
     if (data.cookieRules) {
       data.cookieRules.forEach((rule: CookieRule) => {
         this.rules.set(rule.id, rule);
@@ -83,7 +83,7 @@ export class CookieManager {
   private async saveRulesAndStats(): Promise<void> {
     await chrome.storage.local.set({
       cookieRules: Array.from(this.rules.values()),
-      cookieStats: this.stats
+      cookieStats: this.stats,
     });
   }
 
@@ -94,9 +94,12 @@ export class CookieManager {
     });
 
     // Periodic cleanup
-    setInterval(() => {
-      this.cleanupCookies();
-    }, 5 * 60 * 1000); // Every 5 minutes
+    setInterval(
+      () => {
+        this.cleanupCookies();
+      },
+      5 * 60 * 1000
+    ); // Every 5 minutes
   }
 
   private async handleCookieChange(changeInfo: chrome.cookies.CookieChangeInfo): Promise<void> {
@@ -114,7 +117,7 @@ export class CookieManager {
 
     // Apply rules
     const action = await this.evaluateCookie(_cookie);
-    
+
     switch (_action) {
       case 'block':
         await this.blockCookie(_cookie);
@@ -136,7 +139,7 @@ export class CookieManager {
     if (!this.stats.domainStats[domain]) {
       this.stats.domainStats[domain] = { allowed: 0, blocked: 0 };
     }
-    
+
     if (action === 'block') {
       this.stats.domainStats[domain].blocked++;
     } else {
@@ -165,8 +168,8 @@ export class CookieManager {
 
     // Category-based rules
     const category = this.categorizeCookie(_cookie);
-    const categoryRule = Array.from(this.rules.values()).find(rule => 
-      rule.category === category && rule.domain === '*' && rule.enabled
+    const categoryRule = Array.from(this.rules.values()).find(
+      (rule) => rule.category === category && rule.domain === '*' && rule.enabled
     );
     if (_categoryRule) {
       return categoryRule.action;
@@ -179,16 +182,14 @@ export class CookieManager {
   private findRule(domain: string, name?: string): CookieRule | undefined {
     // Exact match with name
     if (_name) {
-      const exactRule = Array.from(this.rules.values()).find(rule => 
-        rule.domain === domain && rule.name === name
+      const exactRule = Array.from(this.rules.values()).find(
+        (rule) => rule.domain === domain && rule.name === name
       );
       if (_exactRule) return exactRule;
     }
 
     // Domain match
-    return Array.from(this.rules.values()).find(rule => 
-      rule.domain === domain && !rule.name
-    );
+    return Array.from(this.rules.values()).find((rule) => rule.domain === domain && !rule.name);
   }
 
   private categorizeCookie(cookie: chrome.cookies.Cookie): string {
@@ -196,26 +197,48 @@ export class CookieManager {
     const domain = cookie.domain.toLowerCase();
 
     // Essential cookies (_authentication, session, _security)
-    if (name.includes('session') || name.includes('csrf') || name.includes('auth') || 
-        name.includes('login') || name.includes('token') || name === 'jsessionid') {
+    if (
+      name.includes('session') ||
+      name.includes('csrf') ||
+      name.includes('auth') ||
+      name.includes('login') ||
+      name.includes('token') ||
+      name === 'jsessionid'
+    ) {
       return 'essential';
     }
 
     // Analytics cookies
-    if (name.includes('_ga') || name.includes('_gid') || name.includes('analytics') ||
-        name.includes('_utm') || domain.includes('google-analytics')) {
+    if (
+      name.includes('_ga') ||
+      name.includes('_gid') ||
+      name.includes('analytics') ||
+      name.includes('_utm') ||
+      domain.includes('google-analytics')
+    ) {
       return 'analytics';
     }
 
     // Advertising cookies
-    if (name.includes('_ad') || name.includes('doubleclick') || name.includes('facebook') ||
-        name.includes('_fbp') || name.includes('_gcl') || domain.includes('ads')) {
+    if (
+      name.includes('_ad') ||
+      name.includes('doubleclick') ||
+      name.includes('facebook') ||
+      name.includes('_fbp') ||
+      name.includes('_gcl') ||
+      domain.includes('ads')
+    ) {
       return 'advertising';
     }
 
     // Social cookies
-    if (domain.includes('facebook') || domain.includes('twitter') || domain.includes('linkedin') ||
-        domain.includes('instagram') || name.includes('social')) {
+    if (
+      domain.includes('facebook') ||
+      domain.includes('twitter') ||
+      domain.includes('linkedin') ||
+      domain.includes('instagram') ||
+      name.includes('social')
+    ) {
       return 'social';
     }
 
@@ -244,9 +267,9 @@ export class CookieManager {
     try {
       await chrome.cookies.remove({
         url: `http${cookie.secure ? 's' : ''}://${cookie.domain}${cookie.path}`,
-        name: cookie.name
+        name: cookie.name,
       });
-    } catch (error) {
+    } catch {
       console.error('Failed to block cookie:', error);
     }
   }
@@ -265,7 +288,7 @@ export class CookieManager {
           sameSite: cookie.sameSite as any,
           // Remove expiration to make it session-only
         });
-      } catch (error) {
+      } catch {
         console.error('Failed to make cookie session-only:', error);
       }
     }
@@ -285,7 +308,7 @@ export class CookieManager {
           sameSite: cookie.sameSite as any,
           expirationDate: cookie.expirationDate,
         });
-      } catch (error) {
+      } catch {
         console.error('Failed to make cookie secure-only:', error);
       }
     }
@@ -309,43 +332,43 @@ export class CookieManager {
         action: 'block',
         category: 'advertising',
         description: 'Block all advertising cookies by default',
-        enabled: true
+        enabled: true,
       },
       {
         domain: '*',
         action: 'session-only',
         category: 'analytics',
         description: 'Make analytics cookies session-only',
-        enabled: true
+        enabled: true,
       },
       {
         domain: '*',
         action: 'allow',
         category: 'essential',
         description: 'Always allow essential cookies',
-        enabled: true
+        enabled: true,
       },
       {
         domain: 'google.com',
         action: 'session-only',
         category: 'functional',
         description: 'Google cookies as session-only',
-        enabled: true
+        enabled: true,
       },
       {
         domain: 'facebook.com',
         action: 'block',
         category: 'social',
         description: 'Block Facebook tracking cookies',
-        enabled: true
-      }
+        enabled: true,
+      },
     ];
 
     for (const ruleData of defaultRules) {
       const rule: CookieRule = {
         ...ruleData,
         id: this.generateRuleId(),
-        createdAt: Date.now()
+        createdAt: Date.now(),
       };
       this.rules.set(rule.id, rule);
     }
@@ -359,7 +382,7 @@ export class CookieManager {
     const rule: CookieRule = {
       ...ruleData,
       id: this.generateRuleId(),
-      createdAt: Date.now()
+      createdAt: Date.now(),
     };
 
     this.rules.set(rule.id, rule);

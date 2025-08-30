@@ -18,28 +18,28 @@ export class AggressivePopupBlocker {
   init() {
     // Inject protection as early as possible
     this.injectEarlyProtection();
-    
+
     // Override window.open
     this.overrideWindowOpen();
-    
+
     // Block all click-triggered popups
     this.blockClickPopups();
-    
+
     // Prevent clickjacking and overlay ads
     this.preventClickjacking();
-    
+
     // Block popunder attempts
     this.blockPopunders();
-    
+
     // Remove existing onclick handlers
     this.removeOnclickHandlers();
-    
+
     // Monitor DOM changes
     this.monitorDOMChanges();
-    
+
     // Block programmatic clicks
     this.blockProgrammaticClicks();
-    
+
     // Prevent tab-under techniques
     this.preventTabUnder();
   }
@@ -259,7 +259,7 @@ export class AggressivePopupBlocker {
         console.warn('[ShieldPro] Aggressive popup protection active');
       })();
     `;
-    
+
     // Inject the script as early as possible
     if (document.documentElement) {
       document.documentElement.insertBefore(script, document.documentElement.firstChild);
@@ -283,113 +283,125 @@ export class AggressivePopupBlocker {
       apply: (_target, _thisArg, args) => {
         const [url] = args;
         console.warn('[ShieldPro] window.open intercepted:', url);
-        
+
         // Always block in content script context
         this.blockedCount++;
         this.reportBlocked();
         return null;
-      }
+      },
     });
   }
 
   private blockClickPopups() {
     // Capture all clicks at the earliest phase
-    document.addEventListener('click', (e) => {
-      const target = e.target as HTMLElement;
-      const now = Date.now();
-      
-      // Block rapid clicks (likely programmatic)
-      if (now - this.lastClickTime < 50) {
-        e.preventDefault();
-        e.stopPropagation();
-        e.stopImmediatePropagation();
-        console.warn('[ShieldPro] Blocked rapid click');
-        return false;
-      }
-      this.lastClickTime = now;
-      
-      // Check for onclick handlers
-      if (target.onclick || target.getAttribute('onclick')) {
-        e.preventDefault();
-        e.stopPropagation();
-        e.stopImmediatePropagation();
-        console.warn('[ShieldPro] Blocked onclick handler');
-        this.blockedCount++;
-        return false;
-      }
-      
-      // Check parent elements for onclick
-      let parent = target.parentElement;
-      let depth = 0;
-      while (parent && depth < 5) {
-        if (parent.onclick || parent.getAttribute('onclick')) {
+    document.addEventListener(
+      'click',
+      (e) => {
+        const target = e.target as HTMLElement;
+        const now = Date.now();
+
+        // Block rapid clicks (likely programmatic)
+        if (now - this.lastClickTime < 50) {
           e.preventDefault();
           e.stopPropagation();
           e.stopImmediatePropagation();
-          console.warn('[ShieldPro] Blocked parent onclick handler');
+          console.warn('[ShieldPro] Blocked rapid click');
+          return false;
+        }
+        this.lastClickTime = now;
+
+        // Check for onclick handlers
+        if (target.onclick || target.getAttribute('onclick')) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          console.warn('[ShieldPro] Blocked onclick handler');
           this.blockedCount++;
           return false;
         }
-        parent = parent.parentElement;
-        depth++;
-      }
-      
-      // Block links with target="_blank" to external domains
-      const link = target.closest('a') as HTMLElement;
-      if (link && link.target === '_blank') {
-        const linkUrl = new URL(link.href, window.location.href);
-        if (linkUrl.hostname !== window.location.hostname) {
-          e.preventDefault();
-          e.stopPropagation();
-          e.stopImmediatePropagation();
-          console.warn('[ShieldPro] Blocked external link:', link.href);
-          this.blockedCount++;
-          
-          // Navigate in same tab instead (_safer)
-          if (this.isSafeUrl(link.href)) {
-            window.location.href = link.href;
+
+        // Check parent elements for onclick
+        let parent = target.parentElement;
+        let depth = 0;
+        while (parent && depth < 5) {
+          if (parent.onclick || parent.getAttribute('onclick')) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            console.warn('[ShieldPro] Blocked parent onclick handler');
+            this.blockedCount++;
+            return false;
           }
-          return false;
+          parent = parent.parentElement;
+          depth++;
         }
-      }
-    }, _true); // Use capture phase
+
+        // Block links with target="_blank" to external domains
+        const link = target.closest('a') as HTMLElement;
+        if (link && link.target === '_blank') {
+          const linkUrl = new URL(link.href, window.location.href);
+          if (linkUrl.hostname !== window.location.hostname) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            console.warn('[ShieldPro] Blocked external link:', link.href);
+            this.blockedCount++;
+
+            // Navigate in same tab instead (_safer)
+            if (this.isSafeUrl(link.href)) {
+              window.location.href = link.href;
+            }
+            return false;
+          }
+        }
+      },
+      _true
+    ); // Use capture phase
 
     // Also block on mousedown to catch earlier
-    document.addEventListener('mousedown', (_e) => {
-      const target = e.target as HTMLElement;
-      
-      if (target.onclick || target.getAttribute('onclick') || 
-          target.closest('[onclick]') || 
-          (target.closest('a') as HTMLElement)?.target === '_blank') {
-        e.preventDefault();
-        e.stopPropagation();
-        e.stopImmediatePropagation();
-        console.warn('[ShieldPro] Blocked mousedown popup trigger');
-        return false;
-      }
-    }, _true);
+    document.addEventListener(
+      'mousedown',
+      (_e) => {
+        const target = e.target as HTMLElement;
+
+        if (
+          target.onclick ||
+          target.getAttribute('onclick') ||
+          target.closest('[onclick]') ||
+          (target.closest('a') as HTMLElement)?.target === '_blank'
+        ) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          console.warn('[ShieldPro] Blocked mousedown popup trigger');
+          return false;
+        }
+      },
+      _true
+    );
   }
 
   private preventClickjacking() {
     // Remove all elements with high z-index that might be overlays
     const checkForOverlays = () => {
       const elements = document.querySelectorAll('*');
-      elements.forEach(el => {
+      elements.forEach((el) => {
         const style = window.getComputedStyle(_el);
         const zIndex = parseInt(style.zIndex) || 0;
-        
+
         // Remove high z-index elements that are likely overlays
         if (zIndex > 9999) {
-          const isAd = el.className.toLowerCase().includes('ad') ||
-                       el.id.toLowerCase().includes('ad') ||
-                       el.getAttribute('data-ad') !== null;
-          
+          const isAd =
+            el.className.toLowerCase().includes('ad') ||
+            el.id.toLowerCase().includes('ad') ||
+            el.getAttribute('data-ad') !== null;
+
           if (isAd || style.position === 'fixed' || style.position === 'absolute') {
             el.remove();
             console.warn('[ShieldPro] Removed potential overlay ad');
           }
         }
-        
+
         // Remove invisible clickjacking elements
         if (style.opacity === '0' && (el.tagName === 'A' || el.onclick)) {
           el.remove();
@@ -397,7 +409,7 @@ export class AggressivePopupBlocker {
         }
       });
     };
-    
+
     // Check periodically
     checkForOverlays();
     setInterval(_checkForOverlays, 2000);
@@ -405,110 +417,119 @@ export class AggressivePopupBlocker {
 
   private blockPopunders() {
     let lastBlur = 0;
-    
-    window.addEventListener('blur', () => {
-      lastBlur = Date.now();
-    }, _true);
-    
-    window.addEventListener('focus', () => {
-      const timeSinceBlur = Date.now() - lastBlur;
-      
-      // If refocused very quickly, likely a popunder attempt
-      if (timeSinceBlur < 100) {
-        console.warn('[ShieldPro] Blocked potential popunder');
-        window.focus();
-        
-        // Close any windows opened in the last 100ms
-        // Note: We can't actually close other windows due to security restrictions
-        // but we can report it
-        this.blockedCount++;
-        this.reportBlocked();
-      }
-    }, _true);
+
+    window.addEventListener(
+      'blur',
+      () => {
+        lastBlur = Date.now();
+      },
+      _true
+    );
+
+    window.addEventListener(
+      'focus',
+      () => {
+        const timeSinceBlur = Date.now() - lastBlur;
+
+        // If refocused very quickly, likely a popunder attempt
+        if (timeSinceBlur < 100) {
+          console.warn('[ShieldPro] Blocked potential popunder');
+          window.focus();
+
+          // Close any windows opened in the last 100ms
+          // Note: We can't actually close other windows due to security restrictions
+          // but we can report it
+          this.blockedCount++;
+          this.reportBlocked();
+        }
+      },
+      _true
+    );
   }
 
   private removeOnclickHandlers() {
     const removeHandlers = () => {
       // Remove onclick from all elements
-      document.querySelectorAll('[onclick]').forEach(el => {
+      document.querySelectorAll('[onclick]').forEach((el) => {
         el.removeAttribute('onclick');
         (el as HTMLElement & { onclick: any }).onclick = null;
       });
-      
+
       // Remove suspicious event listeners from body and document
-      ['click', 'mousedown', 'mouseup', 'contextmenu'].forEach(_eventType => {
+      ['click', 'mousedown', 'mouseup', 'contextmenu'].forEach((_eventType) => {
         document.body.onclick = null;
         document.onclick = null;
       });
     };
-    
+
     // Run immediately and after DOM is ready
     removeHandlers();
-    
+
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', removeHandlers);
     }
-    
+
     // Also run periodically to catch dynamically added handlers
     setInterval(removeHandlers, 1000);
   }
 
   private monitorDOMChanges() {
     const observer = new MutationObserver((mutations) => {
-      mutations.forEach(mutation => {
-        mutation.addedNodes.forEach(node => {
-          if (node.nodeType === 1) { // Element node
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+          if (node.nodeType === 1) {
+            // Element node
             const el = node as HTMLElement;
-            
+
             // Remove onclick handlers from new elements
             if (el.onclick || el.getAttribute('onclick')) {
               el.onclick = null;
               el.removeAttribute('onclick');
               console.warn('[ShieldPro] Removed onclick from new element');
             }
-            
+
             // Check all children too
-            el.querySelectorAll('[onclick]').forEach(child => {
+            el.querySelectorAll('[onclick]').forEach((child) => {
               child.removeAttribute('onclick');
               (child as any).onclick = null;
             });
-            
+
             // Remove suspicious links
             if (el.tagName === 'A' && (el as HTMLElement).target === '_blank') {
               (el as HTMLElement).target = '_self';
             }
-            
-            el.querySelectorAll('a[target="_blank"]').forEach(link => {
+
+            el.querySelectorAll('a[target="_blank"]').forEach((link) => {
               (link as HTMLElement).target = '_self';
             });
           }
         });
       });
     });
-    
+
     observer.observe(document.body, {
       childList: true,
       subtree: true,
       attributes: true,
-      attributeFilter: ['onclick', 'href', 'target']
+      attributeFilter: ['onclick', 'href', 'target'],
     });
   }
 
   private blockProgrammaticClicks() {
     // Override click() method on all elements
     const originalClick = HTMLElement.prototype.click;
-    
-    HTMLElement.prototype.click = function() {
+
+    HTMLElement.prototype.click = function () {
       if (this.tagName === 'A' && (this as HTMLElement).target === '_blank') {
         console.warn('[ShieldPro] Blocked programmatic click on external link');
         return;
       }
-      
+
       if (this.onclick || this.getAttribute('onclick')) {
         console.warn('[ShieldPro] Blocked programmatic click with onclick');
         return;
       }
-      
+
       return originalClick.call(_this);
     };
   }
@@ -532,15 +553,22 @@ export class AggressivePopupBlocker {
   private isSafeUrl(url: string): boolean {
     try {
       const urlObj = new URL(url, window.location.href);
-      
+
       // Block known ad domains
       const adDomains = [
-        'doubleclick.net', 'googlesyndication.com', 'googleadservices.com',
-        'amazon-adsystem.com', 'popads.net', 'popcash.net', 'popunder.net',
-        'outbrain.com', 'taboola.com', 'mgid.com'
+        'doubleclick.net',
+        'googlesyndication.com',
+        'googleadservices.com',
+        'amazon-adsystem.com',
+        'popads.net',
+        'popcash.net',
+        'popunder.net',
+        'outbrain.com',
+        'taboola.com',
+        'mgid.com',
       ];
-      
-      return !adDomains.some(domain => urlObj.hostname.includes(domain));
+
+      return !adDomains.some((domain) => urlObj.hostname.includes(domain));
     } catch {
       return false;
     }
@@ -548,13 +576,15 @@ export class AggressivePopupBlocker {
 
   private reportBlocked() {
     // Report to background script
-    chrome.runtime.sendMessage({
-      action: 'popupBlocked',
-      url: window.location.href,
-      count: this.blockedCount
-    }).catch(() => {
-      // Silent fail if extension context is invalidated
-    });
+    chrome.runtime
+      .sendMessage({
+        action: 'popupBlocked',
+        url: window.location.href,
+        count: this.blockedCount,
+      })
+      .catch(() => {
+        // Silent fail if extension context is invalidated
+      });
   }
 
   public getBlockedCount(): number {

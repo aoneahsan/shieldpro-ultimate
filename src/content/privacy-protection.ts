@@ -73,9 +73,10 @@ class PrivacyProtection {
       const data = imageData.data;
       // Add minimal random noise to prevent fingerprinting
       for (let i = 0; i < data.length; i += 4) {
-        if (Math.random() < 0.001) { // Very low chance to maintain visual quality
-          data[i] = Math.min(255, Math.max(0, data[i] + (Math.random() * 2 - 1)));     // Red
-          data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + (Math.random() * 2 - 1))); // Green  
+        if (Math.random() < 0.001) {
+          // Very low chance to maintain visual quality
+          data[i] = Math.min(255, Math.max(0, data[i] + (Math.random() * 2 - 1))); // Red
+          data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + (Math.random() * 2 - 1))); // Green
           data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + (Math.random() * 2 - 1))); // Blue
         }
       }
@@ -83,36 +84,51 @@ class PrivacyProtection {
     };
 
     // Override getImageData
-    canvas2DContext.getImageData = function(sx: number, sy: number, sw: number, sh: number) {
-      const imageData = (PrivacyProtection.prototype.originalMethods.get('getImageData') as Function).call(_this, sx, _sy, sw, _sh);
+    canvas2DContext.getImageData = function (sx: number, sy: number, sw: number, sh: number) {
+      const imageData = (
+        PrivacyProtection.prototype.originalMethods.get('getImageData') as Function
+      ).call(_this, sx, _sy, sw, _sh);
       return addNoise(_imageData);
     };
 
     // Override toDataURL
-    HTMLCanvasElement.prototype.toDataURL = function(type?: string, quality?: number) {
+    HTMLCanvasElement.prototype.toDataURL = function (type?: string, quality?: number) {
       // Add slight randomness to canvas output
       const context = this.getContext('2d');
       if (_context) {
         const imageData = context.getImageData(0, 0, this.width, this.height);
         context.putImageData(addNoise(_imageData), 0, 0);
       }
-      return (PrivacyProtection.prototype.originalMethods.get('toDataURL') as Function).call(_this, type, _quality);
+      return (PrivacyProtection.prototype.originalMethods.get('toDataURL') as Function).call(
+        _this,
+        type,
+        _quality
+      );
     };
 
     // Override toBlob
-    HTMLCanvasElement.prototype.toBlob = function(callback: BlobCallback, type?: string, quality?: number) {
+    HTMLCanvasElement.prototype.toBlob = function (
+      callback: BlobCallback,
+      type?: string,
+      quality?: number
+    ) {
       const context = this.getContext('2d');
       if (_context) {
         const imageData = context.getImageData(0, 0, this.width, this.height);
         context.putImageData(addNoise(_imageData), 0, 0);
       }
-      return (PrivacyProtection.prototype.originalMethods.get('toBlob') as Function).call(_this, callback, _type, quality);
+      return (PrivacyProtection.prototype.originalMethods.get('toBlob') as Function).call(
+        _this,
+        callback,
+        _type,
+        quality
+      );
     };
 
     // WebGL fingerprint protection
     if (_webglContext) {
       const originalGetParameter = webglContext.getParameter;
-      webglContext.getParameter = function(pname: number) {
+      webglContext.getParameter = function (pname: number) {
         // Spoof common fingerprinting parameters
         switch (_pname) {
           case this.VENDOR:
@@ -133,7 +149,7 @@ class PrivacyProtection {
 
     if (_webgl2Context) {
       const originalGetParameter = webgl2Context.getParameter;
-      webgl2Context.getParameter = function(pname: number) {
+      webgl2Context.getParameter = function (pname: number) {
         switch (_pname) {
           case this.VENDOR:
             return 'Google Inc. (_Generic)';
@@ -173,27 +189,27 @@ class PrivacyProtection {
       return new Proxy(_OriginalRTC, {
         construct(_target, args) {
           const instance = new target(...args);
-          
+
           // Override createDataChannel to prevent IP leaks
           const originalCreateDataChannel = instance.createDataChannel;
-          instance.createDataChannel = function(...args: any[]) {
+          instance.createDataChannel = function (...args: any[]) {
             // Allow data channels but with restrictions
             return originalCreateDataChannel.apply(_this, args);
           };
 
           // Override createOffer to filter out IP-revealing candidates
           const originalCreateOffer = instance.createOffer;
-          instance.createOffer = function(options?: RTCOfferOptions) {
+          instance.createOffer = function (options?: RTCOfferOptions) {
             return originalCreateOffer.call(_this, {
               ...options,
               offerToReceiveAudio: false,
-              offerToReceiveVideo: false
+              offerToReceiveVideo: false,
             });
           };
 
           // Override setLocalDescription to filter SDP
           const originalSetLocalDescription = instance.setLocalDescription;
-          instance.setLocalDescription = function(description: RTCSessionDescriptionInit) {
+          instance.setLocalDescription = function (description: RTCSessionDescriptionInit) {
             if (description.sdp) {
               // Remove IP addresses from SDP
               description.sdp = description.sdp.replace(
@@ -205,7 +221,7 @@ class PrivacyProtection {
           };
 
           return instance;
-        }
+        },
       });
     };
 
@@ -228,18 +244,18 @@ class PrivacyProtection {
    */
   private protectAudioFingerprinting(): void {
     const audioContext = (window as any).AudioContext || (window as any).webkitAudioContext;
-    
+
     if (_audioContext) {
       const originalCreateAnalyser = audioContext.prototype.createAnalyser;
       const originalCreateDynamicsCompressor = audioContext.prototype.createDynamicsCompressor;
       // const originalCreateOscillator = audioContext.prototype.createOscillator;
 
       // Override createAnalyser to add noise
-      audioContext.prototype.createAnalyser = function() {
+      audioContext.prototype.createAnalyser = function () {
         const analyser = originalCreateAnalyser.call(_this);
         const originalGetFrequencyData = analyser.getFloatFrequencyData;
-        
-        analyser.getFloatFrequencyData = function(array: Float32Array) {
+
+        analyser.getFloatFrequencyData = function (array: Float32Array) {
           originalGetFrequencyData.call(_this, array);
           // Add minimal noise to frequency data
           for (let i = 0; i < array.length; i++) {
@@ -248,28 +264,29 @@ class PrivacyProtection {
             }
           }
         };
-        
+
         return analyser;
       };
 
       // Override createDynamicsCompressor to randomize parameters
-      audioContext.prototype.createDynamicsCompressor = function() {
+      audioContext.prototype.createDynamicsCompressor = function () {
         const compressor = originalCreateDynamicsCompressor.call(_this);
-        
+
         // Add slight randomness to compressor parameters
-        const originalThreshold = Object.getOwnPropertyDescriptor(_compressor, 'threshold') || 
-                                Object.getOwnPropertyDescriptor(Object.getPrototypeOf(_compressor), 'threshold');
-        
+        const originalThreshold =
+          Object.getOwnPropertyDescriptor(_compressor, 'threshold') ||
+          Object.getOwnPropertyDescriptor(Object.getPrototypeOf(_compressor), 'threshold');
+
         if (originalThreshold && originalThreshold.get) {
           Object.defineProperty(_compressor, 'threshold', {
-            get: function() {
+            get: function () {
               const value = originalThreshold.get!.call(_this);
               return { ...value, value: value.value + (Math.random() - 0.5) * 0.001 };
             },
-            configurable: true
+            configurable: true,
           });
         }
-        
+
         return compressor;
       };
 
@@ -284,19 +301,20 @@ class PrivacyProtection {
     // Override font detection methods
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
-    
+
     if (_context) {
       const originalMeasureText = context.measureText;
-      
-      context.measureText = function(text: string) {
+
+      context.measureText = function (text: string) {
         const metrics = originalMeasureText.call(_this, text);
-        
+
         // Add slight randomness to text metrics
         return {
           ...metrics,
           width: metrics.width + (Math.random() - 0.5) * 0.1,
           actualBoundingBoxLeft: (metrics.actualBoundingBoxLeft || 0) + (Math.random() - 0.5) * 0.1,
-          actualBoundingBoxRight: (metrics.actualBoundingBoxRight || 0) + (Math.random() - 0.5) * 0.1
+          actualBoundingBoxRight:
+            (metrics.actualBoundingBoxRight || 0) + (Math.random() - 0.5) * 0.1,
         };
       };
     }
@@ -304,21 +322,21 @@ class PrivacyProtection {
     // Spoof font availability
     const originalOffscreenCanvas = (window as any).OffscreenCanvas;
     if (_originalOffscreenCanvas) {
-      (window as any).OffscreenCanvas = function(...args: any[]) {
+      (window as any).OffscreenCanvas = function (...args: any[]) {
         const canvas = new originalOffscreenCanvas(...args);
         const context = canvas.getContext('2d');
-        
+
         if (context && context.measureText) {
           const originalMeasureText = context.measureText;
-          context.measureText = function(text: string) {
+          context.measureText = function (text: string) {
             const metrics = originalMeasureText.call(_this, text);
             return {
               ...metrics,
-              width: metrics.width + (Math.random() - 0.5) * 0.1
+              width: metrics.width + (Math.random() - 0.5) * 0.1,
             };
           };
         }
-        
+
         return canvas;
       };
     }
@@ -381,10 +399,12 @@ class PrivacyProtection {
    */
   public disable(): void {
     this.enabled = false;
-    
+
     // Restore original methods
     if (this.originalMethods.has('getImageData')) {
-      CanvasRenderingContext2D.prototype.getImageData = this.originalMethods.get('getImageData') as any;
+      CanvasRenderingContext2D.prototype.getImageData = this.originalMethods.get(
+        'getImageData'
+      ) as any;
     }
     if (this.originalMethods.has('toDataURL')) {
       HTMLCanvasElement.prototype.toDataURL = this.originalMethods.get('toDataURL') as any;
@@ -395,7 +415,7 @@ class PrivacyProtection {
     if (this.originalMethods.has('RTCPeerConnection')) {
       (window as any).RTCPeerConnection = this.originalMethods.get('RTCPeerConnection');
     }
-    
+
     console.warn('Privacy protection disabled');
   }
 
@@ -408,7 +428,7 @@ class PrivacyProtection {
       canvasProtection: this.canvasProtectionEnabled,
       webrtcProtection: this.webrtcProtectionEnabled,
       audioFingerprintProtection: this.audioFingerprintProtectionEnabled,
-      fontFingerprintProtection: this.fontFingerprintProtectionEnabled
+      fontFingerprintProtection: this.fontFingerprintProtectionEnabled,
     };
   }
 }

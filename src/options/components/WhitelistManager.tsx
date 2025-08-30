@@ -13,7 +13,7 @@ import {
   Edit,
   Save,
   ToggleLeft,
-  ToggleRight
+  ToggleRight,
 } from 'lucide-react';
 
 type WhitelistType = 'domain' | 'page' | 'regex';
@@ -68,7 +68,7 @@ export const WhitelistManager: React.FC<WhitelistManagerProps> = ({ currentTier 
     temporary: false,
     scope: 'all',
     tags: [],
-    isFavorite: false
+    isFavorite: false,
   });
   const [showGroupManager, setShowGroupManager] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
@@ -81,7 +81,7 @@ export const WhitelistManager: React.FC<WhitelistManagerProps> = ({ currentTier 
     { domain: 'twitter.com', reason: 'Social media', scope: 'trackers' },
     { domain: 'linkedin.com', reason: 'Professional network', scope: 'trackers' },
     { domain: 'github.com', reason: 'Code repository', scope: 'all' },
-    { domain: 'stackoverflow.com', reason: 'Developer community', scope: 'ads' }
+    { domain: 'stackoverflow.com', reason: 'Developer community', scope: 'ads' },
   ];
 
   useEffect(() => {
@@ -96,7 +96,7 @@ export const WhitelistManager: React.FC<WhitelistManagerProps> = ({ currentTier 
       if (result.whitelist) {
         setEntries(result.whitelist);
       }
-    } catch (error) {
+    } catch {
       console.error('Failed to load whitelist:', error);
     }
   };
@@ -107,7 +107,7 @@ export const WhitelistManager: React.FC<WhitelistManagerProps> = ({ currentTier 
       if (result.whitelistGroups) {
         setGroups(result.whitelistGroups);
       }
-    } catch (error) {
+    } catch {
       console.error('Failed to load whitelist groups:', error);
     }
   };
@@ -116,23 +116,23 @@ export const WhitelistManager: React.FC<WhitelistManagerProps> = ({ currentTier 
     try {
       await chrome.storage.local.set({ whitelist: updatedEntries });
       setEntries(updatedEntries);
-      
+
       // Notify content scripts
       chrome.runtime.sendMessage({
         action: 'whitelistUpdated',
-        entries: updatedEntries
+        entries: updatedEntries,
       });
-    } catch (error) {
+    } catch {
       console.error('Failed to save whitelist:', error);
     }
   };
 
   const cleanupExpiredEntries = async () => {
     const now = Date.now();
-    const activeEntries = entries.filter(entry => 
-      !entry.temporary || !entry.expiresAt || entry.expiresAt > now
+    const activeEntries = entries.filter(
+      (entry) => !entry.temporary || !entry.expiresAt || entry.expiresAt > now
     );
-    
+
     if (activeEntries.length !== entries.length) {
       await saveWhitelist(activeEntries);
     }
@@ -152,21 +152,19 @@ export const WhitelistManager: React.FC<WhitelistManagerProps> = ({ currentTier 
       reason: newEntry.reason,
       enabled: newEntry.enabled !== false,
       temporary: newEntry.temporary || false,
-      expiresAt: newEntry.temporary && newEntry.expiresAt 
-        ? newEntry.expiresAt 
-        : undefined,
+      expiresAt: newEntry.temporary && newEntry.expiresAt ? newEntry.expiresAt : undefined,
       createdAt: Date.now(),
       hitCount: 0,
       tags: newEntry.tags || [],
       priority: entries.length + 1,
       isFavorite: newEntry.isFavorite || false,
       scope: (newEntry.scope as WhitelistScope) || 'all',
-      notes: newEntry.notes
+      notes: newEntry.notes,
     };
 
     const updatedEntries = [...entries, entry];
     await saveWhitelist(updatedEntries);
-    
+
     // Reset form
     setNewEntry({
       domain: '',
@@ -176,13 +174,13 @@ export const WhitelistManager: React.FC<WhitelistManagerProps> = ({ currentTier 
       temporary: false,
       scope: 'all',
       tags: [],
-      isFavorite: false
+      isFavorite: false,
     });
     setShowAddEntry(false);
   };
 
   const updateEntry = async (id: string, updates: Partial<WhitelistEntry>) => {
-    const updatedEntries = entries.map(entry =>
+    const updatedEntries = entries.map((entry) =>
       entry.id === id ? { ...entry, ...updates } : entry
     );
     await saveWhitelist(updatedEntries);
@@ -190,19 +188,19 @@ export const WhitelistManager: React.FC<WhitelistManagerProps> = ({ currentTier 
   };
 
   const deleteEntry = async (id: string) => {
-    const updatedEntries = entries.filter(entry => entry.id !== id);
+    const updatedEntries = entries.filter((entry) => entry.id !== id);
     await saveWhitelist(updatedEntries);
   };
 
   const toggleEntry = async (id: string) => {
-    const updatedEntries = entries.map(entry =>
+    const updatedEntries = entries.map((entry) =>
       entry.id === id ? { ...entry, enabled: !entry.enabled } : entry
     );
     await saveWhitelist(updatedEntries);
   };
 
   const toggleFavorite = async (id: string) => {
-    const updatedEntries = entries.map(entry =>
+    const updatedEntries = entries.map((entry) =>
       entry.id === id ? { ...entry, isFavorite: !entry.isFavorite } : entry
     );
     await saveWhitelist(updatedEntries);
@@ -221,7 +219,7 @@ export const WhitelistManager: React.FC<WhitelistManagerProps> = ({ currentTier 
       tags: [],
       priority: entries.length + 1,
       isFavorite: false,
-      scope: common.scope
+      scope: common.scope,
     };
 
     const updatedEntries = [...entries, entry];
@@ -233,12 +231,12 @@ export const WhitelistManager: React.FC<WhitelistManagerProps> = ({ currentTier 
       version: '1.0',
       timestamp: Date.now(),
       entries: entries,
-      groups: groups
+      groups: groups,
     };
 
     const dataStr = JSON.stringify(exportData, null, 2);
     const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-    
+
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
     linkElement.setAttribute('download', `whitelist-${Date.now()}.json`);
@@ -249,11 +247,11 @@ export const WhitelistManager: React.FC<WhitelistManagerProps> = ({ currentTier 
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'application/json';
-    
+
     input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
-      
+
       const reader = new FileReader();
       reader.onload = async (event) => {
         try {
@@ -261,31 +259,31 @@ export const WhitelistManager: React.FC<WhitelistManagerProps> = ({ currentTier 
           if (data.entries) {
             const importedEntries = data.entries.map((entry: WhitelistEntry) => ({
               ...entry,
-              id: `imported-${Date.now()}-${Math.random()}`
+              id: `imported-${Date.now()}-${Math.random()}`,
             }));
             const updatedEntries = [...entries, ...importedEntries];
             await saveWhitelist(updatedEntries);
-            
+
             if (data.groups) {
               const importedGroups = data.groups.map((group: WhitelistGroup) => ({
                 ...group,
-                id: `imported-${Date.now()}-${Math.random()}`
+                id: `imported-${Date.now()}-${Math.random()}`,
               }));
-              await chrome.storage.local.set({ 
-                whitelistGroups: [...groups, ...importedGroups] 
+              await chrome.storage.local.set({
+                whitelistGroups: [...groups, ...importedGroups],
               });
               setGroups([...groups, ...importedGroups]);
             }
-            
+
             alert(`Imported ${importedEntries.length} whitelist entries successfully!`);
           }
-        } catch (error) {
+        } catch {
           alert('Failed to import whitelist. Please check the file format.');
         }
       };
       reader.readAsText(file);
     };
-    
+
     input.click();
   };
 
@@ -293,9 +291,9 @@ export const WhitelistManager: React.FC<WhitelistManagerProps> = ({ currentTier 
     // Send test request to background script
     const response = await chrome.runtime.sendMessage({
       action: 'testWhitelistEntry',
-      entry: entry
+      entry: entry,
     });
-    
+
     if (response?.success) {
       alert(`Entry "${entry.domain}" is working correctly!`);
     } else {
@@ -311,7 +309,8 @@ export const WhitelistManager: React.FC<WhitelistManagerProps> = ({ currentTier 
           <h2 className="text-xl font-bold text-gray-900">Whitelist Manager</h2>
         </div>
         <p className="text-gray-700 mb-4">
-          Upgrade to Tier 4 to unlock advanced whitelist management with temporary entries, groups, and regex support.
+          Upgrade to Tier 4 to unlock advanced whitelist management with temporary entries, groups,
+          and regex support.
         </p>
         <button className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
           Upgrade to Tier 4
@@ -320,15 +319,17 @@ export const WhitelistManager: React.FC<WhitelistManagerProps> = ({ currentTier 
     );
   }
 
-  const filteredEntries = entries.filter(entry => {
-    const matchesSearch = searchQuery === '' || 
+  const filteredEntries = entries.filter((entry) => {
+    const matchesSearch =
+      searchQuery === '' ||
       entry.domain.toLowerCase().includes(searchQuery.toLowerCase()) ||
       entry.reason?.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesScope = selectedScope === 'all' || 
+
+    const matchesScope =
+      selectedScope === 'all' ||
       entry.scope === selectedScope ||
       (selectedScope === 'favorites' && entry.isFavorite);
-    
+
     return matchesSearch && matchesScope;
   });
 
@@ -389,7 +390,7 @@ export const WhitelistManager: React.FC<WhitelistManagerProps> = ({ currentTier 
           />
         </div>
         <div className="flex space-x-2">
-          {scopes.map(scope => (
+          {scopes.map((scope) => (
             <button
               key={scope}
               onClick={() => setSelectedScope(scope)}
@@ -413,16 +414,18 @@ export const WhitelistManager: React.FC<WhitelistManagerProps> = ({ currentTier 
       <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
         <h3 className="text-sm font-semibold text-blue-900 mb-2">Quick Add Popular Sites</h3>
         <div className="flex flex-wrap gap-2">
-          {COMMON_ENTRIES.filter(ce => !entries.find(e => e.domain === ce.domain)).map(common => (
-            <button
-              key={common.domain}
-              onClick={() => quickAddCommon(common)}
-              className="px-3 py-1 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors text-sm flex items-center space-x-1"
-            >
-              <Plus className="w-3 h-3" />
-              <span>{common.domain}</span>
-            </button>
-          ))}
+          {COMMON_ENTRIES.filter((ce) => !entries.find((e) => e.domain === ce.domain)).map(
+            (common) => (
+              <button
+                key={common.domain}
+                onClick={() => quickAddCommon(common)}
+                className="px-3 py-1 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors text-sm flex items-center space-x-1"
+              >
+                <Plus className="w-3 h-3" />
+                <span>{common.domain}</span>
+              </button>
+            )
+          )}
         </div>
       </div>
 
@@ -430,12 +433,10 @@ export const WhitelistManager: React.FC<WhitelistManagerProps> = ({ currentTier 
       {showAddEntry && (
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
           <h3 className="text-lg font-semibold mb-4">Add Whitelist Entry</h3>
-          
+
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Domain or URL
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Domain or URL</label>
               <input
                 type="text"
                 value={newEntry.domain}
@@ -444,14 +445,14 @@ export const WhitelistManager: React.FC<WhitelistManagerProps> = ({ currentTier 
                 placeholder="example.com or https://example.com/page"
               />
             </div>
-            
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Type
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
               <select
                 value={newEntry.type}
-                onChange={(e) => setNewEntry({ ...newEntry, type: e.target.value as WhitelistType })}
+                onChange={(e) =>
+                  setNewEntry({ ...newEntry, type: e.target.value as WhitelistType })
+                }
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
               >
                 <option value="domain">Domain</option>
@@ -463,9 +464,7 @@ export const WhitelistManager: React.FC<WhitelistManagerProps> = ({ currentTier 
 
           <div className="grid grid-cols-2 gap-4 mt-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Reason
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Reason</label>
               <input
                 type="text"
                 value={newEntry.reason}
@@ -474,14 +473,14 @@ export const WhitelistManager: React.FC<WhitelistManagerProps> = ({ currentTier 
                 placeholder="Why whitelist this site?"
               />
             </div>
-            
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Scope
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Scope</label>
               <select
                 value={newEntry.scope}
-                onChange={(e) => setNewEntry({ ...newEntry, scope: e.target.value as WhitelistScope })}
+                onChange={(e) =>
+                  setNewEntry({ ...newEntry, scope: e.target.value as WhitelistScope })
+                }
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
               >
                 <option value="all">All Blocking</option>
@@ -494,9 +493,7 @@ export const WhitelistManager: React.FC<WhitelistManagerProps> = ({ currentTier 
           </div>
 
           <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Notes (Optional)
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Notes (Optional)</label>
             <textarea
               value={newEntry.notes}
               onChange={(e) => setNewEntry({ ...newEntry, notes: e.target.value })}
@@ -540,15 +537,13 @@ export const WhitelistManager: React.FC<WhitelistManagerProps> = ({ currentTier 
 
           {newEntry.temporary && (
             <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Expires In
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Expires In</label>
               <select
                 onChange={(e) => {
                   const hours = parseInt(e.target.value);
                   setNewEntry({
                     ...newEntry,
-                    expiresAt: Date.now() + (hours * 60 * 60 * 1000)
+                    expiresAt: Date.now() + hours * 60 * 60 * 1000,
                   });
                 }}
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
@@ -574,7 +569,7 @@ export const WhitelistManager: React.FC<WhitelistManagerProps> = ({ currentTier 
                   temporary: false,
                   scope: 'all',
                   tags: [],
-                  isFavorite: false
+                  isFavorite: false,
                 });
               }}
               className="px-4 py-2 text-gray-600 hover:text-gray-800"
@@ -597,34 +592,43 @@ export const WhitelistManager: React.FC<WhitelistManagerProps> = ({ currentTier 
           <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg">
             <Shield className="w-12 h-12 text-gray-400 mx-auto mb-3" />
             <p className="text-gray-600">No whitelist entries found</p>
-            <p className="text-sm text-gray-500 mt-1">
-              Add sites you trust to the whitelist
-            </p>
+            <p className="text-sm text-gray-500 mt-1">Add sites you trust to the whitelist</p>
           </div>
         ) : (
-          filteredEntries.map(entry => (
-            <div key={entry.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+          filteredEntries.map((entry) => (
+            <div
+              key={entry.id}
+              className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4"
+            >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center space-x-2">
                     <h4 className="font-medium text-gray-900">{entry.domain}</h4>
-                    {entry.isFavorite && (
-                      <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                    )}
-                    <span className={`px-2 py-0.5 text-xs rounded ${
-                      entry.type === 'domain' ? 'bg-blue-100 text-blue-700' :
-                      entry.type === 'page' ? 'bg-green-100 text-green-700' :
-                      'bg-purple-100 text-purple-700'
-                    }`}>
+                    {entry.isFavorite && <Star className="w-4 h-4 text-yellow-500 fill-current" />}
+                    <span
+                      className={`px-2 py-0.5 text-xs rounded ${
+                        entry.type === 'domain'
+                          ? 'bg-blue-100 text-blue-700'
+                          : entry.type === 'page'
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-purple-100 text-purple-700'
+                      }`}
+                    >
                       {entry.type}
                     </span>
-                    <span className={`px-2 py-0.5 text-xs rounded ${
-                      entry.scope === 'all' ? 'bg-gray-100 text-gray-700' :
-                      entry.scope === 'ads' ? 'bg-red-100 text-red-700' :
-                      entry.scope === 'trackers' ? 'bg-orange-100 text-orange-700' :
-                      entry.scope === 'social' ? 'bg-pink-100 text-pink-700' :
-                      'bg-indigo-100 text-indigo-700'
-                    }`}>
+                    <span
+                      className={`px-2 py-0.5 text-xs rounded ${
+                        entry.scope === 'all'
+                          ? 'bg-gray-100 text-gray-700'
+                          : entry.scope === 'ads'
+                            ? 'bg-red-100 text-red-700'
+                            : entry.scope === 'trackers'
+                              ? 'bg-orange-100 text-orange-700'
+                              : entry.scope === 'social'
+                                ? 'bg-pink-100 text-pink-700'
+                                : 'bg-indigo-100 text-indigo-700'
+                      }`}
+                    >
                       {entry.scope}
                     </span>
                     {entry.temporary && (
@@ -635,9 +639,7 @@ export const WhitelistManager: React.FC<WhitelistManagerProps> = ({ currentTier 
                     )}
                   </div>
 
-                  {entry.reason && (
-                    <p className="text-sm text-gray-600 mt-1">{entry.reason}</p>
-                  )}
+                  {entry.reason && <p className="text-sm text-gray-600 mt-1">{entry.reason}</p>}
 
                   {editingEntry === entry.id ? (
                     <div className="mt-2">
@@ -649,8 +651,10 @@ export const WhitelistManager: React.FC<WhitelistManagerProps> = ({ currentTier 
                         placeholder="Add notes..."
                       />
                     </div>
-                  ) : entry.notes && (
-                    <p className="text-xs text-gray-500 mt-1 italic">{entry.notes}</p>
+                  ) : (
+                    entry.notes && (
+                      <p className="text-xs text-gray-500 mt-1 italic">{entry.notes}</p>
+                    )
                   )}
 
                   <div className="mt-2 flex items-center space-x-4 text-xs text-gray-500">
@@ -673,14 +677,22 @@ export const WhitelistManager: React.FC<WhitelistManagerProps> = ({ currentTier 
                     className="p-2 text-gray-400 hover:text-yellow-500 transition-colors"
                     title={entry.isFavorite ? 'Remove from favorites' : 'Add to favorites'}
                   >
-                    {entry.isFavorite ? <Star className="w-4 h-4 fill-current" /> : <StarOff className="w-4 h-4" />}
+                    {entry.isFavorite ? (
+                      <Star className="w-4 h-4 fill-current" />
+                    ) : (
+                      <StarOff className="w-4 h-4" />
+                    )}
                   </button>
                   <button
                     onClick={() => setEditingEntry(editingEntry === entry.id ? null : entry.id)}
                     className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
                     title="Edit notes"
                   >
-                    {editingEntry === entry.id ? <Save className="w-4 h-4" /> : <Edit className="w-4 h-4" />}
+                    {editingEntry === entry.id ? (
+                      <Save className="w-4 h-4" />
+                    ) : (
+                      <Edit className="w-4 h-4" />
+                    )}
                   </button>
                   <button
                     onClick={() => testWhitelistEntry(entry)}
@@ -698,7 +710,11 @@ export const WhitelistManager: React.FC<WhitelistManagerProps> = ({ currentTier 
                     }`}
                     title={entry.enabled ? 'Disable' : 'Enable'}
                   >
-                    {entry.enabled ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
+                    {entry.enabled ? (
+                      <ToggleRight className="w-5 h-5" />
+                    ) : (
+                      <ToggleLeft className="w-5 h-5" />
+                    )}
                   </button>
                   <button
                     onClick={() => deleteEntry(entry.id)}
@@ -719,19 +735,19 @@ export const WhitelistManager: React.FC<WhitelistManagerProps> = ({ currentTier 
         <div className="grid grid-cols-4 gap-4">
           <div className="text-center">
             <div className="text-2xl font-bold text-green-600">
-              {entries.filter(e => e.enabled).length}
+              {entries.filter((e) => e.enabled).length}
             </div>
             <div className="text-sm text-gray-600">Active</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-yellow-600">
-              {entries.filter(e => e.temporary).length}
+              {entries.filter((e) => e.temporary).length}
             </div>
             <div className="text-sm text-gray-600">Temporary</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-blue-600">
-              {entries.filter(e => e.isFavorite).length}
+              {entries.filter((e) => e.isFavorite).length}
             </div>
             <div className="text-sm text-gray-600">Favorites</div>
           </div>

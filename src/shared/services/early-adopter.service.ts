@@ -26,7 +26,7 @@ class EarlyAdopterService {
     const storage = await chrome.storage.local.get([
       MARKETING_CONFIG.EARLY_ADOPTER_STORAGE_KEY,
       MARKETING_CONFIG.USER_ID_KEY,
-      MARKETING_CONFIG.INSTALL_DATE_KEY
+      MARKETING_CONFIG.INSTALL_DATE_KEY,
     ]);
 
     // Check if user already initialized
@@ -38,16 +38,16 @@ class EarlyAdopterService {
     // Generate unique user ID
     const userId = this.generateUserId();
     const installDate = new Date().toISOString();
-    
+
     // Fetch global user count from Firebase (simulated for now)
     const userNumber = await this.fetchAndIncrementGlobalUserCount();
-    
+
     // Determine if user is an early adopter
     const isEarlyAdopter = userNumber <= MARKETING_CONFIG.EARLY_ADOPTER_LIMIT;
-    
+
     // Early adopters get Tier 5 immediately, others get calculated tier
     const initialTier = isEarlyAdopter ? 5 : this.calculateInitialTier(userNumber, false);
-    
+
     // Create user status
     this.userStatus = {
       isEarlyAdopter,
@@ -55,16 +55,16 @@ class EarlyAdopterService {
       installDate,
       userNumber,
       hasAccount: false,
-      currentTier: initialTier,  // Tier 5 for early adopters!
+      currentTier: initialTier, // Tier 5 for early adopters!
       lockedTier: isEarlyAdopter ? 5 : initialTier,
-      benefits: this.getBenefitsForUser(userNumber, false)
+      benefits: this.getBenefitsForUser(userNumber, false),
     };
 
     // Save to storage
     await chrome.storage.local.set({
       [MARKETING_CONFIG.USER_ID_KEY]: userId,
       [MARKETING_CONFIG.INSTALL_DATE_KEY]: installDate,
-      [MARKETING_CONFIG.EARLY_ADOPTER_STORAGE_KEY]: this.userStatus
+      [MARKETING_CONFIG.EARLY_ADOPTER_STORAGE_KEY]: this.userStatus,
     });
 
     // Track analytics
@@ -79,7 +79,7 @@ class EarlyAdopterService {
   async onAccountCreated(userEmail: string): Promise<EarlyAdopterStatus> {
     const storage = await chrome.storage.local.get([
       MARKETING_CONFIG.EARLY_ADOPTER_STORAGE_KEY,
-      MARKETING_CONFIG.GLOBAL_USER_COUNT_KEY
+      MARKETING_CONFIG.GLOBAL_USER_COUNT_KEY,
     ]);
 
     const status = storage[MARKETING_CONFIG.EARLY_ADOPTER_STORAGE_KEY] as EarlyAdopterStatus;
@@ -92,14 +92,14 @@ class EarlyAdopterService {
     // Update status
     status.hasAccount = true;
     status.accountCreatedDate = new Date().toISOString();
-    
+
     // Early adopters with accounts get permanent Tier 5
     if (status.isEarlyAdopter) {
       status.currentTier = 5;
       status.lockedTier = 5;
       status.benefits = [
         ...MARKETING_CONFIG.PHASES.EARLY_ADOPTER.benefits,
-        'Account secured - lifetime premium access confirmed'
+        'Account secured - lifetime premium access confirmed',
       ];
     } else {
       // Calculate tier based on current phase
@@ -111,7 +111,7 @@ class EarlyAdopterService {
 
     // Save updated status
     await chrome.storage.local.set({
-      [MARKETING_CONFIG.EARLY_ADOPTER_STORAGE_KEY]: status
+      [MARKETING_CONFIG.EARLY_ADOPTER_STORAGE_KEY]: status,
     });
 
     // Track analytics
@@ -126,7 +126,7 @@ class EarlyAdopterService {
   async checkTierEligibility(): Promise<number> {
     const storage = await chrome.storage.local.get([
       MARKETING_CONFIG.EARLY_ADOPTER_STORAGE_KEY,
-      MARKETING_CONFIG.GLOBAL_USER_COUNT_KEY
+      MARKETING_CONFIG.GLOBAL_USER_COUNT_KEY,
     ]);
 
     const status = storage[MARKETING_CONFIG.EARLY_ADOPTER_STORAGE_KEY] as EarlyAdopterStatus;
@@ -146,16 +146,16 @@ class EarlyAdopterService {
     // Early adopters without accounts may face tier reduction
     if (status.isEarlyAdopter && !status.hasAccount) {
       const reducedTier = this.calculateReducedTier(currentGlobalCount);
-      
+
       if (reducedTier < status.lockedTier) {
         // Show warning to create account
         this.showAccountCreationWarning(status, reducedTier);
       }
-      
+
       status.currentTier = reducedTier;
     } else {
       // Regular users
-      status.currentTier = status.hasAccount 
+      status.currentTier = status.hasAccount
         ? this.calculateAccountTier(currentGlobalCount)
         : this.calculateInitialTier(currentGlobalCount, false);
     }
@@ -163,7 +163,7 @@ class EarlyAdopterService {
     // Update storage
     await chrome.storage.local.set({
       [MARKETING_CONFIG.EARLY_ADOPTER_STORAGE_KEY]: status,
-      [MARKETING_CONFIG.GLOBAL_USER_COUNT_KEY]: currentGlobalCount
+      [MARKETING_CONFIG.GLOBAL_USER_COUNT_KEY]: currentGlobalCount,
     });
 
     return status.currentTier;
@@ -174,14 +174,14 @@ class EarlyAdopterService {
    */
   async getUserPriority(): Promise<UserPriority> {
     const status = await this.getUserStatus();
-    
+
     if (!status) {
       return {
         level: 'limited',
         reason: 'User not initialized',
         tierAccess: 1,
         requiresAction: true,
-        actionMessage: 'Initialize extension to access features'
+        actionMessage: 'Initialize extension to access features',
       };
     }
 
@@ -191,7 +191,7 @@ class EarlyAdopterService {
         level: 'early_adopter',
         reason: 'Early adopter with secured account',
         tierAccess: 5,
-        requiresAction: false
+        requiresAction: false,
       };
     }
 
@@ -199,15 +199,15 @@ class EarlyAdopterService {
     if (status.isEarlyAdopter && !status.hasAccount) {
       const currentGlobalCount = await this.fetchGlobalUserCount();
       const nextReduction = this.getNextTierReduction(currentGlobalCount);
-      
+
       return {
         level: 'priority',
         reason: 'Early adopter - account needed to secure benefits',
         tierAccess: status.currentTier,
         requiresAction: true,
-        actionMessage: nextReduction 
+        actionMessage: nextReduction
           ? `Create account before ${nextReduction.afterUsers} users to maintain Tier ${status.currentTier}`
-          : 'Create account to secure lifetime premium access'
+          : 'Create account to secure lifetime premium access',
       };
     }
 
@@ -217,7 +217,7 @@ class EarlyAdopterService {
         level: 'standard',
         reason: 'Registered user',
         tierAccess: status.currentTier,
-        requiresAction: false
+        requiresAction: false,
       };
     }
 
@@ -227,14 +227,14 @@ class EarlyAdopterService {
       reason: 'Unregistered user',
       tierAccess: status.currentTier,
       requiresAction: true,
-      actionMessage: 'Create account to unlock more features'
+      actionMessage: 'Create account to unlock more features',
     };
   }
 
   /**
    * Private helper methods
    */
-  
+
   private generateUserId(): string {
     return `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
@@ -245,11 +245,11 @@ class EarlyAdopterService {
     const storage = await chrome.storage.local.get(MARKETING_CONFIG.GLOBAL_USER_COUNT_KEY);
     const currentCount = storage[MARKETING_CONFIG.GLOBAL_USER_COUNT_KEY] || 0;
     const newCount = currentCount + 1;
-    
+
     await chrome.storage.local.set({
-      [MARKETING_CONFIG.GLOBAL_USER_COUNT_KEY]: newCount
+      [MARKETING_CONFIG.GLOBAL_USER_COUNT_KEY]: newCount,
     });
-    
+
     this.globalUserCount = newCount;
     return newCount;
   }
@@ -286,25 +286,27 @@ class EarlyAdopterService {
   private calculateReducedTier(globalUserCount: number): number {
     // Check tier reduction schedule for early adopters without accounts
     const schedule = MARKETING_CONFIG.TRANSITION_RULES.TIER_REDUCTION_SCHEDULE;
-    
+
     for (const rule of schedule) {
       if (globalUserCount >= rule.afterUsers) {
         return rule.reduceTo;
       }
     }
-    
+
     return 5; // No reduction yet
   }
 
-  private getNextTierReduction(currentCount: number): { afterUsers: number; reduceTo: number } | null {
+  private getNextTierReduction(
+    currentCount: number
+  ): { afterUsers: number; reduceTo: number } | null {
     const schedule = MARKETING_CONFIG.TRANSITION_RULES.TIER_REDUCTION_SCHEDULE;
-    
+
     for (const rule of schedule) {
       if (currentCount < rule.afterUsers) {
         return rule;
       }
     }
-    
+
     return null;
   }
 
@@ -321,7 +323,7 @@ class EarlyAdopterService {
     if (this.userStatus) {
       return this.userStatus;
     }
-    
+
     const storage = await chrome.storage.local.get(MARKETING_CONFIG.EARLY_ADOPTER_STORAGE_KEY);
     this.userStatus = storage[MARKETING_CONFIG.EARLY_ADOPTER_STORAGE_KEY];
     return this.userStatus;
@@ -334,39 +336,40 @@ class EarlyAdopterService {
       iconUrl: chrome.runtime.getURL('icons/icon-128.png'),
       title: 'Secure Your Early Adopter Benefits!',
       message: `Your tier will be reduced from ${status.lockedTier} to ${newTier}. Create an account now to keep all premium features forever!`,
-      buttons: [
-        { title: 'Create Account Now' },
-        { title: 'Remind Me Later' }
-      ],
-      priority: 2
+      buttons: [{ title: 'Create Account Now' }, { title: 'Remind Me Later' }],
+      priority: 2,
     });
   }
 
   private trackUserInitialization(status: EarlyAdopterStatus): void {
     // Analytics tracking
-    chrome.runtime.sendMessage({
-      action: 'analytics',
-      event: 'user_initialized',
-      data: {
-        isEarlyAdopter: status.isEarlyAdopter,
-        userNumber: status.userNumber,
-        tier: status.currentTier
-      }
-    }).catch(() => {});
+    chrome.runtime
+      .sendMessage({
+        action: 'analytics',
+        event: 'user_initialized',
+        data: {
+          isEarlyAdopter: status.isEarlyAdopter,
+          userNumber: status.userNumber,
+          tier: status.currentTier,
+        },
+      })
+      .catch(() => {});
   }
 
   private trackAccountCreation(status: EarlyAdopterStatus): void {
     // Analytics tracking
-    chrome.runtime.sendMessage({
-      action: 'analytics',
-      event: 'account_created',
-      data: {
-        isEarlyAdopter: status.isEarlyAdopter,
-        userNumber: status.userNumber,
-        daysAfterInstall: this.daysBetween(new Date(status.installDate), new Date()),
-        tier: status.currentTier
-      }
-    }).catch(() => {});
+    chrome.runtime
+      .sendMessage({
+        action: 'analytics',
+        event: 'account_created',
+        data: {
+          isEarlyAdopter: status.isEarlyAdopter,
+          userNumber: status.userNumber,
+          daysAfterInstall: this.daysBetween(new Date(status.installDate), new Date()),
+          tier: status.currentTier,
+        },
+      })
+      .catch(() => {});
   }
 
   private daysBetween(date1: Date, date2: Date): number {

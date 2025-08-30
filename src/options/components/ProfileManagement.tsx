@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  UserCircle, 
-  Shield, 
+import {
+  UserCircle,
+  Shield,
   Calendar,
   Award,
   RefreshCw,
@@ -11,7 +11,7 @@ import {
   Check,
   X,
   Edit2,
-  Camera
+  Camera,
 } from 'lucide-react';
 import { SignIn } from './SignIn';
 
@@ -51,19 +51,24 @@ export const ProfileManagement: React.FC = () => {
     try {
       // Check if user is logged in via chrome storage
       const result = await chrome.storage.local.get(['authUser', 'authProfile']);
-      
+
       if (result.authUser && result.authProfile) {
         setUser({
           uid: result.authUser.uid,
           email: result.authUser.email,
           displayName: result.authUser.displayName || result.authProfile.displayName,
           photoURL: result.authUser.photoURL,
-          tier: result.authProfile.tier || { level: 1, name: 'Basic', unlockedAt: Date.now(), progress: 0 },
-          stats: result.authProfile.stats
+          tier: result.authProfile.tier || {
+            level: 1,
+            name: 'Basic',
+            unlockedAt: Date.now(),
+            progress: 0,
+          },
+          stats: result.authProfile.stats,
         });
         setDisplayName(result.authUser.displayName || result.authProfile.displayName || '');
       }
-    } catch (error) {
+    } catch {
       console.error('Error loading profile:', error);
     } finally {
       setIsLoading(false);
@@ -72,22 +77,22 @@ export const ProfileManagement: React.FC = () => {
 
   const handleSaveProfile = async () => {
     if (!user) return;
-    
+
     setIsSaving(true);
     setMessage(null);
-    
+
     try {
       // Send message to background script to update profile
       const response = await chrome.runtime.sendMessage({
         action: 'updateProfile',
-        displayName: displayName
+        displayName: displayName,
       });
-      
+
       if (response?.success) {
-        setUser(prev => prev ? { ...prev, displayName } : null);
+        setUser((prev) => (prev ? { ...prev, displayName } : null));
         setIsEditing(false);
         setMessage({ type: 'success', text: 'Profile updated successfully!' });
-        
+
         // Update local storage
         const result = await chrome.storage.local.get(['authUser']);
         if (result.authUser) {
@@ -97,7 +102,7 @@ export const ProfileManagement: React.FC = () => {
       } else {
         setMessage({ type: 'error', text: response?.error || 'Failed to update profile' });
       }
-    } catch (error) {
+    } catch {
       setMessage({ type: 'error', text: 'Failed to update profile' });
     } finally {
       setIsSaving(false);
@@ -111,7 +116,7 @@ export const ProfileManagement: React.FC = () => {
         await chrome.storage.local.remove(['authUser', 'authProfile']);
         setUser(null);
         setMessage({ type: 'success', text: 'Signed out successfully' });
-      } catch (error) {
+      } catch {
         setMessage({ type: 'error', text: 'Failed to sign out' });
       }
     }
@@ -125,9 +130,9 @@ export const ProfileManagement: React.FC = () => {
         settings: data.settings,
         customFilters: data.customFilters,
         whitelist: data.whitelist,
-        exportDate: new Date().toISOString()
+        exportDate: new Date().toISOString(),
       };
-      
+
       const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -135,9 +140,9 @@ export const ProfileManagement: React.FC = () => {
       a.download = `shieldpro-profile-${Date.now()}.json`;
       a.click();
       URL.revokeObjectURL(url);
-      
+
       setMessage({ type: 'success', text: 'Profile data exported successfully!' });
-    } catch (error) {
+    } catch {
       setMessage({ type: 'error', text: 'Failed to export profile data' });
     }
   };
@@ -150,7 +155,7 @@ export const ProfileManagement: React.FC = () => {
           await chrome.storage.local.clear();
           setUser(null);
           setMessage({ type: 'success', text: 'Account deleted successfully' });
-        } catch (error) {
+        } catch {
           setMessage({ type: 'error', text: 'Failed to delete account' });
         }
       }
@@ -161,7 +166,7 @@ export const ProfileManagement: React.FC = () => {
     return new Date(timestamp).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     });
   };
 
@@ -181,17 +186,23 @@ export const ProfileManagement: React.FC = () => {
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Profile Management</h1>
-        <p className="text-gray-600 dark:text-gray-400">Manage your account settings and preferences</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          Profile Management
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400">
+          Manage your account settings and preferences
+        </p>
       </div>
 
       {/* Message */}
       {message && (
-        <div className={`p-4 rounded-lg flex items-center gap-2 ${
-          message.type === 'success' 
-            ? 'bg-green-50 text-green-800 dark:bg-green-900/20 dark:text-green-400' 
-            : 'bg-red-50 text-red-800 dark:bg-red-900/20 dark:text-red-400'
-        }`}>
+        <div
+          className={`p-4 rounded-lg flex items-center gap-2 ${
+            message.type === 'success'
+              ? 'bg-green-50 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+              : 'bg-red-50 text-red-800 dark:bg-red-900/20 dark:text-red-400'
+          }`}
+        >
           {message.type === 'success' ? <Check className="w-5 h-5" /> : <X className="w-5 h-5" />}
           {message.text}
         </div>
@@ -203,9 +214,9 @@ export const ProfileManagement: React.FC = () => {
           <div className="flex items-center gap-4">
             <div className="relative">
               {user.photoURL ? (
-                <img 
-                  src={user.photoURL} 
-                  alt="Profile" 
+                <img
+                  src={user.photoURL}
+                  alt="Profile"
                   className="w-20 h-20 rounded-full object-cover"
                 />
               ) : (
@@ -242,7 +253,11 @@ export const ProfileManagement: React.FC = () => {
                   disabled={isSaving}
                   className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
                 >
-                  {isSaving ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />}
+                  {isSaving ? (
+                    <RefreshCw className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <Check className="w-5 h-5" />
+                  )}
                 </button>
                 <button
                   onClick={() => {
@@ -272,9 +287,7 @@ export const ProfileManagement: React.FC = () => {
               <Shield className="w-4 h-4 text-primary-600" />
               <span className="text-xs text-gray-600 dark:text-gray-400">Tier</span>
             </div>
-            <p className="text-lg font-semibold text-gray-900 dark:text-white">
-              {user.tier.name}
-            </p>
+            <p className="text-lg font-semibold text-gray-900 dark:text-white">{user.tier.name}</p>
             <p className="text-xs text-gray-500 dark:text-gray-500">Level {user.tier.level}</p>
           </div>
 
@@ -316,7 +329,9 @@ export const ProfileManagement: React.FC = () => {
 
       {/* Actions */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Account Actions</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          Account Actions
+        </h3>
         <div className="space-y-3">
           <button
             onClick={handleExportData}
@@ -326,7 +341,9 @@ export const ProfileManagement: React.FC = () => {
               <Download className="w-5 h-5 text-gray-600 dark:text-gray-400" />
               <div className="text-left">
                 <p className="font-medium text-gray-900 dark:text-white">Export Profile Data</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Download all your settings and data</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Download all your settings and data
+                </p>
               </div>
             </div>
           </button>
@@ -352,7 +369,9 @@ export const ProfileManagement: React.FC = () => {
               <Trash2 className="w-5 h-5 text-red-600 dark:text-red-400" />
               <div className="text-left">
                 <p className="font-medium text-red-600 dark:text-red-400">Delete Account</p>
-                <p className="text-sm text-red-600/80 dark:text-red-400/80">Permanently delete your account and data</p>
+                <p className="text-sm text-red-600/80 dark:text-red-400/80">
+                  Permanently delete your account and data
+                </p>
               </div>
             </div>
           </button>

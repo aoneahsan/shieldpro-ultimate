@@ -71,9 +71,9 @@ export class FilterEngine {
     try {
       const baseRules = await this.generateBaseRules();
       await chrome.declarativeNetRequest.updateDynamicRules({
-        addRules: baseRules
+        addRules: baseRules,
       });
-    } catch (error) {
+    } catch {
       console.error('Failed to load filter rules:', error);
     }
   }
@@ -81,13 +81,30 @@ export class FilterEngine {
   private generateBaseRules(): chrome.declarativeNetRequest.Rule[] {
     // Common tracker and ad domains to block
     const trackerDomains = [
-      'google-analytics.com', 'googletagmanager.com', 'doubleclick.net',
-      'facebook.com/tr', 'analytics.twitter.com', 'amazon-adsystem.com',
-      'googlesyndication.com', 'googleadservices.com', 'adsrvr.org',
-      'adsystem.com', 'adnxs.com', 'criteo.com', 'outbrain.com',
-      'taboola.com', 'scorecardresearch.com', 'quantserve.com',
-      'mixpanel.com', 'segment.io', 'amplitude.com', 'hotjar.com',
-      'fullstory.com', 'mouseflow.com', 'clarity.ms', 'crazyegg.com'
+      'google-analytics.com',
+      'googletagmanager.com',
+      'doubleclick.net',
+      'facebook.com/tr',
+      'analytics.twitter.com',
+      'amazon-adsystem.com',
+      'googlesyndication.com',
+      'googleadservices.com',
+      'adsrvr.org',
+      'adsystem.com',
+      'adnxs.com',
+      'criteo.com',
+      'outbrain.com',
+      'taboola.com',
+      'scorecardresearch.com',
+      'quantserve.com',
+      'mixpanel.com',
+      'segment.io',
+      'amplitude.com',
+      'hotjar.com',
+      'fullstory.com',
+      'mouseflow.com',
+      'clarity.ms',
+      'crazyegg.com',
     ];
 
     return trackerDomains.map((domain, index) => ({
@@ -100,18 +117,18 @@ export class FilterEngine {
           'script' as const,
           'xmlhttprequest' as const,
           'image' as const,
-          'sub_frame' as const
-        ]
-      }
+          'sub_frame' as const,
+        ],
+      },
     }));
   }
 
   private async loadRulesForTier(tier: number) {
     this.tierLevel = tier;
-    
+
     // Clear existing rules
     await chrome.declarativeNetRequest.updateDynamicRules({
-      removeRuleIds: Array.from(this.rules.keys())
+      removeRuleIds: Array.from(this.rules.keys()),
     });
     this.rules.clear();
 
@@ -128,7 +145,7 @@ export class FilterEngine {
         const response = await fetch(chrome.runtime.getURL(file));
         const rulesData = await response.json();
         await this.addRules(rulesData);
-      } catch (error) {
+      } catch {
         console.warn(`Failed to load rules from ${file}:`, error);
       }
     }
@@ -137,21 +154,21 @@ export class FilterEngine {
   }
 
   private async addRules(rules: FilterRule[]) {
-    const newRules = rules.filter(rule => !this.rules.has(rule.id));
-    
+    const newRules = rules.filter((rule) => !this.rules.has(rule.id));
+
     if (newRules.length > 0) {
       // Add to Chrome's declarativeNetRequest
       await chrome.declarativeNetRequest.updateDynamicRules({
-        addRules: newRules.map(rule => ({
+        addRules: newRules.map((rule) => ({
           id: rule.id,
           priority: rule.priority,
           action: rule.action as chrome.declarativeNetRequest.RuleAction,
-          condition: rule.condition as chrome.declarativeNetRequest.RuleCondition
-        }))
+          condition: rule.condition as chrome.declarativeNetRequest.RuleCondition,
+        })),
       });
 
       // Store locally for management
-      newRules.forEach(rule => this.rules.set(rule.id, rule));
+      newRules.forEach((rule) => this.rules.set(rule.id, rule));
     }
   }
 
@@ -167,15 +184,17 @@ export class FilterEngine {
         action: { type: chrome.declarativeNetRequest.RuleActionType.ALLOW },
         condition: {
           urlFilter: `||${domain}^`,
-          resourceTypes: Object.values(chrome.declarativeNetRequest.ResourceType) as chrome.declarativeNetRequest.ResourceType[]
-        }
+          resourceTypes: Object.values(
+            chrome.declarativeNetRequest.ResourceType
+          ) as chrome.declarativeNetRequest.ResourceType[],
+        },
       });
     }
 
     // Update rules
     await chrome.declarativeNetRequest.updateDynamicRules({
       removeRuleIds: Array.from({ length: 1000 }, (__, i) => 1000000 + i), // Remove old whitelist rules
-      addRules: whitelistRules
+      addRules: whitelistRules,
     });
   }
 
@@ -186,7 +205,7 @@ export class FilterEngine {
     } else {
       // Disable all rules
       await chrome.declarativeNetRequest.updateDynamicRules({
-        removeRuleIds: Array.from(this.rules.keys())
+        removeRuleIds: Array.from(this.rules.keys()),
       });
     }
   }
@@ -194,24 +213,26 @@ export class FilterEngine {
   private handleBlockedRequest(info: chrome.declarativeNetRequest.MatchedRuleInfoDebug) {
     const url = new URL(info.request.url);
     const domain = url.hostname;
-    
+
     // Update blocked count
     const count = this.blockedRequests.get(domain) || 0;
     this.blockedRequests.set(domain, count + 1);
 
     // Send message to popup/content scripts
-    chrome.runtime.sendMessage({
-      type: 'REQUEST_BLOCKED',
-      data: {
-        url: info.request.url,
-        domain,
-        ruleId: info.rule.ruleId,
-        tabId: info.request.tabId,
-        timestamp: Date.now()
-      }
-    }).catch(() => {
-      // Ignore errors if no listeners
-    });
+    chrome.runtime
+      .sendMessage({
+        type: 'REQUEST_BLOCKED',
+        data: {
+          url: info.request.url,
+          domain,
+          ruleId: info.rule.ruleId,
+          tabId: info.request.tabId,
+          timestamp: Date.now(),
+        },
+      })
+      .catch(() => {
+        // Ignore errors if no listeners
+      });
 
     // Update stats
     this.updateStats(domain, info.rule.ruleId);
@@ -229,8 +250,8 @@ export class FilterEngine {
         malware: 0,
         social: 0,
         youtube: 0,
-        other: 0
-      }
+        other: 0,
+      },
     };
 
     currentStats.totalBlocked++;
@@ -267,7 +288,7 @@ export class FilterEngine {
       id,
       priority: rule.priority || 1000,
       action: rule.action || { type: 'block' },
-      condition: rule.condition || {}
+      condition: rule.condition || {},
     };
 
     await this.addRules([fullRule]);
@@ -275,7 +296,7 @@ export class FilterEngine {
 
   public async removeCustomRule(ruleId: number): Promise<void> {
     await chrome.declarativeNetRequest.updateDynamicRules({
-      removeRuleIds: [ruleId]
+      removeRuleIds: [ruleId],
     });
     this.rules.delete(ruleId);
   }

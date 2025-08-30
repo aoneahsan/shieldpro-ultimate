@@ -16,7 +16,7 @@ const firebaseConfig = {
   projectId: process.env.FIREBASE_PROJECT_ID || '',
   storageBucket: process.env.FIREBASE_STORAGE_BUCKET || '',
   messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || '',
-  appId: process.env.FIREBASE_APP_ID || ''
+  appId: process.env.FIREBASE_APP_ID || '',
 };
 
 let app: FirebaseApp | null = null;
@@ -40,7 +40,7 @@ export function initializeFirebase() {
     functions = getFunctions(app);
     initialized = true;
     console.log('Firebase initialized in service worker');
-  } catch (error) {
+  } catch {
     console.error('Firebase initialization error in service worker:', error);
     // Try to get existing instances if already initialized
     try {

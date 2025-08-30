@@ -21,64 +21,64 @@ export const THEMES: Record<string, ThemeColors> = {
     secondary: '#8b5cf6',
     background: '#ffffff',
     text: '#1f2937',
-    accent: '#10b981'
+    accent: '#10b981',
   },
   dark: {
     primary: '#3b82f6',
     secondary: '#8b5cf6',
     background: '#1f2937',
     text: '#f9fafb',
-    accent: '#10b981'
+    accent: '#10b981',
   },
   ocean: {
     primary: '#0891b2',
     secondary: '#0e7490',
     background: '#ecfeff',
     text: '#164e63',
-    accent: '#06b6d4'
+    accent: '#06b6d4',
   },
   forest: {
     primary: '#059669',
     secondary: '#047857',
     background: '#ecfdf5',
     text: '#064e3b',
-    accent: '#10b981'
+    accent: '#10b981',
   },
   sunset: {
     primary: '#f97316',
     secondary: '#ea580c',
     background: '#fff7ed',
     text: '#7c2d12',
-    accent: '#fb923c'
+    accent: '#fb923c',
   },
   purple: {
     primary: '#9333ea',
     secondary: '#7c3aed',
     background: '#faf5ff',
     text: '#581c87',
-    accent: '#a855f7'
+    accent: '#a855f7',
   },
   rose: {
     primary: '#e11d48',
     secondary: '#be123c',
     background: '#fff1f2',
     text: '#881337',
-    accent: '#f43f5e'
+    accent: '#f43f5e',
   },
   matrix: {
     primary: '#22c55e',
     secondary: '#16a34a',
     background: '#000000',
     text: '#22c55e',
-    accent: '#86efac'
+    accent: '#86efac',
   },
   neon: {
     primary: '#ec4899',
     secondary: '#d946ef',
     background: '#18181b',
     text: '#fbbf24',
-    accent: '#34d399'
-  }
+    accent: '#34d399',
+  },
 };
 
 class ThemeService {
@@ -97,7 +97,7 @@ class ThemeService {
   async initialize(): Promise<void> {
     const storage = StorageManager.getInstance();
     const settings = await storage.getSettings();
-    
+
     if (settings.theme) {
       this.currentTheme = settings.theme as ThemeConfig;
       this.applyTheme(this.currentTheme);
@@ -112,7 +112,7 @@ class ThemeService {
       id: themeId,
       colors,
       fontSize: this.currentTheme?.fontSize || 'medium',
-      fontFamily: this.currentTheme?.fontFamily || 'system'
+      fontFamily: this.currentTheme?.fontFamily || 'system',
     };
 
     await this.saveAndApplyTheme(themeConfig);
@@ -123,7 +123,7 @@ class ThemeService {
       id: 'custom',
       colors,
       fontSize: this.currentTheme?.fontSize || 'medium',
-      fontFamily: this.currentTheme?.fontFamily || 'system'
+      fontFamily: this.currentTheme?.fontFamily || 'system',
     };
 
     await this.saveAndApplyTheme(themeConfig);
@@ -135,7 +135,7 @@ class ThemeService {
         id: 'default',
         colors: THEMES.default,
         fontSize: size,
-        fontFamily: 'system'
+        fontFamily: 'system',
       };
     } else {
       this.currentTheme.fontSize = size;
@@ -150,7 +150,7 @@ class ThemeService {
         id: 'default',
         colors: THEMES.default,
         fontSize: 'medium',
-        fontFamily: family
+        fontFamily: family,
       };
     } else {
       this.currentTheme.fontFamily = family;
@@ -161,7 +161,7 @@ class ThemeService {
 
   private async saveAndApplyTheme(theme: ThemeConfig): Promise<void> {
     this.currentTheme = theme;
-    
+
     // Save to storage
     const storage = StorageManager.getInstance();
     await storage.updateSettings({ theme });
@@ -201,7 +201,7 @@ class ThemeService {
       const sizeMap: Record<string, string> = {
         small: '14px',
         medium: '16px',
-        large: '18px'
+        large: '18px',
       };
       document.documentElement.style.fontSize = sizeMap[fontSize];
       document.body.style.fontSize = sizeMap[fontSize];
@@ -213,7 +213,7 @@ class ThemeService {
         serif: 'Georgia, "Times New Roman", serif',
         mono: '"Courier New", monospace',
         comic: '"Comic Sans MS", cursive',
-        dyslexic: 'OpenDyslexic, sans-serif'
+        dyslexic: 'OpenDyslexic, sans-serif',
       };
       document.documentElement.style.fontFamily = fontMap[fontFamily];
       document.body.style.fontFamily = fontMap[fontFamily];
@@ -366,9 +366,11 @@ class ThemeService {
   }
 
   private isDarkTheme(colors: ThemeColors): boolean {
-    return colors.background === '#1f2937' || 
-           colors.background === '#000000' || 
-           colors.background === '#18181b';
+    return (
+      colors.background === '#1f2937' ||
+      colors.background === '#000000' ||
+      colors.background === '#18181b'
+    );
   }
 
   private broadcastTheme(theme: ThemeConfig): void {
@@ -376,9 +378,9 @@ class ThemeService {
     try {
       chrome.runtime.sendMessage({
         action: 'broadcastTheme',
-        theme
+        theme,
       });
-    } catch (error) {
+    } catch {
       console.log('Could not broadcast theme:', error);
     }
 

@@ -28,13 +28,13 @@ export class PopupBlocker {
   private startBlocking(): void {
     // Override window.open
     this.overrideWindowOpen();
-    
+
     // Block popup triggers
     this.blockPopupTriggers();
-    
+
     // Prevent new window/tab creation
     this.preventNewWindows();
-    
+
     // Block notification popups for Tier 2+
     if (this.tier >= 2) {
       this.blockNotifications();
@@ -44,29 +44,29 @@ export class PopupBlocker {
   private overrideWindowOpen(): void {
     // Store original window.open
     const self = this;
-    
-    window.open = function(...args: any[]): Window | null {
+
+    window.open = function (...args: any[]): Window | null {
       const url = args[0] || '';
       const target = args[1] || '_blank';
       const features = args[2] || '';
-      
+
       // Check if it's a popup
       const isPopup = self.isLikelyPopup(url, target, _features);
-      
+
       if (_isPopup) {
         self.blockedPopups++;
         console.warn('ShieldPro: Blocked popup:', url);
-        
+
         // Send message to background
         chrome.runtime.sendMessage({
           action: 'adBlocked',
           category: 'other',
-          domain: window.location.hostname
+          domain: window.location.hostname,
         });
-        
+
         return null;
       }
-      
+
       // Allow legitimate window.open calls
       return self.originalOpen.apply(window, args);
     };
@@ -77,7 +77,7 @@ export class PopupBlocker {
     if (!url || url === 'about:blank') {
       return true;
     }
-    
+
     // Check for popup features
     const popupFeatures = [
       'toolbar=no',
@@ -90,13 +90,13 @@ export class PopupBlocker {
       'width=',
       'height=',
       'top=',
-      'left='
+      'left=',
     ];
-    
-    if (popupFeatures.some(feature => features.toLowerCase().includes(_feature))) {
+
+    if (popupFeatures.some((feature) => features.toLowerCase().includes(_feature))) {
       return true;
     }
-    
+
     // Check for known ad/popup domains
     const popupDomains = [
       'doubleclick.net',
@@ -113,13 +113,13 @@ export class PopupBlocker {
       'taboola.com',
       'outbrain.com',
       'mgid.com',
-      'revcontent.com'
+      'revcontent.com',
     ];
-    
-    if (popupDomains.some(domain => url.includes(domain))) {
+
+    if (popupDomains.some((domain) => url.includes(domain))) {
       return true;
     }
-    
+
     // Check for suspicious patterns
     const suspiciousPatterns = [
       /\/apu\.php/,
@@ -133,20 +133,20 @@ export class PopupBlocker {
       /track/i,
       /\/ad\//,
       /\/ads\//,
-      /\/advertisement\//
+      /\/advertisement\//,
     ];
-    
-    if (suspiciousPatterns.some(pattern => pattern.test(url))) {
+
+    if (suspiciousPatterns.some((pattern) => pattern.test(url))) {
       return true;
     }
-    
+
     // Advanced checks for Tier 2+
     if (this.tier >= 2) {
       // Block all new windows with specific dimensions (common popup sizes)
       if (features.includes('width=') && features.includes('height=')) {
         const width = parseInt(features.match(/width=(\d+)/)?.[1] || '0');
         const height = parseInt(features.match(/height=(\d+)/)?.[1] || '0');
-        
+
         // Common popup ad sizes
         const popupSizes = [
           { w: 720, h: 300 },
@@ -156,57 +156,71 @@ export class PopupBlocker {
           { w: 728, h: 90 },
           { w: 468, h: 60 },
           { w: 234, h: 60 },
-          { w: 88, h: 31 }
+          { w: 88, h: 31 },
         ];
-        
-        if (popupSizes.some(size => Math.abs(width - size.w) < 50 && Math.abs(height - size.h) < 50)) {
+
+        if (
+          popupSizes.some((size) => Math.abs(width - size.w) < 50 && Math.abs(height - size.h) < 50)
+        ) {
           return true;
         }
       }
     }
-    
+
     return false;
   }
 
   private blockPopupTriggers(): void {
     // Block onclick popups
-    document.addEventListener('click', (e) => {
-      const target = e.target as HTMLElement;
-      
-      // Check for onclick attributes that might open popups
-      if (target.onclick || target.getAttribute('onclick')) {
-        const onclickStr = (target.onclick?.toString() || target.getAttribute('onclick') || '').toLowerCase();
-        
-        if (onclickStr.includes('window.open') || 
-            onclickStr.includes('popup') || 
-            onclickStr.includes('popunder')) {
-          e.preventDefault();
-          e.stopPropagation();
-          this.blockedPopups++;
-          console.warn('ShieldPro: Blocked onclick popup');
+    document.addEventListener(
+      'click',
+      (e) => {
+        const target = e.target as HTMLElement;
+
+        // Check for onclick attributes that might open popups
+        if (target.onclick || target.getAttribute('onclick')) {
+          const onclickStr = (
+            target.onclick?.toString() ||
+            target.getAttribute('onclick') ||
+            ''
+          ).toLowerCase();
+
+          if (
+            onclickStr.includes('window.open') ||
+            onclickStr.includes('popup') ||
+            onclickStr.includes('popunder')
+          ) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.blockedPopups++;
+            console.warn('ShieldPro: Blocked onclick popup');
+          }
         }
-      }
-      
-      // Check for links that open in new windows suspiciously
-      if (target.tagName === 'A' || target.closest('a')) {
-        const link = (target.tagName === 'A' ? target : target.closest('a')) as HTMLAnchorElement;
-        
-        if (link.target === '_blank' && this.isSuspiciousLink(link.href)) {
-          e.preventDefault();
-          e.stopPropagation();
-          this.blockedPopups++;
-          console.warn('ShieldPro: Blocked suspicious link popup');
+
+        // Check for links that open in new windows suspiciously
+        if (target.tagName === 'A' || target.closest('a')) {
+          const link = (target.tagName === 'A' ? target : target.closest('a')) as HTMLAnchorElement;
+
+          if (link.target === '_blank' && this.isSuspiciousLink(link.href)) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.blockedPopups++;
+            console.warn('ShieldPro: Blocked suspicious link popup');
+          }
         }
-      }
-    }, _true);
-    
+      },
+      _true
+    );
+
     // Block popunders
     let popunderAttempt = false;
     window.addEventListener('blur', () => {
       popunderAttempt = true;
-      setTimeout(() => { popunderAttempt = false; }, 1000);
+      setTimeout(() => {
+        popunderAttempt = false;
+      }, 1000);
     });
-    
+
     window.addEventListener('focus', () => {
       if (_popunderAttempt) {
         // Likely a popunder attempt
@@ -218,11 +232,18 @@ export class PopupBlocker {
 
   private isSuspiciousLink(href: string): boolean {
     const suspiciousDomains = [
-      'bit.ly', 'tinyurl.com', 'goo.gl', 'ow.ly', 'short.link',
-      'adf.ly', 'adfoc.us', 'shrink.me', 'shorte.st'
+      'bit.ly',
+      'tinyurl.com',
+      'goo.gl',
+      'ow.ly',
+      'short.link',
+      'adf.ly',
+      'adfoc.us',
+      'shrink.me',
+      'shorte.st',
     ];
-    
-    return suspiciousDomains.some(domain => href.includes(domain));
+
+    return suspiciousDomains.some((domain) => href.includes(domain));
   }
 
   private preventNewWindows(): void {
@@ -233,41 +254,45 @@ export class PopupBlocker {
         return undefined;
       };
     }
-    
+
     // Block form submissions to new windows
-    document.addEventListener('submit', (_e) => {
-      const form = e.target as HTMLFormElement;
-      
-      if (form.target === '_blank') {
-        const action = form.action || '';
-        
-        if (this.isSuspiciousLink(_action)) {
-          e.preventDefault();
-          console.warn('ShieldPro: Blocked form popup submission');
-          this.blockedPopups++;
+    document.addEventListener(
+      'submit',
+      (_e) => {
+        const form = e.target as HTMLFormElement;
+
+        if (form.target === '_blank') {
+          const action = form.action || '';
+
+          if (this.isSuspiciousLink(_action)) {
+            e.preventDefault();
+            console.warn('ShieldPro: Blocked form popup submission');
+            this.blockedPopups++;
+          }
         }
-      }
-    }, _true);
+      },
+      _true
+    );
   }
 
   private blockNotifications(): void {
     // Override Notification API for Tier 2+
     const originalNotification = window.Notification;
-    
+
     // Replace Notification constructor
     window.Notification = new Proxy(_originalNotification, {
       construct(_target, args) {
         console.warn('ShieldPro: Blocked notification popup');
         return {} as Notification;
-      }
+      },
     });
-    
+
     // Override permission request
     Object.defineProperty(_Notification, 'permission', {
       get: () => 'denied',
-      configurable: false
+      configurable: false,
     });
-    
+
     Notification.requestPermission = async () => {
       console.warn('ShieldPro: Blocked notification permission request');
       return 'denied';
@@ -368,7 +393,7 @@ export class PopupBlocker {
         }
       })();
     `;
-    
+
     // Inject as early as possible
     if (document.documentElement) {
       document.documentElement.appendChild(script);

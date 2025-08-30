@@ -4,19 +4,19 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  Shield, 
-  ShieldCheck, 
-  ShieldX, 
-  Code, 
-  Zap, 
-  Globe, 
+import {
+  Shield,
+  ShieldCheck,
+  ShieldX,
+  Code,
+  Zap,
+  Globe,
   AlertTriangle,
   CheckCircle,
   XCircle,
   Play,
   Pause,
-  RotateCcw
+  RotateCcw,
 } from 'lucide-react';
 
 interface ScriptRule {
@@ -56,7 +56,7 @@ export const ScriptControlPanel: React.FC = () => {
     blockedScripts: 0,
     allowedScripts: 0,
     savedBandwidth: 0,
-    performanceGain: 0
+    performanceGain: 0,
   });
   const [activeTab, setActiveTab] = useState<'rules' | 'detected' | 'stats'>('rules');
   const [newRuleForm, setNewRuleForm] = useState<Partial<ScriptRule>>({
@@ -64,7 +64,7 @@ export const ScriptControlPanel: React.FC = () => {
     scriptType: 'all',
     action: 'block',
     pattern: '',
-    enabled: true
+    enabled: true,
   });
   const [isLoading, setIsLoading] = useState(true);
   const [currentDomain, setCurrentDomain] = useState<string>('');
@@ -83,7 +83,7 @@ export const ScriptControlPanel: React.FC = () => {
 
       // Get detected scripts from current tab
       await loadDetectedScripts();
-    } catch (error) {
+    } catch {
       console.error('Failed to initialize script control:', error);
     }
     setIsLoading(false);
@@ -94,16 +94,15 @@ export const ScriptControlPanel: React.FC = () => {
     getCurrentDomain();
   }, [initializeScriptControl]);
 
-
   const getCurrentDomain = async () => {
     try {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       if (tab?.url) {
         const url = new URL(tab.url);
         setCurrentDomain(url.hostname);
-        setNewRuleForm(prev => ({ ...prev, domain: url.hostname }));
+        setNewRuleForm((prev) => ({ ...prev, domain: url.hostname }));
       }
-    } catch (error) {
+    } catch {
       console.error('Failed to get current domain:', error);
     }
   };
@@ -114,14 +113,14 @@ export const ScriptControlPanel: React.FC = () => {
       if (tab?.id) {
         // Send message to content script to get detected scripts
         const response = await chrome.tabs.sendMessage(tab.id, {
-          action: 'getDetectedScripts'
+          action: 'getDetectedScripts',
         });
-        
+
         if (response?.scripts) {
           setDetectedScripts(response.scripts);
         }
       }
-    } catch (error) {
+    } catch {
       console.error('Failed to load detected scripts:', error);
     }
   };
@@ -130,7 +129,7 @@ export const ScriptControlPanel: React.FC = () => {
     try {
       await chrome.storage.local.set({ scriptRules: updatedRules });
       setRules(updatedRules);
-    } catch (error) {
+    } catch {
       console.error('Failed to save script rules:', error);
     }
   };
@@ -146,7 +145,7 @@ export const ScriptControlPanel: React.FC = () => {
       pattern: newRuleForm.pattern,
       enabled: true,
       createdAt: Date.now(),
-      lastModified: Date.now()
+      lastModified: Date.now(),
     };
 
     const updatedRules = [...rules, rule];
@@ -158,44 +157,51 @@ export const ScriptControlPanel: React.FC = () => {
       scriptType: 'all',
       action: 'block',
       pattern: '',
-      enabled: true
+      enabled: true,
     });
   };
 
   const updateRule = (id: string, updates: Partial<ScriptRule>) => {
-    const updatedRules = rules.map(rule => 
-      rule.id === id 
-        ? { ...rule, ...updates, lastModified: Date.now() }
-        : rule
+    const updatedRules = rules.map((rule) =>
+      rule.id === id ? { ...rule, ...updates, lastModified: Date.now() } : rule
     );
     saveRules(updatedRules);
   };
 
   const deleteRule = (id: string) => {
-    const updatedRules = rules.filter(rule => rule.id !== id);
+    const updatedRules = rules.filter((rule) => rule.id !== id);
     saveRules(updatedRules);
   };
 
   const toggleRule = (id: string) => {
-    updateRule(id, { enabled: !rules.find(r => r.id === id)?.enabled });
+    updateRule(id, { enabled: !rules.find((r) => r.id === id)?.enabled });
   };
 
   const getScriptIcon = (type: string) => {
     switch (type) {
-      case 'analytics': return <Zap className="w-4 h-4 text-yellow-500" />;
-      case 'advertising': return <XCircle className="w-4 h-4 text-red-500" />;
-      case 'social': return <Globe className="w-4 h-4 text-blue-500" />;
-      case 'functional': return <CheckCircle className="w-4 h-4 text-green-500" />;
-      default: return <Code className="w-4 h-4 text-gray-500" />;
+      case 'analytics':
+        return <Zap className="w-4 h-4 text-yellow-500" />;
+      case 'advertising':
+        return <XCircle className="w-4 h-4 text-red-500" />;
+      case 'social':
+        return <Globe className="w-4 h-4 text-blue-500" />;
+      case 'functional':
+        return <CheckCircle className="w-4 h-4 text-green-500" />;
+      default:
+        return <Code className="w-4 h-4 text-gray-500" />;
     }
   };
 
   const getActionIcon = (action: string) => {
     switch (action) {
-      case 'block': return <ShieldX className="w-4 h-4 text-red-500" />;
-      case 'allow': return <ShieldCheck className="w-4 h-4 text-green-500" />;
-      case 'delay': return <Pause className="w-4 h-4 text-yellow-500" />;
-      default: return <Shield className="w-4 h-4 text-gray-500" />;
+      case 'block':
+        return <ShieldX className="w-4 h-4 text-red-500" />;
+      case 'allow':
+        return <ShieldCheck className="w-4 h-4 text-green-500" />;
+      case 'delay':
+        return <Pause className="w-4 h-4 text-yellow-500" />;
+      default:
+        return <Shield className="w-4 h-4 text-gray-500" />;
     }
   };
 
@@ -212,7 +218,7 @@ export const ScriptControlPanel: React.FC = () => {
       pattern: script.url,
       enabled: true,
       createdAt: Date.now(),
-      lastModified: Date.now()
+      lastModified: Date.now(),
     };
 
     const updatedRules = [...rules, rule];
@@ -238,9 +244,7 @@ export const ScriptControlPanel: React.FC = () => {
             TIER 4
           </span>
         </div>
-        <p className="text-gray-600">
-          Granular control over JavaScript execution on websites
-        </p>
+        <p className="text-gray-600">Granular control over JavaScript execution on websites</p>
       </div>
 
       {/* Stats Overview */}
@@ -316,16 +320,18 @@ export const ScriptControlPanel: React.FC = () => {
                 type="text"
                 placeholder="Domain (e.g., example.com)"
                 value={newRuleForm.domain}
-                onChange={(e) => setNewRuleForm(prev => ({ ...prev, domain: e.target.value }))}
+                onChange={(e) => setNewRuleForm((prev) => ({ ...prev, domain: e.target.value }))}
                 className="px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
-              
+
               <select
                 value={newRuleForm.scriptType}
-                onChange={(e) => setNewRuleForm(prev => ({ 
-                  ...prev, 
-                  scriptType: e.target.value as ScriptRule['scriptType']
-                }))}
+                onChange={(e) =>
+                  setNewRuleForm((prev) => ({
+                    ...prev,
+                    scriptType: e.target.value as ScriptRule['scriptType'],
+                  }))
+                }
                 className="px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">All Scripts</option>
@@ -335,28 +341,30 @@ export const ScriptControlPanel: React.FC = () => {
                 <option value="functional">Functional</option>
                 <option value="custom">Custom Pattern</option>
               </select>
-              
+
               <select
                 value={newRuleForm.action}
-                onChange={(e) => setNewRuleForm(prev => ({ 
-                  ...prev, 
-                  action: e.target.value as ScriptRule['action']
-                }))}
+                onChange={(e) =>
+                  setNewRuleForm((prev) => ({
+                    ...prev,
+                    action: e.target.value as ScriptRule['action'],
+                  }))
+                }
                 className="px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="block">Block</option>
                 <option value="allow">Allow</option>
                 <option value="delay">Delay (3s)</option>
               </select>
-              
+
               <input
                 type="text"
                 placeholder="Pattern (optional)"
                 value={newRuleForm.pattern}
-                onChange={(e) => setNewRuleForm(prev => ({ ...prev, pattern: e.target.value }))}
+                onChange={(e) => setNewRuleForm((prev) => ({ ...prev, pattern: e.target.value }))}
                 className="px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
-              
+
               <button
                 onClick={addRule}
                 disabled={!newRuleForm.domain}
@@ -377,7 +385,10 @@ export const ScriptControlPanel: React.FC = () => {
               </div>
             ) : (
               rules.map((rule) => (
-                <div key={rule.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                <div
+                  key={rule.id}
+                  className="flex items-center justify-between p-4 border border-gray-200 rounded-lg"
+                >
                   <div className="flex items-center gap-4">
                     <button
                       onClick={() => toggleRule(rule.id)}
@@ -387,7 +398,7 @@ export const ScriptControlPanel: React.FC = () => {
                     >
                       {rule.enabled ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
                     </button>
-                    
+
                     <div>
                       <div className="flex items-center gap-2">
                         {getScriptIcon(rule.scriptType)}
@@ -400,13 +411,15 @@ export const ScriptControlPanel: React.FC = () => {
                         {rule.pattern && (
                           <>
                             <span>•</span>
-                            <span className="font-mono bg-gray-100 px-1 rounded">{rule.pattern}</span>
+                            <span className="font-mono bg-gray-100 px-1 rounded">
+                              {rule.pattern}
+                            </span>
                           </>
                         )}
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => deleteRule(rule.id)}
@@ -435,11 +448,12 @@ export const ScriptControlPanel: React.FC = () => {
               Refresh
             </button>
           </div>
-          
+
           <div className="text-sm text-gray-600 mb-4">
-            Current domain: <span className="font-mono bg-gray-100 px-2 py-1 rounded">{currentDomain}</span>
+            Current domain:{' '}
+            <span className="font-mono bg-gray-100 px-2 py-1 rounded">{currentDomain}</span>
           </div>
-          
+
           <div className="space-y-2">
             {detectedScripts.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
@@ -449,15 +463,22 @@ export const ScriptControlPanel: React.FC = () => {
               </div>
             ) : (
               detectedScripts.map((script, index) => (
-                <div key={index} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-4 border border-gray-200 rounded-lg"
+                >
                   <div className="flex items-center gap-4">
                     {getScriptIcon(script.category)}
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <span className="font-medium text-sm">{script.domain}</span>
-                        <span className={`px-2 py-1 rounded text-xs ${
-                          script.blocked ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
-                        }`}>
+                        <span
+                          className={`px-2 py-1 rounded text-xs ${
+                            script.blocked
+                              ? 'bg-red-100 text-red-700'
+                              : 'bg-green-100 text-green-700'
+                          }`}
+                        >
                           {script.blocked ? 'Blocked' : 'Allowed'}
                         </span>
                         <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
@@ -472,7 +493,7 @@ export const ScriptControlPanel: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                  
+
                   {!script.blocked && (
                     <button
                       onClick={() => quickBlockScript(script)}
@@ -509,7 +530,7 @@ export const ScriptControlPanel: React.FC = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-lg">
               <h3 className="text-lg font-semibold mb-4">Security Benefits</h3>
               <div className="space-y-3">
@@ -528,7 +549,7 @@ export const ScriptControlPanel: React.FC = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
             <div className="flex items-start gap-3">
               <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5" />
@@ -540,8 +561,7 @@ export const ScriptControlPanel: React.FC = () => {
                   • Start with blocking advertising and analytics scripts
                   <br />
                   • Use "Allow" for essential functional scripts
-                  <br />
-                  • "Delay" option improves page load while keeping functionality
+                  <br />• "Delay" option improves page load while keeping functionality
                 </p>
               </div>
             </div>

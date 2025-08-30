@@ -34,18 +34,18 @@ class ElementPicker {
 
   activate() {
     if (this.isActive) return;
-    
+
     this.isActive = true;
     this.createOverlay();
     this.attachEventListeners();
-    
+
     // Show instructions
     this.showInstructions();
   }
 
   deactivate() {
     if (!this.isActive) return;
-    
+
     this.isActive = false;
     this.removeOverlay();
     this.removeEventListeners();
@@ -98,7 +98,7 @@ class ElementPicker {
         Click on any element to block it | Press ESC to cancel
       </div>
     `;
-    
+
     // Add animation
     const style = document.createElement('style');
     style.textContent = `
@@ -108,9 +108,9 @@ class ElementPicker {
       }
     `;
     document.head.appendChild(_style);
-    
+
     document.body.appendChild(_instructions);
-    
+
     // Auto-remove after 3 seconds
     setTimeout(() => {
       instructions.remove();
@@ -122,7 +122,7 @@ class ElementPicker {
     this.mouseoverHandler = (e: MouseEvent) => this.handleMouseOver(e);
     this.clickHandler = (e: MouseEvent) => this.handleClick(e);
     this.keydownHandler = (e: KeyboardEvent) => this.handleKeyDown(e);
-    
+
     document.addEventListener('mouseover', this.mouseoverHandler, true);
     document.addEventListener('click', this.clickHandler, true);
     document.addEventListener('keydown', this.keydownHandler, true);
@@ -142,27 +142,27 @@ class ElementPicker {
 
   private handleMouseOver(e: MouseEvent) {
     if (!this.isActive) return;
-    
+
     const target = e.target as HTMLElement;
-    if (this.shouldIgnoreElement(_target)) return;
-    
+    if (this.shouldIgnoreElement(target)) return;
+
     this.removeHighlight();
-    this.highlightElement(_target);
+    this.highlightElement(target);
     this.selectedElement = target;
   }
 
   private handleClick(e: MouseEvent) {
     if (!this.isActive) return;
-    
+
     e.preventDefault();
     e.stopPropagation();
-    
+
     const target = e.target as HTMLElement;
-    if (this.shouldIgnoreElement(_target)) return;
-    
-    this.blockElement(_target);
+    if (this.shouldIgnoreElement(target)) return;
+
+    this.blockElement(target);
     this.deactivate();
-    
+
     return false;
   }
 
@@ -173,9 +173,11 @@ class ElementPicker {
   }
 
   private shouldIgnoreElement(element: HTMLElement): boolean {
-    return element.id === 'shieldpro-element-picker-overlay' ||
-           element.id === 'shieldpro-picker-instructions' ||
-           element.id === 'shieldpro-highlight-box';
+    return (
+      element.id === 'shieldpro-element-picker-overlay' ||
+      element.id === 'shieldpro-picker-instructions' ||
+      element.id === 'shieldpro-highlight-box'
+    );
   }
 
   private highlightElement(element: HTMLElement) {
@@ -194,36 +196,36 @@ class ElementPicker {
       z-index: 2147483646;
       box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
     `;
-    
+
     if (this.overlay) {
-      this.overlay.appendChild(_highlight);
+      this.overlay.appendChild(highlight);
     }
   }
 
   private removeHighlight() {
     const highlight = document.getElementById('shieldpro-highlight-box');
-    if (_highlight) {
+    if (highlight) {
       highlight.remove();
     }
   }
 
   private async blockElement(element: HTMLElement) {
     // Generate CSS selector for the element
-    const selector = this.generateSelector(_element);
-    
+    const selector = this.generateSelector(element);
+
     // Hide element immediately
     element.style.display = 'none';
-    
+
     // Save the custom filter
-    await this.saveCustomFilter(_selector);
-    
+    await this.saveCustomFilter(selector);
+
     // Show success notification
     this.showNotification(`Element blocked! Filter added: ${selector}`);
-    
+
     // Send message to background to update filters
     chrome.runtime.sendMessage({
       action: 'addCustomFilter',
-      filter: selector
+      filter: selector,
     });
   }
 
@@ -232,53 +234,57 @@ class ElementPicker {
     if (element.id) {
       return `#${element.id}`;
     }
-    
+
     if (element.className && typeof element.className === 'string') {
-      const classes = element.className.split(' ')
-        .filter(c => c && !c.startsWith('shieldpro'))
+      const classes = element.className
+        .split(' ')
+        .filter((c) => c && !c.startsWith('shieldpro'))
         .join('.');
-      if (_classes) {
+      if (classes) {
         return `.${classes}`;
       }
     }
-    
+
     // Generate path-based selector
     const path: string[] = [];
     let current: HTMLElement | null = element;
-    
+
     while (current && current !== document.body) {
       let selector = current.tagName.toLowerCase();
-      
+
       if (current.id) {
         selector = `#${current.id}`;
-        path.unshift(_selector);
+        path.unshift(selector);
         break;
       } else if (current.className && typeof current.className === 'string') {
-        const classes = current.className.split(' ').filter(c => c).join('.');
-        if (_classes) {
+        const classes = current.className
+          .split(' ')
+          .filter((c) => c)
+          .join('.');
+        if (classes) {
           selector += `.${classes}`;
         }
       }
-      
+
       path.unshift(_selector);
       current = current.parentElement;
     }
-    
+
     return path.join(' > ');
   }
 
   private async saveCustomFilter(selector: string) {
     const result = await chrome.storage.local.get('customFilters');
     const filters = result.customFilters || [];
-    
+
     // Add new filter with metadata
     filters.push({
       selector,
       domain: window.location.hostname,
       created: Date.now(),
-      enabled: true
+      enabled: true,
     });
-    
+
     await chrome.storage.local.set({ customFilters: filters });
   }
 
@@ -299,10 +305,10 @@ class ElementPicker {
       animation: slideUp 0.3s ease-out;
       max-width: 300px;
     `;
-    
+
     notification.textContent = message;
     document.body.appendChild(_notification);
-    
+
     setTimeout(() => {
       notification.style.animation = 'fadeOut 0.3s ease-out';
       setTimeout(() => notification.remove(), 300);
@@ -314,15 +320,15 @@ class ElementPicker {
     const result = await chrome.storage.local.get('customFilters');
     const filters = result.customFilters || [];
     const currentDomain = window.location.hostname;
-    
+
     filters.forEach((filter: any) => {
       if (filter.enabled && (!filter.domain || filter.domain === currentDomain)) {
         try {
           const elements = document.querySelectorAll(filter.selector);
-          elements.forEach(el => {
+          elements.forEach((el) => {
             (el as HTMLElement).style.display = 'none';
           });
-        } catch (error) {
+        } catch {
           console.error('Error applying filter:', filter.selector, error);
         }
       }

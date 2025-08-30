@@ -12,46 +12,46 @@ export const WidthControl: React.FC<WidthControlProps> = ({ currentWidth, onWidt
 
   // Predefined width options
   const widthOptions = [
-    { 
-      value: 'full', 
-      label: 'Full Width', 
-      icon: Maximize2, 
+    {
+      value: 'full',
+      label: 'Full Width',
+      icon: Maximize2,
       description: '100% of screen',
-      percentage: 100
+      percentage: 100,
     },
-    { 
-      value: 'extra-wide', 
-      label: 'Extra Wide', 
-      icon: Monitor, 
+    {
+      value: 'extra-wide',
+      label: 'Extra Wide',
+      icon: Monitor,
       description: '90% of screen',
-      percentage: 90
+      percentage: 90,
     },
-    { 
-      value: 'wide', 
-      label: 'Wide', 
-      icon: Monitor, 
+    {
+      value: 'wide',
+      label: 'Wide',
+      icon: Monitor,
       description: '80% of screen',
-      percentage: 80
+      percentage: 80,
     },
-    { 
-      value: 'standard', 
-      label: 'Standard', 
-      icon: Tablet, 
+    {
+      value: 'standard',
+      label: 'Standard',
+      icon: Tablet,
       description: '70% of screen',
-      percentage: 70
+      percentage: 70,
     },
-    { 
-      value: 'compact', 
-      label: 'Compact', 
-      icon: Smartphone, 
+    {
+      value: 'compact',
+      label: 'Compact',
+      icon: Smartphone,
       description: '60% of screen',
-      percentage: 60
-    }
+      percentage: 60,
+    },
   ];
 
   useEffect(() => {
     // Check if current width is a custom value
-    const isPreset = widthOptions.some(opt => opt.value === currentWidth);
+    const isPreset = widthOptions.some((opt) => opt.value === currentWidth);
     if (!isPreset && currentWidth.includes('custom-')) {
       setIsCustom(true);
       const percentage = parseInt(currentWidth.replace('custom-', ''));
@@ -80,9 +80,7 @@ export const WidthControl: React.FC<WidthControlProps> = ({ currentWidth, onWidt
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-          Content Width
-        </h3>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">Content Width</h3>
         <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
           Adjust how wide the options page content appears on your screen
         </p>
@@ -100,9 +98,10 @@ export const WidthControl: React.FC<WidthControlProps> = ({ currentWidth, onWidt
               onClick={() => handlePresetChange(option.value, option.percentage)}
               className={`
                 relative flex flex-col items-center p-3 rounded-lg border-2 transition-all
-                ${isActive
-                  ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
-                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                ${
+                  isActive
+                    ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                 }
               `}
             >
@@ -112,12 +111,16 @@ export const WidthControl: React.FC<WidthControlProps> = ({ currentWidth, onWidt
                 </div>
               )}
 
-              <Icon className={`w-6 h-6 mb-1 ${isActive ? 'text-primary-600 dark:text-primary-400' : 'text-gray-600 dark:text-gray-400'}`} />
-              
-              <span className={`text-xs font-medium ${isActive ? 'text-primary-600 dark:text-primary-400' : 'text-gray-900 dark:text-gray-100'}`}>
+              <Icon
+                className={`w-6 h-6 mb-1 ${isActive ? 'text-primary-600 dark:text-primary-400' : 'text-gray-600 dark:text-gray-400'}`}
+              />
+
+              <span
+                className={`text-xs font-medium ${isActive ? 'text-primary-600 dark:text-primary-400' : 'text-gray-900 dark:text-gray-100'}`}
+              >
                 {option.label}
               </span>
-              
+
               <span className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                 {option.description}
               </span>
@@ -135,9 +138,7 @@ export const WidthControl: React.FC<WidthControlProps> = ({ currentWidth, onWidt
               Custom Width
             </label>
           </div>
-          <span className="text-sm font-mono text-gray-600 dark:text-gray-400">
-            {customWidth}%
-          </span>
+          <span className="text-sm font-mono text-gray-600 dark:text-gray-400">{customWidth}%</span>
         </div>
 
         <div className="relative">
@@ -153,10 +154,10 @@ export const WidthControl: React.FC<WidthControlProps> = ({ currentWidth, onWidt
               slider focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
             "
             style={{
-              background: `linear-gradient(to right, rgb(59, 130, 246) 0%, rgb(59, 130, 246) ${((customWidth - 50) / 50) * 100}%, rgb(229, 231, 235) ${((customWidth - 50) / 50) * 100}%, rgb(229, 231, 235) 100%)`
+              background: `linear-gradient(to right, rgb(59, 130, 246) 0%, rgb(59, 130, 246) ${((customWidth - 50) / 50) * 100}%, rgb(229, 231, 235) ${((customWidth - 50) / 50) * 100}%, rgb(229, 231, 235) 100%)`,
             }}
           />
-          
+
           {/* Tick marks */}
           <div className="flex justify-between mt-1 px-1">
             <span className="text-xs text-gray-500">50%</span>
@@ -181,10 +182,10 @@ export const WidthControl: React.FC<WidthControlProps> = ({ currentWidth, onWidt
         </label>
         <div className="relative h-24 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
           <div className="absolute inset-0 flex items-center justify-center">
-            <div 
+            <div
               className="h-16 bg-primary-500/20 border-2 border-primary-500 rounded transition-all duration-300"
-              style={{ 
-                width: `${isCustom ? customWidth : (widthOptions.find(o => o.value === currentWidth)?.percentage || 80)}%` 
+              style={{
+                width: `${isCustom ? customWidth : widthOptions.find((o) => o.value === currentWidth)?.percentage || 80}%`,
               }}
             >
               <div className="h-full flex items-center justify-center">

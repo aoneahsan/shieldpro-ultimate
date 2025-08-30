@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Cloud, Download, Upload, RefreshCw, Check, Shield, Calendar, Smartphone, Monitor, Copy } from 'lucide-react';
+import {
+  Cloud,
+  Download,
+  Upload,
+  RefreshCw,
+  Check,
+  Shield,
+  Calendar,
+  Smartphone,
+  Monitor,
+  Copy,
+} from 'lucide-react';
 import { StorageManager } from '../../shared/utils/storage';
 import authService from '../../services/auth.service';
 
@@ -37,7 +48,7 @@ export const BackupSync: React.FC<BackupSyncProps> = ({ currentTier }) => {
   const loadSyncSettings = async () => {
     const storage = StorageManager.getInstance();
     const settings = await storage.getSettings();
-    
+
     if (settings.sync) {
       setSyncEnabled(settings.sync.enabled || false);
       setAutoSync(settings.sync.auto || true);
@@ -83,8 +94,8 @@ export const BackupSync: React.FC<BackupSyncProps> = ({ currentTier }) => {
         interval: syncInterval,
         lastSync,
         devices,
-        code: syncCode
-      }
+        code: syncCode,
+      },
     });
   };
 
@@ -113,8 +124,8 @@ export const BackupSync: React.FC<BackupSyncProps> = ({ currentTier }) => {
           id: await getDeviceId(),
           name: await getDeviceName(),
           type: getDeviceType(),
-          browser: getBrowserInfo()
-        }
+          browser: getBrowserInfo(),
+        },
       };
 
       // Save to cloud (Firebase)
@@ -122,30 +133,30 @@ export const BackupSync: React.FC<BackupSyncProps> = ({ currentTier }) => {
 
       // Update last sync
       setLastSync(Date.now());
-      
+
       // Update devices list
       const currentDevice: SyncDevice = {
         id: backup.device.id,
         name: backup.device.name,
         type: backup.device.type as 'desktop' | 'mobile' | 'tablet',
         lastSync: Date.now(),
-        browser: backup.device.browser
+        browser: backup.device.browser,
       };
-      
-      const updatedDevices = devices.filter(d => d.id !== currentDevice.id);
+
+      const updatedDevices = devices.filter((d) => d.id !== currentDevice.id);
       updatedDevices.push(currentDevice);
       setDevices(updatedDevices);
-      
+
       await saveSyncSettings();
-      
+
       // Show success notification
       chrome.notifications.create({
         type: 'basic',
         iconUrl: chrome.runtime.getURL('icons/icon-128.png'),
         title: 'Sync Complete',
-        message: 'Your settings have been synced to the cloud'
+        message: 'Your settings have been synced to the cloud',
       });
-    } catch (error) {
+    } catch {
       console.error('Sync error:', error);
       alert('Failed to sync settings. Please try again.');
     } finally {
@@ -157,23 +168,23 @@ export const BackupSync: React.FC<BackupSyncProps> = ({ currentTier }) => {
     if (confirm('This will replace all your current settings. Continue?')) {
       try {
         const storage = StorageManager.getInstance();
-        
+
         // Restore settings
         await storage.setSettings(backup.settings);
-        
+
         // Restore whitelist
         for (const domain of backup.whitelist) {
           await storage.addToWhitelist(domain);
         }
-        
+
         // Restore custom filters if present
         if (backup.customFilters) {
           await chrome.storage.local.set({ customFilters: backup.customFilters });
         }
-        
+
         // Reload extension
         chrome.runtime.reload();
-      } catch (error) {
+      } catch {
         console.error('Restore error:', error);
         alert('Failed to restore backup. Please try again.');
       }
@@ -193,7 +204,7 @@ export const BackupSync: React.FC<BackupSyncProps> = ({ currentTier }) => {
       settings: allSettings,
       whitelist,
       stats,
-      customFilters
+      customFilters,
     };
 
     const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
@@ -213,15 +224,15 @@ export const BackupSync: React.FC<BackupSyncProps> = ({ currentTier }) => {
     reader.onload = async (e) => {
       try {
         const importData = JSON.parse(e.target?.result as string);
-        
+
         if (!importData.version || !importData.settings) {
           throw new Error('Invalid backup file');
         }
 
         await handleRestore(importData);
-      } catch (error) {
+      } catch {
         console.error('Import error:', error);
-        alert('Failed to import backup file. Please ensure it\'s a valid ShieldPro backup.');
+        alert("Failed to import backup file. Please ensure it's a valid ShieldPro backup.");
       }
     };
     reader.readAsText(file);
@@ -237,7 +248,7 @@ export const BackupSync: React.FC<BackupSyncProps> = ({ currentTier }) => {
     try {
       // Fetch settings from cloud using sync code
       const cloudData = await fetchFromCloud(enterSyncCode);
-      
+
       if (cloudData) {
         await handleRestore(cloudData);
         setEnterSyncCode('');
@@ -245,7 +256,7 @@ export const BackupSync: React.FC<BackupSyncProps> = ({ currentTier }) => {
       } else {
         alert('No data found for this sync code');
       }
-    } catch (error) {
+    } catch {
       console.error('Sync with code error:', error);
       alert('Failed to sync with code. Please check the code and try again.');
     } finally {
@@ -309,9 +320,12 @@ export const BackupSync: React.FC<BackupSyncProps> = ({ currentTier }) => {
 
   const getDeviceIcon = (type: string) => {
     switch (type) {
-      case 'mobile': return <Smartphone className="w-4 h-4" />;
-      case 'tablet': return <Smartphone className="w-4 h-4 rotate-90" />;
-      default: return <Monitor className="w-4 h-4" />;
+      case 'mobile':
+        return <Smartphone className="w-4 h-4" />;
+      case 'tablet':
+        return <Smartphone className="w-4 h-4 rotate-90" />;
+      default:
+        return <Monitor className="w-4 h-4" />;
     }
   };
 
@@ -335,9 +349,11 @@ export const BackupSync: React.FC<BackupSyncProps> = ({ currentTier }) => {
                   syncEnabled ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'
                 } cursor-pointer`}
               >
-                <div className={`absolute w-5 h-5 bg-white rounded-full shadow transition-transform top-0.5 ${
-                  syncEnabled ? 'translate-x-6' : 'translate-x-0.5'
-                }`} />
+                <div
+                  className={`absolute w-5 h-5 bg-white rounded-full shadow transition-transform top-0.5 ${
+                    syncEnabled ? 'translate-x-6' : 'translate-x-0.5'
+                  }`}
+                />
               </button>
             )}
           </div>
@@ -384,12 +400,14 @@ export const BackupSync: React.FC<BackupSyncProps> = ({ currentTier }) => {
                       autoSync ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'
                     }`}
                   >
-                    <div className={`absolute w-4 h-4 bg-white rounded-full shadow transition-transform top-0.5 ${
-                      autoSync ? 'translate-x-5' : 'translate-x-0.5'
-                    }`} />
+                    <div
+                      className={`absolute w-4 h-4 bg-white rounded-full shadow transition-transform top-0.5 ${
+                        autoSync ? 'translate-x-5' : 'translate-x-0.5'
+                      }`}
+                    />
                   </button>
                 </div>
-                
+
                 {autoSync && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -427,7 +445,7 @@ export const BackupSync: React.FC<BackupSyncProps> = ({ currentTier }) => {
               Use this code to sync settings on another device
             </p>
           </div>
-          
+
           <div className="p-4 space-y-4">
             <div>
               <div className="flex items-center space-x-2">
@@ -450,7 +468,7 @@ export const BackupSync: React.FC<BackupSyncProps> = ({ currentTier }) => {
                       type: 'basic',
                       iconUrl: chrome.runtime.getURL('icons/icon-128.png'),
                       title: 'Copied!',
-                      message: 'Sync code copied to clipboard'
+                      message: 'Sync code copied to clipboard',
                     });
                   }}
                   className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -491,11 +509,14 @@ export const BackupSync: React.FC<BackupSyncProps> = ({ currentTier }) => {
           <div className="p-4 border-b border-gray-200 dark:border-gray-700">
             <h4 className="font-medium">Connected Devices</h4>
           </div>
-          
+
           <div className="p-4">
             <div className="space-y-2">
-              {devices.map(device => (
-                <div key={device.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              {devices.map((device) => (
+                <div
+                  key={device.id}
+                  className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
+                >
                   <div className="flex items-center space-x-3">
                     {getDeviceIcon(device.type)}
                     <div>
@@ -520,7 +541,7 @@ export const BackupSync: React.FC<BackupSyncProps> = ({ currentTier }) => {
             Export and import settings manually
           </p>
         </div>
-        
+
         <div className="p-4">
           <div className="flex space-x-3">
             <button
@@ -530,16 +551,11 @@ export const BackupSync: React.FC<BackupSyncProps> = ({ currentTier }) => {
               <Download className="w-4 h-4" />
               <span>Export Settings</span>
             </button>
-            
+
             <label className="flex-1 flex items-center justify-center space-x-2 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 cursor-pointer">
               <Upload className="w-4 h-4" />
               <span>Import Settings</span>
-              <input
-                type="file"
-                accept=".json"
-                onChange={handleImport}
-                className="hidden"
-              />
+              <input type="file" accept=".json" onChange={handleImport} className="hidden" />
             </label>
           </div>
         </div>
@@ -554,27 +570,31 @@ export const BackupSync: React.FC<BackupSyncProps> = ({ currentTier }) => {
               <span>Recent Backups</span>
             </h4>
           </div>
-          
+
           <div className="p-4">
             <div className="space-y-2">
-              {backups.slice(-5).reverse().map((backup, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                  <div>
-                    <div className="text-sm font-medium">
-                      {formatDate(backup.timestamp)}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      Version {backup.version} • {backup.device?.name || 'Unknown Device'}
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => handleRestore(backup)}
-                    className="px-3 py-1 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700"
+              {backups
+                .slice(-5)
+                .reverse()
+                .map((backup, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
                   >
-                    Restore
-                  </button>
-                </div>
-              ))}
+                    <div>
+                      <div className="text-sm font-medium">{formatDate(backup.timestamp)}</div>
+                      <div className="text-xs text-gray-500">
+                        Version {backup.version} • {backup.device?.name || 'Unknown Device'}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleRestore(backup)}
+                      className="px-3 py-1 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700"
+                    >
+                      Restore
+                    </button>
+                  </div>
+                ))}
             </div>
           </div>
         </div>

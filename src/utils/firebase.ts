@@ -4,8 +4,8 @@
  */
 
 import { initializeApp, FirebaseApp } from 'firebase/app';
-import { 
-  getAuth, 
+import {
+  getAuth,
   Auth,
   signInAnonymously,
   signInWithEmailAndPassword,
@@ -14,10 +14,10 @@ import {
   GoogleAuthProvider,
   linkWithCredential,
   EmailAuthProvider,
-  User
+  User,
 } from 'firebase/auth';
-import { 
-  getFirestore, 
+import {
+  getFirestore,
   Firestore,
   connectFirestoreEmulator,
   doc,
@@ -26,28 +26,32 @@ import {
   updateDoc,
   increment,
   serverTimestamp,
-  Timestamp
+  Timestamp,
 } from 'firebase/firestore';
-import { 
-  getFunctions, 
+import {
+  getFunctions,
   Functions,
   connectFunctionsEmulator,
-  httpsCallable
+  httpsCallable,
 } from 'firebase/functions';
-import { 
-  getStorage, 
-  Storage,
-  connectStorageEmulator
-} from 'firebase/storage';
+import { getStorage, Storage, connectStorageEmulator } from 'firebase/storage';
 
 // Firebase configuration from environment variables
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || process.env.REACT_APP_FIREBASE_API_KEY || '',
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || process.env.REACT_APP_FIREBASE_AUTH_DOMAIN || '',
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || process.env.REACT_APP_FIREBASE_PROJECT_ID || '',
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || process.env.REACT_APP_FIREBASE_STORAGE_BUCKET || '',
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID || '',
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || process.env.REACT_APP_FIREBASE_APP_ID || ''
+  authDomain:
+    import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || process.env.REACT_APP_FIREBASE_AUTH_DOMAIN || '',
+  projectId:
+    import.meta.env.VITE_FIREBASE_PROJECT_ID || process.env.REACT_APP_FIREBASE_PROJECT_ID || '',
+  storageBucket:
+    import.meta.env.VITE_FIREBASE_STORAGE_BUCKET ||
+    process.env.REACT_APP_FIREBASE_STORAGE_BUCKET ||
+    '',
+  messagingSenderId:
+    import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID ||
+    process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID ||
+    '',
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || process.env.REACT_APP_FIREBASE_APP_ID || '',
 };
 
 // Initialize Firebase
@@ -64,7 +68,7 @@ try {
   firestore = getFirestore(app);
   functions = getFunctions(app);
   storage = getStorage(app);
-} catch (error) {
+} catch {
   console.error('Firebase initialization error:', error);
   // If already initialized, get the existing instances
   auth = getAuth();
@@ -80,7 +84,7 @@ if (import.meta.env.DEV && import.meta.env.VITE_USE_FIREBASE_EMULATOR === 'true'
     connectFunctionsEmulator(functions, 'localhost', 5001);
     connectStorageEmulator(storage, 'localhost', 9199);
     console.log('Connected to Firebase emulators');
-  } catch (error) {
+  } catch {
     // Already connected to emulators
     console.log('Firebase emulators already connected');
   }
@@ -102,7 +106,7 @@ export {
   GoogleAuthProvider,
   linkWithCredential,
   EmailAuthProvider,
-  
+
   // Firestore functions
   doc,
   getDoc,
@@ -111,9 +115,9 @@ export {
   increment,
   serverTimestamp,
   Timestamp,
-  
+
   // Functions
-  httpsCallable
+  httpsCallable,
 };
 
 /**
@@ -150,7 +154,7 @@ export const FirebaseErrorCode = {
   NETWORK_REQUEST_FAILED: 'auth/network-request-failed',
   TOO_MANY_REQUESTS: 'auth/too-many-requests',
   USER_DISABLED: 'auth/user-disabled',
-  
+
   // Firestore errors
   PERMISSION_DENIED: 'permission-denied',
   NOT_FOUND: 'not-found',
@@ -163,7 +167,7 @@ export const FirebaseErrorCode = {
   INTERNAL: 'internal',
   UNAVAILABLE: 'unavailable',
   DATA_LOSS: 'data-loss',
-  UNAUTHENTICATED: 'unauthenticated'
+  UNAUTHENTICATED: 'unauthenticated',
 } as const;
 
 /**
@@ -171,7 +175,7 @@ export const FirebaseErrorCode = {
  */
 export const handleFirebaseError = (error: any): string => {
   const code = error?.code || error?.message || 'unknown-error';
-  
+
   const errorMessages: Record<string, string> = {
     [FirebaseErrorCode.EMAIL_ALREADY_IN_USE]: 'This email is already registered',
     [FirebaseErrorCode.INVALID_EMAIL]: 'Invalid email address',
@@ -181,11 +185,11 @@ export const handleFirebaseError = (error: any): string => {
     [FirebaseErrorCode.NETWORK_REQUEST_FAILED]: 'Network error. Please check your connection',
     [FirebaseErrorCode.TOO_MANY_REQUESTS]: 'Too many attempts. Please try again later',
     [FirebaseErrorCode.USER_DISABLED]: 'This account has been disabled',
-    [FirebaseErrorCode.PERMISSION_DENIED]: 'You don\'t have permission to perform this action',
+    [FirebaseErrorCode.PERMISSION_DENIED]: "You don't have permission to perform this action",
     [FirebaseErrorCode.NOT_FOUND]: 'Requested resource not found',
-    [FirebaseErrorCode.UNAUTHENTICATED]: 'Please sign in to continue'
+    [FirebaseErrorCode.UNAUTHENTICATED]: 'Please sign in to continue',
   };
-  
+
   return errorMessages[code] || `An error occurred: ${code}`;
 };
 
@@ -198,21 +202,21 @@ export const cloudFunctions = {
   deleteAnonymousUser: httpsCallable(functions, 'deleteAnonymousUser'),
   trackAnalytics: httpsCallable(functions, 'trackAnalytics'),
   getGlobalStats: httpsCallable(functions, 'getGlobalStats'),
-  
-  // Tier management functions  
+
+  // Tier management functions
   checkTierUpgrade: httpsCallable(functions, 'checkTierUpgrade'),
   trackDailyEngagement: httpsCallable(functions, 'trackDailyEngagement'),
   getTierProgress: httpsCallable(functions, 'getTierProgress'),
-  
+
   // Referral functions
   processReferral: httpsCallable(functions, 'processReferral'),
-  
+
   // Stats functions
   updateBlockingStats: httpsCallable(functions, 'updateBlockingStats'),
   getUserStatistics: httpsCallable(functions, 'getUserStatistics'),
-  
+
   // Data export functions
-  exportUserData: httpsCallable(functions, 'exportUserData')
+  exportUserData: httpsCallable(functions, 'exportUserData'),
 };
 
 /**
@@ -228,7 +232,7 @@ export const initAuthListener = (callback: (user: User | null) => void) => {
 export const signOut = async (): Promise<void> => {
   try {
     await auth.signOut();
-  } catch (error) {
+  } catch {
     console.error('Sign out error:', error);
     throw error;
   }

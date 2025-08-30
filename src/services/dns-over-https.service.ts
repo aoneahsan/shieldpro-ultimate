@@ -59,7 +59,7 @@ export class DNSOverHTTPSService {
   private cache: Map<string, { response: DNSResponse; expires: number }> = new Map();
   private queryLog: DNSQuery[] = [];
   private tierLevel: number = 1;
-  
+
   private defaultProviders: DoHProvider[] = [
     {
       name: 'Cloudflare',
@@ -68,16 +68,16 @@ export class DNSOverHTTPSService {
       location: 'Global',
       supportsECS: false,
       logging: 'none',
-      reliability: 10
+      reliability: 10,
     },
     {
       name: 'Google Public DNS',
       url: 'https://dns.google/dns-query',
-      description: 'Google\'s public DNS service with global coverage',
+      description: "Google's public DNS service with global coverage",
       location: 'Global',
       supportsECS: true,
       logging: 'minimal',
-      reliability: 9
+      reliability: 9,
     },
     {
       name: 'Quad9',
@@ -86,16 +86,16 @@ export class DNSOverHTTPSService {
       location: 'Global',
       supportsECS: false,
       logging: 'none',
-      reliability: 9
+      reliability: 9,
     },
     {
       name: 'OpenDNS',
       url: 'https://doh.opendns.com/dns-query',
-      description: 'Cisco\'s DNS with content filtering options',
+      description: "Cisco's DNS with content filtering options",
       location: 'Global',
       supportsECS: true,
       logging: 'standard',
-      reliability: 8
+      reliability: 8,
     },
     {
       name: 'AdGuard DNS',
@@ -104,8 +104,8 @@ export class DNSOverHTTPSService {
       location: 'Global',
       supportsECS: false,
       logging: 'none',
-      reliability: 8
-    }
+      reliability: 8,
+    },
   ];
 
   constructor() {
@@ -118,7 +118,7 @@ export class DNSOverHTTPSService {
       cacheTTL: 300, // 5 minutes
       blockMaliciousDomains: true,
       logQueries: false,
-      useECS: false
+      useECS: false,
     };
     this.initialize();
   }
@@ -162,13 +162,16 @@ export class DNSOverHTTPSService {
     console.log('DNS interception setup (framework ready)');
   }
 
-  public async resolveDoH(domain: string, recordType: 'A' | 'AAAA' | 'CNAME' | 'MX' | 'TXT' | 'NS' = 'A'): Promise<DNSResponse> {
+  public async resolveDoH(
+    domain: string,
+    recordType: 'A' | 'AAAA' | 'CNAME' | 'MX' | 'TXT' | 'NS' = 'A'
+  ): Promise<DNSResponse> {
     if (this.tierLevel < 4) {
       throw new Error('DNS-over-HTTPS requires Tier 4');
     }
 
     const cacheKey = `${domain}:${recordType}`;
-    
+
     // Check cache first
     if (this.settings.cacheEnabled) {
       const cached = this.cache.get(_cacheKey);
@@ -187,23 +190,23 @@ export class DNSOverHTTPSService {
       domain,
       recordType,
       timestamp: Date.now(),
-      provider: provider.name
+      provider: provider.name,
     };
 
     const startTime = Date.now();
 
     try {
       const response = await this.performDoHQuery(provider.url, domain, recordType);
-      
+
       query.response = response;
       query.duration = Date.now() - startTime;
 
       // Cache the response
       if (this.settings.cacheEnabled && response.Answer && response.Answer.length > 0) {
-        const ttl = Math.min(...response.Answer.map(r => r.TTL)) * 1000;
+        const ttl = Math.min(...response.Answer.map((r) => r.TTL)) * 1000;
         this.cache.set(_cacheKey, {
           response,
-          expires: Date.now() + Math.min(_ttl, this.settings.cacheTTL * 1000)
+          expires: Date.now() + Math.min(_ttl, this.settings.cacheTTL * 1000),
         });
       }
 
@@ -216,7 +219,7 @@ export class DNSOverHTTPSService {
       }
 
       return response;
-    } catch (error) {
+    } catch {
       query.error = error instanceof Error ? error.message : 'Unknown error';
       query.duration = Date.now() - startTime;
 
@@ -240,27 +243,31 @@ export class DNSOverHTTPSService {
     }
   }
 
-  private async performDoHQuery(providerUrl: string, domain: string, recordType: string): Promise<DNSResponse> {
+  private async performDoHQuery(
+    providerUrl: string,
+    domain: string,
+    recordType: string
+  ): Promise<DNSResponse> {
     const typeMap: Record<string, number> = {
-      'A': 1,
-      'AAAA': 28,
-      'CNAME': 5,
-      'MX': 15,
-      'TXT': 16,
-      'NS': 2
+      A: 1,
+      AAAA: 28,
+      CNAME: 5,
+      MX: 15,
+      TXT: 16,
+      NS: 2,
     };
 
     const params = new URLSearchParams({
       name: domain,
-      type: typeMap[recordType].toString()
+      type: typeMap[recordType].toString(),
     });
 
     const response = await fetch(`${providerUrl}?${params}`, {
       method: 'GET',
       headers: {
-        'Accept': 'application/dns-json',
-        'User-Agent': 'ShieldPro-Ultimate/1.0'
-      }
+        Accept: 'application/dns-json',
+        'User-Agent': 'ShieldPro-Ultimate/1.0',
+      },
     });
 
     if (!response.ok) {
@@ -271,8 +278,9 @@ export class DNSOverHTTPSService {
   }
 
   private getProvider(name: string): DoHProvider | undefined {
-    return [...this.defaultProviders, ...this.settings.customProviders]
-      .find(p => p.name === name);
+    return [...this.defaultProviders, ...this.settings.customProviders].find(
+      (p) => p.name === name
+    );
   }
 
   public async enableDoH(primaryProvider: string = 'Cloudflare'): Promise<void> {
@@ -282,7 +290,7 @@ export class DNSOverHTTPSService {
 
     this.settings.enabled = true;
     this.settings.primaryProvider = primaryProvider;
-    
+
     await this.saveSettings();
     await this.setupDNSInterception();
 
@@ -302,7 +310,7 @@ export class DNSOverHTTPSService {
   public async addCustomProvider(provider: Omit<DoHProvider, 'reliability'>): Promise<void> {
     const newProvider: DoHProvider = {
       ...provider,
-      reliability: 5 // Default reliability for custom providers
+      reliability: 5, // Default reliability for custom providers
     };
 
     this.settings.customProviders.push(_newProvider);
@@ -310,7 +318,7 @@ export class DNSOverHTTPSService {
   }
 
   public async removeCustomProvider(name: string): Promise<void> {
-    this.settings.customProviders = this.settings.customProviders.filter(p => p.name !== name);
+    this.settings.customProviders = this.settings.customProviders.filter((p) => p.name !== name);
     await this.saveSettings();
   }
 
@@ -345,15 +353,17 @@ export class DNSOverHTTPSService {
 
   public getCacheStats(): { entries: number; hitRate: number } {
     const totalQueries = this.queryLog.length;
-    const cacheHits = this.queryLog.filter(q => q.duration && q.duration < 10).length; // Assume <10ms = cache hit
-    
+    const cacheHits = this.queryLog.filter((q) => q.duration && q.duration < 10).length; // Assume <10ms = cache hit
+
     return {
       entries: this.cache.size,
-      hitRate: totalQueries > 0 ? cacheHits / totalQueries : 0
+      hitRate: totalQueries > 0 ? cacheHits / totalQueries : 0,
     };
   }
 
-  public async testProvider(providerName: string): Promise<{ success: boolean; latency: number; error?: string }> {
+  public async testProvider(
+    providerName: string
+  ): Promise<{ success: boolean; latency: number; error?: string }> {
     const provider = this.getProvider(_providerName);
     if (!provider) {
       return { success: false, latency: 0, error: 'Provider not found' };
@@ -363,43 +373,45 @@ export class DNSOverHTTPSService {
     try {
       const response = await this.performDoHQuery(provider.url, 'google.com', 'A');
       const latency = Date.now() - startTime;
-      
+
       return {
         success: response.Status === 0 && response.Answer && response.Answer.length > 0,
-        latency
+        latency,
       };
-    } catch (error) {
+    } catch {
       return {
         success: false,
         latency: Date.now() - startTime,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   }
 
-  public async performBenchmark(): Promise<{ provider: string; latency: number; reliability: number }[]> {
+  public async performBenchmark(): Promise<
+    { provider: string; latency: number; reliability: number }[]
+  > {
     const results = [];
-    
+
     for (const provider of this.defaultProviders) {
       const tests = [];
-      
+
       // Run 3 test queries
       for (let i = 0; i < 3; i++) {
         const result = await this.testProvider(provider.name);
         tests.push(_result);
-        await new Promise(resolve => setTimeout(_resolve, 100)); // Small delay between tests
+        await new Promise((resolve) => setTimeout(_resolve, 100)); // Small delay between tests
       }
-      
-      const successful = tests.filter(t => t.success).length;
+
+      const successful = tests.filter((t) => t.success).length;
       const avgLatency = tests.reduce((_sum, t) => sum + t.latency, 0) / tests.length;
-      
+
       results.push({
         provider: provider.name,
         latency: avgLatency,
-        reliability: (successful / tests.length) * 10
+        reliability: (successful / tests.length) * 10,
       });
     }
-    
+
     return results.sort((_a, b) => a.latency - b.latency);
   }
 }

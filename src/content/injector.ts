@@ -1,7 +1,7 @@
 (() => {
   const COMMON_AD_SELECTORS = [
     '[id*="google_ads"]',
-    '[id*="google-ads"]', 
+    '[id*="google-ads"]',
     '[class*="google-ads"]',
     '[id*="banner_ad"]',
     '[class*="banner_ad"]',
@@ -19,7 +19,7 @@
     '.ad',
     '.ads',
     '.advert',
-    '.advertisement'
+    '.advertisement',
   ];
 
   let observer: MutationObserver | null = null;
@@ -34,21 +34,25 @@
       const response = await chrome.runtime.sendMessage({ action: 'getSettings' });
       isEnabled = response?.enabled ?? true;
       currentTier = response?.tier?.level || 1;
-      
+
       const tabState = await chrome.runtime.sendMessage({ action: 'getTabState' });
       isWhitelisted = tabState?.whitelisted ?? false;
-      
+
       if (!isEnabled || isWhitelisted) {
         stopBlocking();
       } else {
         startBlocking();
-        
+
         // Load YouTube blocker for Tier 2+ on YouTube
-        if (currentTier >= 2 && window.location.hostname.includes('youtube.com') && !youtubeBlockerLoaded) {
+        if (
+          currentTier >= 2 &&
+          window.location.hostname.includes('youtube.com') &&
+          !youtubeBlockerLoaded
+        ) {
           loadYouTubeBlocker();
         }
       }
-    } catch (error) {
+    } catch {
       console.error('ShieldPro: Failed to check settings', error);
     }
   }
@@ -61,29 +65,34 @@
 
   function hideElements() {
     if (!isEnabled || isWhitelisted) return;
-    
-    COMMON_AD_SELECTORS.forEach(_selector => {
+
+    COMMON_AD_SELECTORS.forEach((_selector) => {
       try {
         const elements = document.querySelectorAll(_selector);
-        elements.forEach(_element => {
+        elements.forEach((_element) => {
           if (!hiddenElements.has(_element)) {
             (element as HTMLElement).style.display = 'none';
             hiddenElements.add(_element);
           }
         });
-      } catch (_e) {}
+      } catch {}
     });
   }
 
   function blockPopups() {
     if (!isEnabled || isWhitelisted) return;
-    
+
     // Block window.open popups
     const originalOpen = window.open;
-    window.open = function(...args) {
+    window.open = function (...args) {
       const url = args[0]?.toString() || '';
-      if (url && (url.includes('doubleclick') || url.includes('googleads') || 
-          url === 'about:blank' || url.includes('popup'))) {
+      if (
+        url &&
+        (url.includes('doubleclick') ||
+          url.includes('googleads') ||
+          url === 'about:blank' ||
+          url.includes('popup'))
+      ) {
         console.warn('ShieldPro: Blocked popup', url);
         return null;
       }
@@ -93,12 +102,14 @@
 
   function removeTrackingPixels() {
     if (!isEnabled || isWhitelisted) return;
-    
+
     // Remove 1x1 tracking pixels
     const images = document.querySelectorAll('img');
-    images.forEach(img => {
-      if ((img.width === 1 && img.height === 1) || 
-          (img.naturalWidth === 1 && img.naturalHeight === 1)) {
+    images.forEach((img) => {
+      if (
+        (img.width === 1 && img.height === 1) ||
+        (img.naturalWidth === 1 && img.naturalHeight === 1)
+      ) {
         img.remove();
       }
     });
@@ -106,7 +117,7 @@
 
   function removeCookieBanners() {
     if (!isEnabled || isWhitelisted) return;
-    
+
     const cookieSelectors = [
       '[class*="cookie-banner"]',
       '[class*="cookie-consent"]',
@@ -117,14 +128,14 @@
       '.cookie-banner',
       '.cookie-consent',
       '#cookie-notice',
-      '#gdpr-banner'
+      '#gdpr-banner',
     ];
-    
-    cookieSelectors.forEach(_selector => {
+
+    cookieSelectors.forEach((_selector) => {
       try {
         const elements = document.querySelectorAll(_selector);
-        elements.forEach(el => el.remove());
-      } catch (_e) {}
+        elements.forEach((el) => el.remove());
+      } catch {}
     });
   }
 
@@ -133,17 +144,17 @@
     blockPopups();
     removeTrackingPixels();
     removeCookieBanners();
-    
+
     if (!observer) {
       observer = new MutationObserver(() => {
         hideElements();
         removeTrackingPixels();
         removeCookieBanners();
       });
-      
+
       observer.observe(document.body, {
         childList: true,
-        subtree: true
+        subtree: true,
       });
     }
   }
@@ -153,9 +164,9 @@
       observer.disconnect();
       observer = null;
     }
-    
+
     // Show hidden elements
-    hiddenElements.forEach(_element => {
+    hiddenElements.forEach((_element) => {
       (element as HTMLElement).style.display = '';
     });
     hiddenElements.clear();
@@ -191,7 +202,7 @@
         window.dataLayer.push = noop;
       })();
     `;
-    
+
     if (document.documentElement) {
       document.documentElement.appendChild(script);
       script.remove();

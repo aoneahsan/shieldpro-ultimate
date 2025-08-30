@@ -28,39 +28,39 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
     try {
       // Check cached auth state first
       const cached = await chrome.storage.local.get(['authUser', 'authProfile']);
-      
+
       if (cached.authUser) {
         setCurrentUser(cached.authUser);
         setUserProfile(cached.authProfile);
-        
+
         if (cached.authProfile?.tier?.level) {
           onTierUpgrade(cached.authProfile.tier.level);
         }
       }
-      
+
       // Then check with background for fresh state
       chrome.runtime.sendMessage({ action: 'getAuthState' }, (response) => {
         if (chrome.runtime.lastError) {
           console.error('Failed to get auth state:', chrome.runtime.lastError);
           return;
         }
-        
+
         if (response?.user) {
           setCurrentUser(response.user);
           setUserProfile(response.profile);
-          
+
           if (response.profile?.tier?.level) {
             onTierUpgrade(response.profile.tier.level);
           }
-          
+
           // Cache the auth state
           chrome.storage.local.set({
             authUser: response.user,
-            authProfile: response.profile
+            authProfile: response.profile,
           });
         }
       });
-    } catch (error) {
+    } catch {
       console.error('Failed to check auth:', error);
     } finally {
       setAuthLoading(false);
@@ -80,14 +80,14 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
         email,
         password,
         displayName,
-        referralCode
+        referralCode,
       });
 
       if (response.success) {
         setSuccess('Account created successfully! Tier 2 features unlocked!');
         setCurrentUser(response.user);
         onTierUpgrade(2);
-        
+
         // Update local storage
         const storage = StorageManager.getInstance();
         await storage.setSettings({
@@ -95,10 +95,10 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
             level: 2,
             name: 'Enhanced',
             unlockedAt: Date.now(),
-            progress: 20
-          }
+            progress: 20,
+          },
         });
-        
+
         setTimeout(() => {
           setShowSignup(false);
           setSuccess('');
@@ -124,7 +124,7 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
       const response = await chrome.runtime.sendMessage({
         action: 'login',
         email,
-        password
+        password,
       });
 
       if (response.success) {
@@ -133,7 +133,7 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
         setCurrentUser(response.user);
         setUserProfile(response.profile);
         onTierUpgrade(tierLevel);
-        
+
         // Update local storage
         const storage = StorageManager.getInstance();
         await storage.setSettings({
@@ -141,10 +141,10 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
             level: 2,
             name: 'Enhanced',
             unlockedAt: Date.now(),
-            progress: 20
-          }
+            progress: 20,
+          },
         });
-        
+
         setTimeout(() => {
           setShowLogin(false);
           setSuccess('');
@@ -163,16 +163,16 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
     try {
       // Send signout request to background
       await chrome.runtime.sendMessage({ action: 'signout' });
-      
+
       // Clear local auth state
       setCurrentUser(null);
       setUserProfile(null);
       setShowSignup(false);
       setShowLogin(false);
-      
+
       // Clear cached auth
       await chrome.storage.local.remove(['authUser', 'authProfile']);
-      
+
       // Update tier
       const storage = StorageManager.getInstance();
       await storage.setSettings({
@@ -180,15 +180,15 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
           level: 1,
           name: 'Basic',
           unlockedAt: Date.now(),
-          progress: 0
-        }
+          progress: 0,
+        },
       });
-      
+
       onTierUpgrade(1);
-      
+
       setSuccess('Signed out successfully');
       setTimeout(() => setSuccess(''), 2000);
-    } catch (error) {
+    } catch {
       setError('Failed to sign out.');
     }
   };
@@ -216,9 +216,7 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
             </p>
             <p className="text-xs opacity-75 mt-1">{currentUser.email}</p>
             {userProfile?.referralCode && (
-              <p className="text-xs opacity-75 mt-1">
-                Referral Code: {userProfile.referralCode}
-              </p>
+              <p className="text-xs opacity-75 mt-1">Referral Code: {userProfile.referralCode}</p>
             )}
           </div>
           <button
@@ -227,8 +225,12 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
             title="Sign Out"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+              />
             </svg>
           </button>
         </div>
@@ -243,25 +245,17 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
         <h3 className="text-lg font-semibold mb-3">
           {showLogin ? 'Sign In' : 'Create Account'} for Tier 2
         </h3>
-        
-        {error && (
-          <div className="bg-red-50 text-red-600 p-2 rounded mb-3 text-sm">
-            {error}
-          </div>
-        )}
-        
+
+        {error && <div className="bg-red-50 text-red-600 p-2 rounded mb-3 text-sm">{error}</div>}
+
         {success && (
-          <div className="bg-green-50 text-green-600 p-2 rounded mb-3 text-sm">
-            {success}
-          </div>
+          <div className="bg-green-50 text-green-600 p-2 rounded mb-3 text-sm">{success}</div>
         )}
 
         <form onSubmit={showLogin ? handleLogin : handleSignup}>
           {!showLogin && (
             <div className="mb-3">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Display Name
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Display Name</label>
               <input
                 type="text"
                 value={displayName}
@@ -274,9 +268,7 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
           )}
 
           <div className="mb-3">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
             <input
               type="email"
               value={email}
@@ -289,9 +281,7 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Password
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
             <input
               type="password"
               value={password}
@@ -326,7 +316,13 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
               disabled={loading}
               className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2 px-4 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 disabled:opacity-50"
             >
-              {loading ? (showLogin ? 'Signing In...' : 'Creating...') : (showLogin ? 'Sign In' : 'Create Account')}
+              {loading
+                ? showLogin
+                  ? 'Signing In...'
+                  : 'Creating...'
+                : showLogin
+                  ? 'Sign In'
+                  : 'Create Account'}
             </button>
             <button
               type="button"
@@ -352,7 +348,7 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
             }}
             className="text-sm text-blue-600 hover:text-blue-700"
           >
-            {showLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
+            {showLogin ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
           </button>
         </div>
 
@@ -388,9 +384,18 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
         </div>
         <div className="ml-3">
           <div className="bg-white rounded-full p-2">
-            <svg className="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                d="M13 10V3L4 14h7v7l9-11h-7z" />
+            <svg
+              className="w-6 h-6 text-amber-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 10V3L4 14h7v7l9-11h-7z"
+              />
             </svg>
           </div>
         </div>

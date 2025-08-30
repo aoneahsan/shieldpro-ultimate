@@ -1,5 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Image, Cat, Dog, Trees, Mountain, Coffee, Heart, Star, Sparkles, Upload, X } from 'lucide-react';
+import {
+  Image,
+  Cat,
+  Dog,
+  Trees,
+  Mountain,
+  Coffee,
+  Heart,
+  Star,
+  Sparkles,
+  Upload,
+  X,
+} from 'lucide-react';
 import { StorageManager } from '../../shared/utils/storage';
 
 interface ImageCategory {
@@ -15,32 +27,22 @@ const imageCategories: ImageCategory[] = [
     id: 'cats',
     name: 'Cats',
     icon: Cat,
-    images: [
-      'https://cataas.com/cat',
-      'https://cataas.com/cat/cute',
-      'https://cataas.com/cat/gif'
-    ],
-    requiredTier: 3
+    images: ['https://cataas.com/cat', 'https://cataas.com/cat/cute', 'https://cataas.com/cat/gif'],
+    requiredTier: 3,
   },
   {
     id: 'dogs',
     name: 'Dogs',
     icon: Dog,
-    images: [
-      'https://random.dog/woof.json',
-      'https://dog.ceo/api/breeds/image/random'
-    ],
-    requiredTier: 3
+    images: ['https://random.dog/woof.json', 'https://dog.ceo/api/breeds/image/random'],
+    requiredTier: 3,
   },
   {
     id: 'nature',
     name: 'Nature',
     icon: Trees,
-    images: [
-      'https://picsum.photos/300/250?nature',
-      'https://source.unsplash.com/300x250/?nature'
-    ],
-    requiredTier: 3
+    images: ['https://picsum.photos/300/250?nature', 'https://source.unsplash.com/300x250/?nature'],
+    requiredTier: 3,
   },
   {
     id: 'mountains',
@@ -48,9 +50,9 @@ const imageCategories: ImageCategory[] = [
     icon: Mountain,
     images: [
       'https://picsum.photos/300/250?mountain',
-      'https://source.unsplash.com/300x250/?mountain'
+      'https://source.unsplash.com/300x250/?mountain',
     ],
-    requiredTier: 3
+    requiredTier: 3,
   },
   {
     id: 'coffee',
@@ -58,9 +60,9 @@ const imageCategories: ImageCategory[] = [
     icon: Coffee,
     images: [
       'https://coffee.alexflipnote.dev/random',
-      'https://source.unsplash.com/300x250/?coffee'
+      'https://source.unsplash.com/300x250/?coffee',
     ],
-    requiredTier: 4
+    requiredTier: 4,
   },
   {
     id: 'inspirational',
@@ -68,9 +70,9 @@ const imageCategories: ImageCategory[] = [
     icon: Heart,
     images: [
       'https://source.unsplash.com/300x250/?inspiration',
-      'https://picsum.photos/300/250?grayscale'
+      'https://picsum.photos/300/250?grayscale',
     ],
-    requiredTier: 4
+    requiredTier: 4,
   },
   {
     id: 'space',
@@ -78,20 +80,17 @@ const imageCategories: ImageCategory[] = [
     icon: Star,
     images: [
       'https://source.unsplash.com/300x250/?space',
-      'https://source.unsplash.com/300x250/?galaxy'
+      'https://source.unsplash.com/300x250/?galaxy',
     ],
-    requiredTier: 5
+    requiredTier: 5,
   },
   {
     id: 'abstract',
     name: 'Abstract',
     icon: Sparkles,
-    images: [
-      'https://source.unsplash.com/300x250/?abstract',
-      'https://picsum.photos/300/250?blur'
-    ],
-    requiredTier: 5
-  }
+    images: ['https://source.unsplash.com/300x250/?abstract', 'https://picsum.photos/300/250?blur'],
+    requiredTier: 5,
+  },
 ];
 
 interface ImageSwapProps {
@@ -115,7 +114,7 @@ export const ImageSwap: React.FC<ImageSwapProps> = ({ currentTier }) => {
   const loadSettings = async () => {
     const storage = StorageManager.getInstance();
     const settings = await storage.getSettings();
-    
+
     if (settings.imageSwap) {
       setEnabled(settings.imageSwap.enabled || false);
       setSelectedCategories(settings.imageSwap.categories || ['cats']);
@@ -138,17 +137,17 @@ export const ImageSwap: React.FC<ImageSwapProps> = ({ currentTier }) => {
       categories: overrides?.categories || selectedCategories,
       customImages: overrides?.customImages || customImages,
       frequency: overrides?.frequency !== undefined ? overrides.frequency : replaceFrequency,
-      size: overrides?.size || imageSize
+      size: overrides?.size || imageSize,
     };
-    
+
     await storage.setSettings({
-      imageSwap: settingsToSave
+      imageSwap: settingsToSave,
     });
 
     // Send message to content scripts to update image swap
     chrome.runtime.sendMessage({
       action: 'updateImageSwap',
-      settings: settingsToSave
+      settings: settingsToSave,
     });
   };
 
@@ -159,13 +158,13 @@ export const ImageSwap: React.FC<ImageSwapProps> = ({ currentTier }) => {
   };
 
   const toggleCategory = async (categoryId: string) => {
-    const category = imageCategories.find(c => c.id === categoryId);
+    const category = imageCategories.find((c) => c.id === categoryId);
     if (!category || currentTier < category.requiredTier) return;
 
     const newCategories = selectedCategories.includes(categoryId)
-      ? selectedCategories.filter(c => c !== categoryId)
+      ? selectedCategories.filter((c) => c !== categoryId)
       : [...selectedCategories, categoryId];
-    
+
     setSelectedCategories(newCategories);
     await saveSettings({ categories: newCategories });
   };
@@ -180,29 +179,29 @@ export const ImageSwap: React.FC<ImageSwapProps> = ({ currentTier }) => {
   };
 
   const removeCustomImage = async (url: string) => {
-    const newImages = customImages.filter(img => img !== url);
+    const newImages = customImages.filter((img) => img !== url);
     setCustomImages(newImages);
     await saveSettings({ customImages: newImages });
   };
 
   const getRandomReplacementImage = () => {
     const allImages: string[] = [];
-    
+
     // Add images from selected categories
-    selectedCategories.forEach(catId => {
-      const category = imageCategories.find(c => c.id === catId);
+    selectedCategories.forEach((catId) => {
+      const category = imageCategories.find((c) => c.id === catId);
       if (category) {
         allImages.push(...category.images);
       }
     });
-    
+
     // Add custom images
     allImages.push(...customImages);
-    
+
     if (allImages.length === 0) {
       return 'https://cataas.com/cat'; // Default fallback
     }
-    
+
     return allImages[Math.floor(Math.random() * allImages.length)];
   };
 
@@ -232,9 +231,11 @@ export const ImageSwap: React.FC<ImageSwapProps> = ({ currentTier }) => {
                 enabled ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-gray-600'
               } ${currentTier < 3 ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
             >
-              <div className={`absolute w-5 h-5 bg-white rounded-full shadow transition-transform top-0.5 ${
-                enabled ? 'translate-x-6' : 'translate-x-0.5'
-              }`} />
+              <div
+                className={`absolute w-5 h-5 bg-white rounded-full shadow transition-transform top-0.5 ${
+                  enabled ? 'translate-x-6' : 'translate-x-0.5'
+                }`}
+              />
             </button>
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
@@ -280,7 +281,7 @@ export const ImageSwap: React.FC<ImageSwapProps> = ({ currentTier }) => {
                 Image Size
               </label>
               <div className="flex space-x-2">
-                {['original', 'small', 'medium', 'large'].map(size => (
+                {['original', 'small', 'medium', 'large'].map((size) => (
                   <button
                     key={size}
                     onClick={async () => {
@@ -311,14 +312,14 @@ export const ImageSwap: React.FC<ImageSwapProps> = ({ currentTier }) => {
               Choose what types of images to display
             </p>
           </div>
-          
+
           <div className="p-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {imageCategories.map(category => {
+              {imageCategories.map((category) => {
                 const Icon = category.icon;
                 const isLocked = currentTier < category.requiredTier;
                 const isSelected = selectedCategories.includes(category.id);
-                
+
                 return (
                   <button
                     key={category.id}
@@ -330,9 +331,11 @@ export const ImageSwap: React.FC<ImageSwapProps> = ({ currentTier }) => {
                         : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
                     } ${isLocked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                   >
-                    <Icon className={`w-8 h-8 mx-auto mb-2 ${
-                      isSelected ? 'text-indigo-600' : 'text-gray-400'
-                    }`} />
+                    <Icon
+                      className={`w-8 h-8 mx-auto mb-2 ${
+                        isSelected ? 'text-indigo-600' : 'text-gray-400'
+                      }`}
+                    />
                     <div className="text-sm font-medium">{category.name}</div>
                     {isLocked && (
                       <div className="text-xs text-gray-500 mt-1">
@@ -359,7 +362,7 @@ export const ImageSwap: React.FC<ImageSwapProps> = ({ currentTier }) => {
               </span>
             </h4>
           </div>
-          
+
           <div className="p-4 space-y-3">
             <div className="flex space-x-2">
               <input
@@ -376,11 +379,14 @@ export const ImageSwap: React.FC<ImageSwapProps> = ({ currentTier }) => {
                 Add
               </button>
             </div>
-            
+
             {customImages.length > 0 && (
               <div className="space-y-2">
                 {customImages.map((url, index) => (
-                  <div key={index} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded-lg"
+                  >
                     <span className="text-sm truncate flex-1">{url}</span>
                     <button
                       onClick={() => removeCustomImage(url)}
@@ -406,16 +412,17 @@ export const ImageSwap: React.FC<ImageSwapProps> = ({ currentTier }) => {
             >
               Preview Random Replacement Image
             </button>
-            
+
             {showPreview && previewImage && (
               <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                <img 
-                  src={previewImage} 
-                  alt="Preview" 
+                <img
+                  src={previewImage}
+                  alt="Preview"
                   className="mx-auto rounded-lg shadow-lg"
                   style={{ maxWidth: '300px', maxHeight: '250px' }}
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300x250?text=Image+Not+Found';
+                    (e.target as HTMLImageElement).src =
+                      'https://via.placeholder.com/300x250?text=Image+Not+Found';
                   }}
                 />
                 <p className="text-xs text-gray-500 text-center mt-2">

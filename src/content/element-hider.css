@@ -1,17 +1,17 @@
 /* ShieldPro Ultimate - Element Hiding CSS for Tier 1 */
 
 /* Generic ad hiding */
-[id*="google_ads"],
-[id*="google-ads"],
-[id*="banner_ad"],
-[id*="banner-ad"],
-[class*="google-ads"],
-[class*="advertisement"],
-[class*="ad-container"],
-[class*="ad-wrapper"],
-[class*="ad-banner"],
-[class*="sponsored"],
-[class*="sponsor-"],
+[id*='google_ads'],
+[id*='google-ads'],
+[id*='banner_ad'],
+[id*='banner-ad'],
+[class*='google-ads'],
+[class*='advertisement'],
+[class*='ad-container'],
+[class*='ad-wrapper'],
+[class*='ad-banner'],
+[class*='sponsored'],
+[class*='sponsor-'],
 [data-ad],
 [data-ads],
 [data-ad-slot],
@@ -20,65 +20,65 @@ ins.adsbygoogle,
 .ads,
 .advert,
 .advertisement {
-    display: none !important;
-    visibility: hidden !important;
-    height: 0 !important;
-    width: 0 !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  width: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 /* Iframe ads */
-iframe[src*="doubleclick"],
-iframe[src*="googlesyndication"],
-iframe[src*="googleadservices"],
-iframe[src*="amazon-adsystem"],
-iframe[src*="facebook.com/plugins"],
-iframe[src*="platform.twitter"] {
-    display: none !important;
+iframe[src*='doubleclick'],
+iframe[src*='googlesyndication'],
+iframe[src*='googleadservices'],
+iframe[src*='amazon-adsystem'],
+iframe[src*='facebook.com/plugins'],
+iframe[src*='platform.twitter'] {
+  display: none !important;
 }
 
 /* Sticky and floating ads */
-[class*="sticky-ad"],
-[class*="fixed-ad"],
-[class*="floating-ad"],
-[class*="popup-ad"],
-[class*="overlay-ad"] {
-    display: none !important;
+[class*='sticky-ad'],
+[class*='fixed-ad'],
+[class*='floating-ad'],
+[class*='popup-ad'],
+[class*='overlay-ad'] {
+  display: none !important;
 }
 
 /* Video ads */
-[class*="video-ad"],
-[class*="preroll-ad"],
-[class*="midroll-ad"],
-[class*="postroll-ad"] {
-    display: none !important;
+[class*='video-ad'],
+[class*='preroll-ad'],
+[class*='midroll-ad'],
+[class*='postroll-ad'] {
+  display: none !important;
 }
 
 /* Native ads */
-[class*="native-ad"],
-[class*="promoted-content"],
-[class*="recommended-ad"],
-[class*="suggested-post"] {
-    display: none !important;
+[class*='native-ad'],
+[class*='promoted-content'],
+[class*='recommended-ad'],
+[class*='suggested-post'] {
+  display: none !important;
 }
 
 /* Common ad containers by ID patterns */
-div[id*="ad-"],
-div[id*="ads-"],
-div[id^="div-gpt-ad"],
-div[id*="banner"],
-div[id*="sponsor"] {
-    display: none !important;
+div[id*='ad-'],
+div[id*='ads-'],
+div[id^='div-gpt-ad'],
+div[id*='banner'],
+div[id*='sponsor'] {
+  display: none !important;
 }
 
 /* Common ad containers by class patterns */
-div[class*="ad-slot"],
-div[class*="advert"],
-div[class*="ad_container"],
-div[class*="banner_ad"],
-div[class*="dfp-ad"] {
-    display: none !important;
+div[class*='ad-slot'],
+div[class*='advert'],
+div[class*='ad_container'],
+div[class*='banner_ad'],
+div[class*='dfp-ad'] {
+  display: none !important;
 }
 
 /* Social media embeds (Tier 1 basic blocking) */
@@ -87,16 +87,16 @@ div[class*="dfp-ad"] {
 .twitter-share-button,
 .twitter-follow-button,
 .linkedin-share-button {
-    display: none !important;
+  display: none !important;
 }
 
 /* Cookie consent banners (Tier 1) */
-[class*="cookie-banner"],
-[class*="cookie-consent"],
-[class*="cookie-notice"],
-[class*="gdpr"],
-[id*="cookie-banner"],
-[id*="cookie-consent"],
+[class*='cookie-banner'],
+[class*='cookie-consent'],
+[class*='cookie-notice'],
+[class*='gdpr'],
+[id*='cookie-banner'],
+[id*='cookie-consent'],
 #onetrust-consent-sdk,
 .optanon-alert-box-wrapper,
 .qc-cmp-ui-container,
@@ -104,53 +104,53 @@ div[class*="dfp-ad"] {
 .cookiefirst-root,
 .cc-window,
 .trustarc-banner-container {
-    display: none !important;
+  display: none !important;
 }
 
 /* Remove empty ad spaces */
 .ad-container:empty,
 .advertisement:empty,
 .ad-wrapper:empty {
-    display: none !important;
+  display: none !important;
 }
 
 /* Hide ad placeholders */
-[class*="ad-placeholder"],
-[class*="ad-space"],
-[class*="ad-unit"]:empty {
-    display: none !important;
+[class*='ad-placeholder'],
+[class*='ad-space'],
+[class*='ad-unit']:empty {
+  display: none !important;
 }
 
 /* Aggressive hiding for persistent ads */
-[style*="position: fixed"][style*="z-index: 9"],
-[style*="position: fixed"][style*="z-index: 99"],
-[style*="position: fixed"][style*="z-index: 999"],
-[style*="position: fixed"][style*="z-index: 9999"],
-[style*="position: fixed"][style*="z-index: 99999"] {
-    display: none !important;
+[style*='position: fixed'][style*='z-index: 9'],
+[style*='position: fixed'][style*='z-index: 99'],
+[style*='position: fixed'][style*='z-index: 999'],
+[style*='position: fixed'][style*='z-index: 9999'],
+[style*='position: fixed'][style*='z-index: 99999'] {
+  display: none !important;
 }
 
 /* Newsletter popups */
-[class*="newsletter-popup"],
-[class*="newsletter-modal"],
-[class*="subscribe-popup"],
-[class*="email-signup"] {
-    display: none !important;
+[class*='newsletter-popup'],
+[class*='newsletter-modal'],
+[class*='subscribe-popup'],
+[class*='email-signup'] {
+  display: none !important;
 }
 
 /* Promotional banners */
-[class*="promo-banner"],
-[class*="promotional-bar"],
-[class*="offer-banner"],
-[class*="discount-banner"] {
-    display: none !important;
+[class*='promo-banner'],
+[class*='promotional-bar'],
+[class*='offer-banner'],
+[class*='discount-banner'] {
+  display: none !important;
 }
 
 /* Notification bars */
-[class*="notification-bar"][class*="marketing"],
-[class*="notice-bar"][class*="sale"],
-[class*="info-bar"][class*="promo"] {
-    display: none !important;
+[class*='notification-bar'][class*='marketing'],
+[class*='notice-bar'][class*='sale'],
+[class*='info-bar'][class*='promo'] {
+  display: none !important;
 }
 
 /* Anti-adblock detection bypass */
@@ -158,17 +158,17 @@ div[class*="dfp-ad"] {
 .adblock-message,
 .adblock-warning,
 .please-disable-adblock {
-    display: none !important;
+  display: none !important;
 }
 
 /* Restore body scroll when ads are blocked */
 body:not(.shieldpro-processed) {
-    overflow: auto !important;
-    position: static !important;
+  overflow: auto !important;
+  position: static !important;
 }
 
 /* Remove blur effects from ad-block detection */
 body > *:not(.cookie-banner):not(.ad-container) {
-    filter: none !important;
-    opacity: 1 !important;
+  filter: none !important;
+  opacity: 1 !important;
 }

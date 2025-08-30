@@ -36,14 +36,13 @@ async function initializeContentScripts() {
         try {
           const elements = document.querySelectorAll(request.selector);
           sendResponse({ matchCount: elements.length });
-        } catch (error) {
+        } catch {
           sendResponse({ matchCount: 0, error: 'Invalid selector' });
         }
       }
       return true;
     });
-
-  } catch (error) {
+  } catch {
     console.error('[ShieldPro] Error initializing content scripts:', error);
   }
 }

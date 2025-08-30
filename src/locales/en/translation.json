@@ -55,7 +55,7 @@
     "install": "Install",
     "uninstall": "Uninstall"
   },
-  
+
   "tiers": {
     "title": "Feature Tiers",
     "current": "Current Tier",
@@ -121,7 +121,7 @@
       "requirement": "Weekly engagement"
     }
   },
-  
+
   "popup": {
     "title": "ShieldPro Ultimate",
     "status": {
@@ -154,7 +154,7 @@
       "viewBenefits": "View Benefits"
     }
   },
-  
+
   "settings": {
     "title": "Settings",
     "tabs": {
@@ -209,7 +209,7 @@
       "compactMode": "Compact Mode"
     }
   },
-  
+
   "auth": {
     "login": {
       "title": "Login",
@@ -255,7 +255,7 @@
       "message": "You will need to login again to access premium features."
     }
   },
-  
+
   "referral": {
     "title": "Referral Program",
     "subtitle": "Refer 30 friends to unlock Tier 4",
@@ -282,7 +282,7 @@
       "bonus": "Bonus features for top referrers"
     }
   },
-  
+
   "engagement": {
     "title": "Weekly Engagement",
     "subtitle": "Maintain Tier 5 with weekly visits",
@@ -299,7 +299,7 @@
       "streakBonus": "Streak Bonus Unlocked"
     }
   },
-  
+
   "notification": {
     "tierUpgrade": {
       "title": "Tier Upgraded!",
@@ -331,7 +331,7 @@
       "generic": "Operation completed successfully"
     }
   },
-  
+
   "errors": {
     "network": "Network error. Please check your connection.",
     "auth": {

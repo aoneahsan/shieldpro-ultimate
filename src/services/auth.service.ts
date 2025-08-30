@@ -7,19 +7,19 @@ import {
   deleteUser,
   User,
   onAuthStateChanged,
-  sendEmailVerification
+  sendEmailVerification,
 } from 'firebase/auth';
-import { 
-  doc, 
-  setDoc, 
-  getDoc, 
-  updateDoc, 
+import {
+  doc,
+  setDoc,
+  getDoc,
+  updateDoc,
   serverTimestamp,
   increment,
   collection,
   query,
   where,
-  getDocs
+  getDocs,
 } from 'firebase/firestore';
 import { auth, firestore as db } from '../utils/firebase';
 
@@ -91,19 +91,19 @@ class AuthService {
           return;
         }
       }
-    } catch (error) {
+    } catch {
       console.error('Error checking logout flag:', error);
     }
 
     onAuthStateChanged(auth, async (user) => {
       console.log('Auth state changed:', user?.email || 'null', 'isSigningOut:', this.isSigningOut);
-      
+
       // If we're signing out, ignore any auth state changes
       if (this.isSigningOut) {
         console.log('Ignoring auth state change during sign out');
         return;
       }
-      
+
       this.currentUser = user;
       if (user) {
         await this.loadUserProfile(user.uid);
@@ -114,7 +114,7 @@ class AuthService {
         // Clear cached auth state
         await this.clearAuthCache();
       }
-      
+
       // Mark as initialized and resolve the promise
       if (!this.authInitialized) {
         this.authInitialized = true;
@@ -135,16 +135,18 @@ class AuthService {
     try {
       if (chrome?.storage?.local) {
         await chrome.storage.local.set({
-          authUser: user ? {
-            uid: user.uid,
-            email: user.email,
-            displayName: user.displayName,
-            photoURL: user.photoURL
-          } : null,
-          authProfile: profile
+          authUser: user
+            ? {
+                uid: user.uid,
+                email: user.email,
+                displayName: user.displayName,
+                photoURL: user.photoURL,
+              }
+            : null,
+          authProfile: profile,
         });
       }
-    } catch (error) {
+    } catch {
       console.error('Failed to cache auth state:', error);
     }
   }
@@ -155,7 +157,7 @@ class AuthService {
       if (chrome?.storage?.local) {
         await chrome.storage.local.remove(['authUser', 'authProfile']);
       }
-    } catch (error) {
+    } catch {
       console.error('Failed to clear auth cache:', error);
     }
   }
@@ -177,7 +179,7 @@ class AuthService {
   // Create user profile in Firestore
   private async createUserProfileInternal(user: User, referralCode?: string): Promise<void> {
     let uniqueReferralCode = this.generateReferralCode(user.uid);
-    
+
     // Ensure referral code is unique
     while (!(await this.isReferralCodeUnique(uniqueReferralCode))) {
       uniqueReferralCode = this.generateReferralCode(user.uid);
@@ -192,7 +194,7 @@ class AuthService {
         level: 1,
         name: 'Basic',
         unlockedAt: Date.now(),
-        progress: 0
+        progress: 0,
       },
       stats: {
         totalBlocked: 0,
@@ -201,14 +203,14 @@ class AuthService {
         referralCode: uniqueReferralCode,
         referredBy: referralCode,
         referralCount: 0,
-        weeklyEngagement: [0]
+        weeklyEngagement: [0],
       },
       preferences: {
         notifications: true,
         autoUpdate: true,
         theme: 'system',
-        language: navigator.language || 'en'
-      }
+        language: navigator.language || 'en',
+      },
     };
 
     await setDoc(doc(db, 'users', user.uid), userProfile);
@@ -225,15 +227,15 @@ class AuthService {
   private async updateReferrerCount(referralCode: string): Promise<void> {
     const q = query(collection(db, 'users'), where('stats.referralCode', '==', referralCode));
     const snapshot = await getDocs(q);
-    
+
     if (!snapshot.empty && snapshot.docs[0]) {
       const referrerDoc = snapshot.docs[0];
       const referrerId = referrerDoc.id;
       const referrerData = referrerDoc.data() as UserProfile;
-      
+
       await updateDoc(doc(db, 'users', referrerId), {
         'stats.referralCount': increment(1),
-        'stats.lastActive': serverTimestamp()
+        'stats.lastActive': serverTimestamp(),
       });
 
       // Check if referrer qualifies for Tier 4 (30 referrals)
@@ -247,19 +249,24 @@ class AuthService {
   private async loadUserProfile(uid: string): Promise<void> {
     const docRef = doc(db, 'users', uid);
     const docSnap = await getDoc(docRef);
-    
+
     if (docSnap.exists()) {
       this.userProfile = docSnap.data() as UserProfile;
-      
+
       // Update last active
       await updateDoc(docRef, {
-        'stats.lastActive': serverTimestamp()
+        'stats.lastActive': serverTimestamp(),
       });
     }
   }
 
   // Sign up with email and password
-  async signUp(email: string, password: string, displayName?: string, referralCode?: string): Promise<User> {
+  async signUp(
+    email: string,
+    password: string,
+    displayName?: string,
+    referralCode?: string
+  ): Promise<User> {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
@@ -294,14 +301,18 @@ class AuthService {
   async signInWithGoogle(): Promise<User> {
     // In Chrome extension context, this should be handled via message passing
     // to the background script which uses Chrome Identity API
-    throw new Error('Google Sign-In must be handled through the background script in Chrome extensions');
+    throw new Error(
+      'Google Sign-In must be handled through the background script in Chrome extensions'
+    );
   }
 
   // Social sign in - Not available in extension context
   async signInWithSocial(provider: 'google' | 'facebook' | 'github'): Promise<User> {
     // In Chrome extension context, social sign-in should be handled via message passing
     // to the background script which uses Chrome Identity API
-    throw new Error('Social sign-in must be handled through the background script in Chrome extensions');
+    throw new Error(
+      'Social sign-in must be handled through the background script in Chrome extensions'
+    );
   }
 
   // Sign out
@@ -310,15 +321,15 @@ class AuthService {
       console.log('AuthService: Starting sign out');
       // Set flag to prevent auth state reload
       this.isSigningOut = true;
-      
+
       // Clear local state immediately
       this.currentUser = null;
       this.userProfile = null;
-      
+
       // Clear the cache immediately
       await this.clearAuthCache();
       console.log('AuthService: Cleared auth cache');
-      
+
       // Set a flag to prevent auth reload on next popup open
       if (chrome?.storage?.local) {
         await chrome.storage.local.set({ forceLoggedOut: true });
@@ -326,16 +337,16 @@ class AuthService {
         setTimeout(async () => {
           try {
             await chrome.storage.local.remove('forceLoggedOut');
-          } catch (error) {
+          } catch {
             console.error('Error removing logout flag:', error);
           }
         }, 5000);
       }
-      
+
       // Using the imported signOut function from Firebase
       await firebaseSignOut(auth);
       console.log('AuthService: Firebase sign out complete');
-      
+
       // Keep the flag set for longer to ensure state doesn't reload
       setTimeout(() => {
         this.isSigningOut = false;
@@ -363,7 +374,7 @@ class AuthService {
     const docRef = doc(db, 'users', this.currentUser.uid);
     await updateDoc(docRef, {
       ...updates,
-      'stats.lastActive': serverTimestamp()
+      'stats.lastActive': serverTimestamp(),
     });
 
     // Reload profile
@@ -377,7 +388,7 @@ class AuthService {
       2: 'Enhanced',
       3: 'Professional',
       4: 'Premium',
-      5: 'Ultimate'
+      5: 'Ultimate',
     };
 
     const tierProgress = {
@@ -385,19 +396,19 @@ class AuthService {
       2: 20,
       3: 40,
       4: 60,
-      5: 80
+      5: 80,
     };
 
     // Check if document exists first
     const userRef = doc(db, 'users', uid);
     const userSnap = await getDoc(userRef);
-    
+
     if (userSnap.exists()) {
       await updateDoc(userRef, {
         'tier.level': newTier,
         'tier.name': tierNames[newTier],
         'tier.unlockedAt': Date.now(),
-        'tier.progress': tierProgress[newTier]
+        'tier.progress': tierProgress[newTier],
       });
     } else {
       // Create a basic user profile if it doesn't exist
@@ -408,7 +419,7 @@ class AuthService {
           level: newTier,
           name: tierNames[newTier],
           unlockedAt: Date.now(),
-          progress: tierProgress[newTier]
+          progress: tierProgress[newTier],
         },
         stats: {
           totalBlocked: 0,
@@ -416,23 +427,23 @@ class AuthService {
           lastActive: Date.now(),
           referralCode: this.generateReferralCode(uid),
           referralCount: 0,
-          weeklyEngagement: [0]
+          weeklyEngagement: [0],
         },
         preferences: {
           notifications: true,
           autoUpdate: true,
           theme: 'system',
-          language: navigator.language || 'en'
-        }
+          language: navigator.language || 'en',
+        },
       };
       await setDoc(userRef, userProfile);
     }
 
     // Send message to extension to update rules
     if (chrome?.runtime?.sendMessage) {
-      chrome.runtime.sendMessage({ 
-        action: 'tierUpgraded', 
-        tier: newTier 
+      chrome.runtime.sendMessage({
+        action: 'tierUpgraded',
+        tier: newTier,
       });
     }
   }
@@ -441,7 +452,7 @@ class AuthService {
   async updateWeeklyEngagement(uid: string): Promise<void> {
     const userRef = doc(db, 'users', uid);
     const userDoc = await getDoc(userRef);
-    
+
     if (!userDoc.exists()) {
       console.log('User document does not exist, skipping weekly engagement update');
       return;
@@ -450,7 +461,7 @@ class AuthService {
     const userData = userDoc.data() as UserProfile;
     const weeklyEngagement = userData.stats.weeklyEngagement || [];
     const today = new Date().getDay();
-    
+
     // Reset weekly engagement array if it's a new week
     if (weeklyEngagement.length > 7) {
       weeklyEngagement.splice(0, weeklyEngagement.length - 7);
@@ -463,7 +474,7 @@ class AuthService {
 
     await updateDoc(userRef, {
       'stats.weeklyEngagement': weeklyEngagement,
-      'stats.lastActive': serverTimestamp()
+      'stats.lastActive': serverTimestamp(),
     });
 
     // Check if user maintains Tier 5 (7 days of engagement)
@@ -494,11 +505,11 @@ class AuthService {
   // Ensure user profile exists
   async ensureUserProfile(user: User): Promise<void> {
     if (!user) return;
-    
+
     // Check if profile exists
     const docRef = doc(db, 'users', user.uid);
     const docSnap = await getDoc(docRef);
-    
+
     if (!docSnap.exists()) {
       // Create profile if it doesn't exist
       await this.createUserProfileInternal(user);
@@ -512,7 +523,7 @@ class AuthService {
   isAuthenticated(): boolean {
     return !!this.currentUser;
   }
-  
+
   // Check if auth state has been initialized
   isAuthInitialized(): boolean {
     return this.authInitialized;
@@ -532,14 +543,14 @@ class AuthService {
     try {
       // Delete the user account
       await deleteUser(this.currentUser);
-      
+
       // Clear local data
       this.currentUser = null;
       this.userProfile = null;
-      
+
       // Clear chrome storage
       await chrome.storage.local.clear();
-    } catch (error) {
+    } catch {
       console.error('Failed to delete account:', error);
       throw error;
     }

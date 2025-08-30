@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, Youtube, Tv, MousePointer, Code, Database, Bell, Eye, EyeOff, X } from 'lucide-react';
+import {
+  Shield,
+  Youtube,
+  Tv,
+  MousePointer,
+  Code,
+  Database,
+  Bell,
+  Eye,
+  EyeOff,
+  X,
+} from 'lucide-react';
 import { StorageManager } from '../../shared/utils/storage';
 
 interface GeneralSettingsProps {
@@ -15,7 +26,7 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({ currentTier })
     blockMalware: true,
     blockPhishing: true,
     blockCryptominers: true,
-    
+
     // AdBlock Plus equivalent settings
     acceptableAds: false,
     acceptableAdsPrivacy: true, // Only non-tracking acceptable ads
@@ -25,14 +36,14 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({ currentTier })
     showBlockedCount: true,
     showBlockedInMenu: true,
     showDevToolsPanel: true,
-    
+
     // Privacy settings
     disableDataCollection: false,
     allowAnonymousStats: true,
     helpWithAntiAdblock: true,
     showPageMessages: true,
     advancedMode: false,
-    
+
     // Distraction Control (Tier 1+)
     blockCookieConsents: true,
     blockNewsletterPopups: true,
@@ -40,12 +51,12 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({ currentTier })
     blockNotificationPrompts: true,
     blockSurveyPopups: true,
     blockChatWidgets: false,
-    
+
     // Performance settings
     enableCaching: true,
     enableLazyLoading: true,
     enableWebWorkers: true,
-    
+
     // Update settings
     autoUpdateFilters: true,
     updateInterval: 4, // hours
@@ -64,19 +75,23 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({ currentTier })
   const loadSettings = async () => {
     const storage = StorageManager.getInstance();
     const storedSettings = await storage.getSettings();
-    
+
     // Merge with default settings
-    setSettings(prev => ({
+    setSettings((prev) => ({
       ...prev,
       ...storedSettings.general,
-      enabled: storedSettings.enabled
+      enabled: storedSettings.enabled,
     }));
-    
+
     // Load whitelisted channels
     const whitelist = await storage.getWhitelist();
-    const ytChannels = whitelist.filter(w => w.includes('youtube.com/channel/')).map(w => w.split('/').pop() || '');
-    const twChannels = whitelist.filter(w => w.includes('twitch.tv/')).map(w => w.split('/').pop() || '');
-    
+    const ytChannels = whitelist
+      .filter((w) => w.includes('youtube.com/channel/'))
+      .map((w) => w.split('/').pop() || '');
+    const twChannels = whitelist
+      .filter((w) => w.includes('twitch.tv/'))
+      .map((w) => w.split('/').pop() || '');
+
     setYoutubeChannels(ytChannels);
     setTwitchChannels(twChannels);
   };
@@ -85,14 +100,14 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({ currentTier })
     const storage = StorageManager.getInstance();
     await storage.setSettings({
       enabled: newSettings.enabled,
-      general: newSettings
+      general: newSettings,
     });
     setSettings(newSettings);
-    
+
     // Send message to background to update settings
-    chrome.runtime.sendMessage({ 
-      action: 'updateSettings', 
-      settings: newSettings 
+    chrome.runtime.sendMessage({
+      action: 'updateSettings',
+      settings: newSettings,
     });
   };
 
@@ -113,7 +128,7 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({ currentTier })
   const removeYoutubeChannel = async (channel: string) => {
     const storage = StorageManager.getInstance();
     await storage.removeFromWhitelist(`youtube.com/channel/${channel}`);
-    setYoutubeChannels(youtubeChannels.filter(c => c !== channel));
+    setYoutubeChannels(youtubeChannels.filter((c) => c !== channel));
   };
 
   const addTwitchChannel = async () => {
@@ -128,16 +143,16 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({ currentTier })
   const removeTwitchChannel = async (channel: string) => {
     const storage = StorageManager.getInstance();
     await storage.removeFromWhitelist(`twitch.tv/${channel}`);
-    setTwitchChannels(twitchChannels.filter(c => c !== channel));
+    setTwitchChannels(twitchChannels.filter((c) => c !== channel));
   };
 
-  const SettingToggle = ({ 
-    enabled, 
-    onToggle, 
-    label, 
-    description, 
+  const SettingToggle = ({
+    enabled,
+    onToggle,
+    label,
+    description,
     icon: Icon,
-    requiredTier = 1 
+    requiredTier = 1,
   }: {
     enabled: boolean;
     onToggle: () => void;
@@ -146,7 +161,9 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({ currentTier })
     icon?: any;
     requiredTier?: number;
   }) => (
-    <div className={`flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 ${currentTier < requiredTier ? 'opacity-50' : ''}`}>
+    <div
+      className={`flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 ${currentTier < requiredTier ? 'opacity-50' : ''}`}
+    >
       <button
         onClick={onToggle}
         disabled={currentTier < requiredTier}
@@ -154,9 +171,11 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({ currentTier })
           enabled ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'
         } ${currentTier < requiredTier ? 'cursor-not-allowed' : 'cursor-pointer'}`}
       >
-        <div className={`w-5 h-5 mt-0.5 bg-white rounded-full shadow transition-transform ${
-          enabled ? 'translate-x-6' : 'translate-x-0.5'
-        }`} />
+        <div
+          className={`w-5 h-5 mt-0.5 bg-white rounded-full shadow transition-transform ${
+            enabled ? 'translate-x-6' : 'translate-x-0.5'
+          }`}
+        />
       </button>
       <div className="flex-1">
         <div className="flex items-center space-x-2">
@@ -262,7 +281,7 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({ currentTier })
             icon={Youtube}
             requiredTier={2}
           />
-          
+
           {settings.youtubeChannelWhitelist && currentTier >= 2 && (
             <div className="mt-4 ml-12 space-y-3">
               <div className="flex space-x-2">
@@ -281,8 +300,11 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({ currentTier })
                 </button>
               </div>
               <div className="space-y-1">
-                {youtubeChannels.map(channel => (
-                  <div key={channel} className="flex items-center justify-between px-3 py-1 bg-gray-50 dark:bg-gray-700 rounded">
+                {youtubeChannels.map((channel) => (
+                  <div
+                    key={channel}
+                    className="flex items-center justify-between px-3 py-1 bg-gray-50 dark:bg-gray-700 rounded"
+                  >
                     <span className="text-sm">{channel}</span>
                     <button
                       onClick={() => removeYoutubeChannel(channel)}
@@ -305,7 +327,7 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({ currentTier })
               icon={Tv}
               requiredTier={2}
             />
-            
+
             {settings.twitchChannelWhitelist && currentTier >= 2 && (
               <div className="mt-4 ml-12 space-y-3">
                 <div className="flex space-x-2">
@@ -324,8 +346,11 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({ currentTier })
                   </button>
                 </div>
                 <div className="space-y-1">
-                  {twitchChannels.map(channel => (
-                    <div key={channel} className="flex items-center justify-between px-3 py-1 bg-gray-50 dark:bg-gray-700 rounded">
+                  {twitchChannels.map((channel) => (
+                    <div
+                      key={channel}
+                      className="flex items-center justify-between px-3 py-1 bg-gray-50 dark:bg-gray-700 rounded"
+                    >
                       <span className="text-sm">{channel}</span>
                       <button
                         onClick={() => removeTwitchChannel(channel)}
@@ -421,7 +446,9 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({ currentTier })
           <h3 className="text-lg font-semibold flex items-center space-x-2">
             <Bell className="w-5 h-5 text-amber-600" />
             <span>Distraction Control</span>
-            <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full">FREE</span>
+            <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full">
+              FREE
+            </span>
           </h3>
         </div>
         <div className="p-2">

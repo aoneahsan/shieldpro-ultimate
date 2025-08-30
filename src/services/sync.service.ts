@@ -1,7 +1,7 @@
-import { 
-  doc, 
-  getDoc, 
-  setDoc, 
+import {
+  doc,
+  getDoc,
+  setDoc,
   updateDoc,
   onSnapshot,
   serverTimestamp,
@@ -10,7 +10,7 @@ import {
   query,
   where,
   getDocs,
-  deleteDoc
+  deleteDoc,
 } from 'firebase/firestore';
 import { firestore as db } from '../utils/firebase';
 import { StorageManager } from '../shared/utils/storage';
@@ -95,7 +95,7 @@ class SyncService {
     if (this.userId === userId) return;
 
     this.userId = userId;
-    
+
     if (userId) {
       this.startSync();
       this.registerDevice();
@@ -151,7 +151,7 @@ class SyncService {
     }
 
     this.pendingSync = this.performSync();
-    
+
     try {
       await this.pendingSync;
     } finally {
@@ -179,10 +179,10 @@ class SyncService {
 
       // Update device sync time
       await this.updateDeviceSyncTime();
-      
+
       this.lastSyncTime = new Date();
       this.notifySyncStatus('success');
-    } catch (error) {
+    } catch {
       console.error('Sync failed:', error);
       this.notifySyncStatus('error');
       throw error;
@@ -208,7 +208,7 @@ class SyncService {
       blacklist,
       customRules,
       stats,
-      lastModified: Timestamp.now()
+      lastModified: Timestamp.now(),
     };
   }
 
@@ -221,13 +221,13 @@ class SyncService {
     try {
       const syncRef = doc(db, 'sync', this.userId);
       const snapshot = await getDoc(syncRef);
-      
+
       if (snapshot.exists()) {
         return snapshot.data() as SyncData;
       }
-      
+
       return null;
-    } catch (error) {
+    } catch {
       console.error('Failed to get remote data:', error);
       return null;
     }
@@ -243,7 +243,7 @@ class SyncService {
     await setDoc(syncRef, {
       ...data,
       lastModified: serverTimestamp(),
-      deviceId: this.deviceId
+      deviceId: this.deviceId,
     });
   }
 
@@ -252,7 +252,7 @@ class SyncService {
    */
   private async pullFromRemote(data: SyncData): Promise<void> {
     const storage = StorageManager.getInstance();
-    
+
     await storage.updateSettings(data.settings);
     await storage.setFilters(data.filters);
     await storage.setWhitelist(data.whitelist);
@@ -269,7 +269,7 @@ class SyncService {
     if ((remoteData as any).deviceId === this.deviceId) return;
 
     const localData = await this.getLocalData();
-    
+
     if (this.isRemoteNewer(localData, remoteData)) {
       await this.pullFromRemote(remoteData);
       this.lastSyncTime = new Date();
@@ -296,11 +296,14 @@ class SyncService {
    */
   private setupPeriodicSync() {
     // Sync every 5 minutes
-    this.syncInterval = setInterval(() => {
-      if (this.userId) {
-        this.syncNow().catch(console.error);
-      }
-    }, 5 * 60 * 1000);
+    this.syncInterval = setInterval(
+      () => {
+        if (this.userId) {
+          this.syncNow().catch(console.error);
+        }
+      },
+      5 * 60 * 1000
+    );
   }
 
   /**
@@ -310,17 +313,21 @@ class SyncService {
     if (!this.userId) return;
 
     const deviceRef = doc(db, 'devices', `${this.userId}_${this.deviceId}`);
-    
-    await setDoc(deviceRef, {
-      userId: this.userId,
-      deviceId: this.deviceId,
-      name: this.getDeviceName(),
-      type: this.getDeviceType(),
-      userAgent: navigator.userAgent,
-      platform: navigator.platform,
-      lastSync: serverTimestamp(),
-      registeredAt: serverTimestamp()
-    }, { merge: true });
+
+    await setDoc(
+      deviceRef,
+      {
+        userId: this.userId,
+        deviceId: this.deviceId,
+        name: this.getDeviceName(),
+        type: this.getDeviceType(),
+        userAgent: navigator.userAgent,
+        platform: navigator.platform,
+        lastSync: serverTimestamp(),
+        registeredAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
   }
 
   /**
@@ -330,9 +337,9 @@ class SyncService {
     if (!this.userId) return;
 
     const deviceRef = doc(db, 'devices', `${this.userId}_${this.deviceId}`);
-    
+
     await updateDoc(deviceRef, {
-      lastSync: serverTimestamp()
+      lastSync: serverTimestamp(),
     });
   }
 
@@ -343,14 +350,11 @@ class SyncService {
     if (!this.userId) return [];
 
     try {
-      const devicesQuery = query(
-        collection(db, 'devices'),
-        where('userId', '==', this.userId)
-      );
-      
+      const devicesQuery = query(collection(db, 'devices'), where('userId', '==', this.userId));
+
       const snapshot = await getDocs(devicesQuery);
       const devices: DeviceInfo[] = [];
-      
+
       snapshot.forEach((doc) => {
         const data = doc.data();
         devices.push({
@@ -360,12 +364,12 @@ class SyncService {
           lastSync: data.lastSync.toDate(),
           isCurrentDevice: data.deviceId === this.deviceId,
           userAgent: data.userAgent,
-          platform: data.platform
+          platform: data.platform,
         });
       });
-      
+
       return devices;
-    } catch (error) {
+    } catch {
       console.error('Failed to get connected devices:', error);
       return [];
     }
@@ -386,12 +390,12 @@ class SyncService {
    */
   async getSyncStatus(): Promise<SyncStatus> {
     const pendingChanges = await this.getPendingChangesCount();
-    
+
     return {
       status: 'idle',
       lastSync: this.lastSyncTime,
       nextSync: this.getNextSyncTime(),
-      pendingChanges
+      pendingChanges,
     };
   }
 
@@ -409,7 +413,7 @@ class SyncService {
    */
   private getNextSyncTime(): Date | null {
     if (!this.lastSyncTime) return null;
-    
+
     const nextSync = new Date(this.lastSyncTime);
     nextSync.setMinutes(nextSync.getMinutes() + 5);
     return nextSync;
@@ -420,7 +424,7 @@ class SyncService {
    */
   onSyncStatusChange(callback: SyncStatusCallback): () => void {
     this.syncStatusCallbacks.add(callback);
-    
+
     return () => {
       this.syncStatusCallbacks.delete(callback);
     };
@@ -430,7 +434,7 @@ class SyncService {
    * Notify sync status
    */
   private notifySyncStatus(status: 'idle' | 'syncing' | 'success' | 'error') {
-    this.syncStatusCallbacks.forEach(callback => callback(status));
+    this.syncStatusCallbacks.forEach((callback) => callback(status));
   }
 
   /**
@@ -439,12 +443,12 @@ class SyncService {
   private getOrCreateDeviceId(): string {
     const key = 'deviceId';
     let deviceId = localStorage.getItem(key);
-    
+
     if (!deviceId) {
       deviceId = this.generateDeviceId();
       localStorage.setItem(key, deviceId);
     }
-    
+
     return deviceId;
   }
 
@@ -469,7 +473,7 @@ class SyncService {
    */
   private getDeviceType(): 'desktop' | 'mobile' | 'tablet' {
     const ua = navigator.userAgent;
-    
+
     if (/tablet|ipad/i.test(ua)) return 'tablet';
     if (/mobile|android|iphone/i.test(ua)) return 'mobile';
     return 'desktop';
@@ -480,7 +484,7 @@ class SyncService {
    */
   private getBrowserName(): string {
     const ua = navigator.userAgent;
-    
+
     if (ua.includes('Chrome')) return 'Chrome';
     if (ua.includes('Firefox')) return 'Firefox';
     if (ua.includes('Safari')) return 'Safari';

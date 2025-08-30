@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Globe, 
-  Plus, 
+import {
+  Globe,
+  Plus,
   Trash2,
   Save,
   X,
@@ -10,7 +10,7 @@ import {
   Upload,
   Clock,
   Shield,
-  CheckCircle
+  CheckCircle,
 } from 'lucide-react';
 import { earlyAdopterService } from '../../shared/services/early-adopter.service';
 import { EarlyAdopterStatus } from '../../shared/constants/marketing';
@@ -45,7 +45,7 @@ export const AdvancedWhitelist: React.FC<AdvancedWhitelistProps> = ({ currentTie
     enabled: true,
     isRegex: false,
     isTemporary: false,
-    allowedResources: []
+    allowedResources: [],
   });
   const [earlyAdopterStatus, setEarlyAdopterStatus] = useState<EarlyAdopterStatus | null>(null);
 
@@ -58,7 +58,7 @@ export const AdvancedWhitelist: React.FC<AdvancedWhitelistProps> = ({ currentTie
     try {
       const status = await earlyAdopterService.initializeUser();
       setEarlyAdopterStatus(status);
-    } catch (error) {
+    } catch {
       console.error('Failed to check early adopter status:', error);
     }
   };
@@ -69,7 +69,7 @@ export const AdvancedWhitelist: React.FC<AdvancedWhitelistProps> = ({ currentTie
       if (result.advancedWhitelist) {
         setWhitelist(result.advancedWhitelist);
       }
-    } catch (error) {
+    } catch {
       console.error('Failed to load whitelist:', error);
     }
   };
@@ -78,13 +78,13 @@ export const AdvancedWhitelist: React.FC<AdvancedWhitelistProps> = ({ currentTie
     try {
       await chrome.storage.local.set({ advancedWhitelist: updatedWhitelist });
       setWhitelist(updatedWhitelist);
-      
+
       // Notify background script
       chrome.runtime.sendMessage({
         action: 'whitelistUpdated',
-        whitelist: updatedWhitelist
+        whitelist: updatedWhitelist,
       });
-    } catch (error) {
+    } catch {
       console.error('Failed to save whitelist:', error);
     }
   };
@@ -104,15 +104,19 @@ export const AdvancedWhitelist: React.FC<AdvancedWhitelistProps> = ({ currentTie
       createdAt: Date.now(),
       isRegex: newEntry.isRegex,
       isTemporary: newEntry.isTemporary,
-      expiresAt: newEntry.isTemporary 
-        ? Date.now() + (parseInt((document.getElementById('tempDuration') as HTMLInputElement)?.value || '24') * 60 * 60 * 1000)
+      expiresAt: newEntry.isTemporary
+        ? Date.now() +
+          parseInt((document.getElementById('tempDuration') as HTMLInputElement)?.value || '24') *
+            60 *
+            60 *
+            1000
         : undefined,
-      allowedResources: newEntry.allowedResources || []
+      allowedResources: newEntry.allowedResources || [],
     };
 
     const updatedWhitelist = [...whitelist, entry];
     saveWhitelist(updatedWhitelist);
-    
+
     // Reset form
     setNewEntry({
       domain: '',
@@ -121,18 +125,18 @@ export const AdvancedWhitelist: React.FC<AdvancedWhitelistProps> = ({ currentTie
       enabled: true,
       isRegex: false,
       isTemporary: false,
-      allowedResources: []
+      allowedResources: [],
     });
     setShowAddEntry(false);
   };
 
   const deleteEntry = (id: string) => {
-    const updatedWhitelist = whitelist.filter(e => e.id !== id);
+    const updatedWhitelist = whitelist.filter((e) => e.id !== id);
     saveWhitelist(updatedWhitelist);
   };
 
   const toggleEntry = (id: string) => {
-    const updatedWhitelist = whitelist.map(e => 
+    const updatedWhitelist = whitelist.map((e) =>
       e.id === id ? { ...e, enabled: !e.enabled } : e
     );
     saveWhitelist(updatedWhitelist);
@@ -140,8 +144,8 @@ export const AdvancedWhitelist: React.FC<AdvancedWhitelistProps> = ({ currentTie
 
   const exportWhitelist = () => {
     const dataStr = JSON.stringify(whitelist, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    
+    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
     linkElement.setAttribute('download', `shieldpro-whitelist-${Date.now()}.json`);
@@ -152,11 +156,11 @@ export const AdvancedWhitelist: React.FC<AdvancedWhitelistProps> = ({ currentTie
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'application/json';
-    
+
     input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
-      
+
       const reader = new FileReader();
       reader.onload = async (event) => {
         try {
@@ -166,25 +170,32 @@ export const AdvancedWhitelist: React.FC<AdvancedWhitelistProps> = ({ currentTie
             await saveWhitelist(updatedWhitelist);
             alert(`Imported ${importedEntries.length} entries successfully!`);
           }
-        } catch (error) {
+        } catch {
           alert('Failed to import whitelist. Please check the file format.');
         }
       };
       reader.readAsText(file);
     };
-    
+
     input.click();
   };
 
-  const filteredWhitelist = whitelist.filter(entry => 
-    entry.domain.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    entry.pattern?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    entry.description?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredWhitelist = whitelist.filter(
+    (entry) =>
+      entry.domain.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      entry.pattern?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      entry.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const resourceTypes = [
-    'script', 'image', 'stylesheet', 'font', 'media', 
-    'xmlhttprequest', 'sub_frame', 'other'
+    'script',
+    'image',
+    'stylesheet',
+    'font',
+    'media',
+    'xmlhttprequest',
+    'sub_frame',
+    'other',
   ];
 
   if (currentTier < 3) {
@@ -195,7 +206,8 @@ export const AdvancedWhitelist: React.FC<AdvancedWhitelistProps> = ({ currentTie
           <h2 className="text-xl font-bold text-gray-900">Advanced Whitelist</h2>
         </div>
         <p className="text-gray-700 mb-4">
-          Upgrade to Tier 3 to unlock advanced whitelist features including patterns, regex support, and temporary whitelisting.
+          Upgrade to Tier 3 to unlock advanced whitelist features including patterns, regex support,
+          and temporary whitelisting.
         </p>
         <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
           Upgrade to Tier 3
@@ -256,12 +268,10 @@ export const AdvancedWhitelist: React.FC<AdvancedWhitelistProps> = ({ currentTie
       {showAddEntry && (
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
           <h3 className="text-lg font-semibold mb-4">Add Whitelist Entry</h3>
-          
+
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Domain
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Domain</label>
               <input
                 type="text"
                 value={newEntry.domain}
@@ -270,7 +280,7 @@ export const AdvancedWhitelist: React.FC<AdvancedWhitelistProps> = ({ currentTie
                 placeholder="example.com"
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Pattern (Optional)
@@ -286,9 +296,7 @@ export const AdvancedWhitelist: React.FC<AdvancedWhitelistProps> = ({ currentTie
           </div>
 
           <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Description
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
             <input
               type="text"
               value={newEntry.description}
@@ -353,7 +361,7 @@ export const AdvancedWhitelist: React.FC<AdvancedWhitelistProps> = ({ currentTie
               Allowed Resource Types (Leave empty for all)
             </label>
             <div className="flex flex-wrap gap-2">
-              {resourceTypes.map(type => (
+              {resourceTypes.map((type) => (
                 <label key={type} className="flex items-center space-x-1">
                   <input
                     type="checkbox"
@@ -363,7 +371,10 @@ export const AdvancedWhitelist: React.FC<AdvancedWhitelistProps> = ({ currentTie
                       if (e.target.checked) {
                         setNewEntry({ ...newEntry, allowedResources: [...resources, type] });
                       } else {
-                        setNewEntry({ ...newEntry, allowedResources: resources.filter(r => r !== type) });
+                        setNewEntry({
+                          ...newEntry,
+                          allowedResources: resources.filter((r) => r !== type),
+                        });
                       }
                     }}
                     className="rounded text-primary-600"
@@ -385,7 +396,7 @@ export const AdvancedWhitelist: React.FC<AdvancedWhitelistProps> = ({ currentTie
                   enabled: true,
                   isRegex: false,
                   isTemporary: false,
-                  allowedResources: []
+                  allowedResources: [],
                 });
               }}
               className="px-4 py-2 text-gray-600 hover:text-gray-800"
@@ -409,19 +420,18 @@ export const AdvancedWhitelist: React.FC<AdvancedWhitelistProps> = ({ currentTie
           <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg">
             <Globe className="w-12 h-12 text-gray-400 mx-auto mb-3" />
             <p className="text-gray-600">No whitelist entries yet</p>
-            <p className="text-sm text-gray-500 mt-1">
-              Add trusted sites to allow ads on them
-            </p>
+            <p className="text-sm text-gray-500 mt-1">Add trusted sites to allow ads on them</p>
           </div>
         ) : (
-          filteredWhitelist.map(entry => (
-            <div key={entry.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+          filteredWhitelist.map((entry) => (
+            <div
+              key={entry.id}
+              className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4"
+            >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center space-x-2">
-                    <h4 className="font-medium text-gray-900">
-                      {entry.domain || entry.pattern}
-                    </h4>
+                    <h4 className="font-medium text-gray-900">{entry.domain || entry.pattern}</h4>
                     {entry.isRegex && (
                       <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded">
                         RegEx
@@ -439,28 +449,31 @@ export const AdvancedWhitelist: React.FC<AdvancedWhitelistProps> = ({ currentTie
                       </span>
                     )}
                   </div>
-                  
+
                   {entry.description && (
                     <p className="text-sm text-gray-600 mt-1">{entry.description}</p>
                   )}
-                  
+
                   {entry.pattern && (
                     <code className="text-xs text-gray-700 bg-gray-100 px-2 py-1 rounded mt-2 inline-block">
                       Pattern: {entry.pattern}
                     </code>
                   )}
-                  
+
                   {entry.allowedResources && entry.allowedResources.length > 0 && (
                     <div className="mt-2">
                       <span className="text-xs text-gray-500">Allowed: </span>
-                      {entry.allowedResources.map(resource => (
-                        <span key={resource} className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded ml-1">
+                      {entry.allowedResources.map((resource) => (
+                        <span
+                          key={resource}
+                          className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded ml-1"
+                        >
                           {resource}
                         </span>
                       ))}
                     </div>
                   )}
-                  
+
                   <div className="mt-2 flex items-center space-x-4 text-xs text-gray-500">
                     <span>Added: {new Date(entry.createdAt).toLocaleDateString()}</span>
                     {entry.lastUsed && (
@@ -473,7 +486,7 @@ export const AdvancedWhitelist: React.FC<AdvancedWhitelistProps> = ({ currentTie
                     )}
                   </div>
                 </div>
-                
+
                 <div className="flex items-center space-x-2 ml-4">
                   <button
                     onClick={() => toggleEntry(entry.id)}
@@ -484,7 +497,11 @@ export const AdvancedWhitelist: React.FC<AdvancedWhitelistProps> = ({ currentTie
                     }`}
                     title={entry.enabled ? 'Disable' : 'Enable'}
                   >
-                    {entry.enabled ? <CheckCircle className="w-4 h-4" /> : <X className="w-4 h-4" />}
+                    {entry.enabled ? (
+                      <CheckCircle className="w-4 h-4" />
+                    ) : (
+                      <X className="w-4 h-4" />
+                    )}
                   </button>
                   <button
                     onClick={() => deleteEntry(entry.id)}
@@ -507,11 +524,11 @@ export const AdvancedWhitelist: React.FC<AdvancedWhitelistProps> = ({ currentTie
             <div className="flex items-center space-x-2">
               <Shield className="w-5 h-5 text-green-600" />
               <span className="text-sm font-medium text-green-900">
-                {whitelist.filter(e => e.enabled).length} active entries
+                {whitelist.filter((e) => e.enabled).length} active entries
               </span>
             </div>
             <span className="text-sm text-green-700">
-              {whitelist.filter(e => e.isTemporary).length} temporary
+              {whitelist.filter((e) => e.isTemporary).length} temporary
             </span>
           </div>
         </div>

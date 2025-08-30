@@ -4,10 +4,10 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { 
-  Network, 
-  ShieldX, 
-  Clock, 
+import {
+  Network,
+  ShieldX,
+  Clock,
   Download,
   Filter,
   Search,
@@ -19,7 +19,7 @@ import {
   Lock,
   Unlock,
   Eye,
-  EyeOff
+  EyeOff,
 } from 'lucide-react';
 
 interface NetworkRequest {
@@ -36,7 +36,15 @@ interface NetworkRequest {
   reason?: string;
   domain: string;
   initiator: string;
-  category: 'document' | 'stylesheet' | 'script' | 'image' | 'font' | 'xmlhttprequest' | 'fetch' | 'other';
+  category:
+    | 'document'
+    | 'stylesheet'
+    | 'script'
+    | 'image'
+    | 'font'
+    | 'xmlhttprequest'
+    | 'fetch'
+    | 'other';
   securityState: 'secure' | 'insecure' | 'unknown';
   cached: boolean;
   redirected: boolean;
@@ -76,7 +84,7 @@ export const NetworkLogger: React.FC<NetworkLoggerProps> = () => {
     savedBandwidth: 0,
     averageResponseTime: 0,
     secureRequests: 0,
-    insecureRequests: 0
+    insecureRequests: 0,
   });
   const [filters, setFilters] = useState<FilterOptions>({
     method: [],
@@ -84,7 +92,7 @@ export const NetworkLogger: React.FC<NetworkLoggerProps> = () => {
     category: [],
     blocked: 'all',
     domain: '',
-    search: ''
+    search: '',
   });
   const [isRecording, setIsRecording] = useState(true);
   const [selectedRequest, setSelectedRequest] = useState<NetworkRequest | null>(null);
@@ -108,13 +116,13 @@ export const NetworkLogger: React.FC<NetworkLoggerProps> = () => {
         if (isRecording) {
           startNetworkMonitoring();
         }
-      } catch (error) {
+      } catch {
         console.error('Failed to initialize network logger:', error);
       }
     };
-    
+
     initialize();
-    
+
     return () => {
       // Cleanup listeners when component unmounts
       if (chrome?.webRequest) {
@@ -135,7 +143,6 @@ export const NetworkLogger: React.FC<NetworkLoggerProps> = () => {
     }
   }, [requests, autoScroll]);
 
-
   const startNetworkMonitoring = useCallback(() => {
     // Listen for messages from background script about network events
     chrome.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
@@ -155,10 +162,10 @@ export const NetworkLogger: React.FC<NetworkLoggerProps> = () => {
   const handleNetworkRequest = (request: Omit<NetworkRequest, 'id'>) => {
     const newRequest: NetworkRequest = {
       ...request,
-      id: `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      id: `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     };
 
-    setRequests(prev => {
+    setRequests((prev) => {
       const updated = [...prev, newRequest].slice(-1000); // Keep last 1000
       saveRequestsToStorage(updated);
       return updated;
@@ -168,18 +175,20 @@ export const NetworkLogger: React.FC<NetworkLoggerProps> = () => {
   };
 
   const updateStats = (request: NetworkRequest) => {
-    setStats(prev => {
+    setStats((prev) => {
       const newStats = {
         totalRequests: prev.totalRequests + 1,
         blockedRequests: prev.blockedRequests + (request.blocked ? 1 : 0),
         allowedRequests: prev.allowedRequests + (request.blocked ? 0 : 1),
         totalSize: prev.totalSize + request.size,
         savedBandwidth: prev.savedBandwidth + (request.blocked ? request.size : 0),
-        averageResponseTime: (prev.averageResponseTime * prev.totalRequests + request.duration) / (prev.totalRequests + 1),
+        averageResponseTime:
+          (prev.averageResponseTime * prev.totalRequests + request.duration) /
+          (prev.totalRequests + 1),
         secureRequests: prev.secureRequests + (request.securityState === 'secure' ? 1 : 0),
-        insecureRequests: prev.insecureRequests + (request.securityState === 'insecure' ? 1 : 0)
+        insecureRequests: prev.insecureRequests + (request.securityState === 'insecure' ? 1 : 0),
       };
-      
+
       chrome.storage.local.set({ networkStats: newStats });
       return newStats;
     });
@@ -188,7 +197,7 @@ export const NetworkLogger: React.FC<NetworkLoggerProps> = () => {
   const saveRequestsToStorage = async (requests: NetworkRequest[]) => {
     try {
       await chrome.storage.local.set({ networkRequests: requests });
-    } catch (error) {
+    } catch {
       console.error('Failed to save network requests:', error);
     }
   };
@@ -196,7 +205,7 @@ export const NetworkLogger: React.FC<NetworkLoggerProps> = () => {
   const toggleRecording = () => {
     const newRecordingState = !isRecording;
     setIsRecording(newRecordingState);
-    
+
     if (newRecordingState) {
       startNetworkMonitoring();
     } else {
@@ -214,7 +223,7 @@ export const NetworkLogger: React.FC<NetworkLoggerProps> = () => {
       savedBandwidth: 0,
       averageResponseTime: 0,
       secureRequests: 0,
-      insecureRequests: 0
+      insecureRequests: 0,
     });
     chrome.storage.local.remove(['networkRequests', 'networkStats']);
   };
@@ -241,19 +250,27 @@ export const NetworkLogger: React.FC<NetworkLoggerProps> = () => {
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
-      case 'document': return <Globe className="w-4 h-4 text-blue-500" />;
-      case 'stylesheet': return <Eye className="w-4 h-4 text-purple-500" />;
-      case 'script': return <Network className="w-4 h-4 text-yellow-500" />;
-      case 'image': return <EyeOff className="w-4 h-4 text-green-500" />;
-      default: return <Network className="w-4 h-4 text-gray-500" />;
+      case 'document':
+        return <Globe className="w-4 h-4 text-blue-500" />;
+      case 'stylesheet':
+        return <Eye className="w-4 h-4 text-purple-500" />;
+      case 'script':
+        return <Network className="w-4 h-4 text-yellow-500" />;
+      case 'image':
+        return <EyeOff className="w-4 h-4 text-green-500" />;
+      default:
+        return <Network className="w-4 h-4 text-gray-500" />;
     }
   };
 
   const getSecurityIcon = (state: string) => {
     switch (state) {
-      case 'secure': return <Lock className="w-4 h-4 text-green-500" />;
-      case 'insecure': return <Unlock className="w-4 h-4 text-red-500" />;
-      default: return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
+      case 'secure':
+        return <Lock className="w-4 h-4 text-green-500" />;
+      case 'insecure':
+        return <Unlock className="w-4 h-4 text-red-500" />;
+      default:
+        return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
     }
   };
 
@@ -270,17 +287,19 @@ export const NetworkLogger: React.FC<NetworkLoggerProps> = () => {
     return `${(ms / 1000).toFixed(1)}s`;
   };
 
-  const filteredRequests = requests.filter(request => {
+  const filteredRequests = requests.filter((request) => {
     if (filters.blocked !== 'all') {
       if (filters.blocked === 'blocked' && !request.blocked) return false;
       if (filters.blocked === 'allowed' && request.blocked) return false;
     }
-    
+
     if (filters.method.length > 0 && !filters.method.includes(request.method)) return false;
     if (filters.category.length > 0 && !filters.category.includes(request.category)) return false;
-    if (filters.domain && !request.domain.toLowerCase().includes(filters.domain.toLowerCase())) return false;
-    if (filters.search && !request.url.toLowerCase().includes(filters.search.toLowerCase())) return false;
-    
+    if (filters.domain && !request.domain.toLowerCase().includes(filters.domain.toLowerCase()))
+      return false;
+    if (filters.search && !request.url.toLowerCase().includes(filters.search.toLowerCase()))
+      return false;
+
     return true;
   });
 
@@ -295,7 +314,7 @@ export const NetworkLogger: React.FC<NetworkLoggerProps> = () => {
               TIER 4
             </span>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <button
               onClick={() => setAutoScroll(!autoScroll)}
@@ -305,7 +324,7 @@ export const NetworkLogger: React.FC<NetworkLoggerProps> = () => {
             >
               Auto Scroll
             </button>
-            
+
             <button
               onClick={() => setShowFilters(!showFilters)}
               className="flex items-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
@@ -313,7 +332,7 @@ export const NetworkLogger: React.FC<NetworkLoggerProps> = () => {
               <Filter className="w-4 h-4" />
               Filters
             </button>
-            
+
             <button
               onClick={exportLogs}
               className="flex items-center gap-2 px-3 py-2 bg-green-100 text-green-700 rounded hover:bg-green-200"
@@ -321,7 +340,7 @@ export const NetworkLogger: React.FC<NetworkLoggerProps> = () => {
               <Download className="w-4 h-4" />
               Export
             </button>
-            
+
             <button
               onClick={clearLogs}
               className="flex items-center gap-2 px-3 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200"
@@ -329,7 +348,7 @@ export const NetworkLogger: React.FC<NetworkLoggerProps> = () => {
               <Trash2 className="w-4 h-4" />
               Clear
             </button>
-            
+
             <button
               onClick={toggleRecording}
               className={`flex items-center gap-2 px-4 py-2 rounded font-medium ${
@@ -352,7 +371,7 @@ export const NetworkLogger: React.FC<NetworkLoggerProps> = () => {
             </button>
           </div>
         </div>
-        
+
         <p className="text-gray-600">
           Real-time monitoring of network requests with detailed analytics
         </p>
@@ -384,7 +403,9 @@ export const NetworkLogger: React.FC<NetworkLoggerProps> = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-green-600 font-medium">Data Saved</p>
-              <p className="text-2xl font-bold text-green-900">{formatSize(stats.savedBandwidth)}</p>
+              <p className="text-2xl font-bold text-green-900">
+                {formatSize(stats.savedBandwidth)}
+              </p>
             </div>
             <Download className="w-8 h-8 text-green-500" />
           </div>
@@ -411,10 +432,12 @@ export const NetworkLogger: React.FC<NetworkLoggerProps> = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">Status Filter</label>
               <select
                 value={filters.blocked}
-                onChange={(e) => setFilters(prev => ({ 
-                  ...prev, 
-                  blocked: e.target.value as 'all' | 'blocked' | 'allowed'
-                }))}
+                onChange={(e) =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    blocked: e.target.value as 'all' | 'blocked' | 'allowed',
+                  }))
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">All Requests</option>
@@ -422,18 +445,18 @@ export const NetworkLogger: React.FC<NetworkLoggerProps> = () => {
                 <option value="allowed">Allowed Only</option>
               </select>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Domain</label>
               <input
                 type="text"
                 placeholder="Filter by domain"
                 value={filters.domain}
-                onChange={(e) => setFilters(prev => ({ ...prev, domain: e.target.value }))}
+                onChange={(e) => setFilters((prev) => ({ ...prev, domain: e.target.value }))}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-600 dark:text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Search URL</label>
               <div className="relative">
@@ -442,7 +465,7 @@ export const NetworkLogger: React.FC<NetworkLoggerProps> = () => {
                   type="text"
                   placeholder="Search in URLs"
                   value={filters.search}
-                  onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+                  onChange={(e) => setFilters((prev) => ({ ...prev, search: e.target.value }))}
                   className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -484,14 +507,16 @@ export const NetworkLogger: React.FC<NetworkLoggerProps> = () => {
                     <Network className="w-12 h-12 mx-auto mb-3 opacity-50" />
                     <p>No network requests recorded</p>
                     <p className="text-sm">
-                      {isRecording ? 'Navigate to a website to see requests' : 'Click Start to begin recording'}
+                      {isRecording
+                        ? 'Navigate to a website to see requests'
+                        : 'Click Start to begin recording'}
                     </p>
                   </td>
                 </tr>
               ) : (
                 filteredRequests.map((request) => (
-                  <tr 
-                    key={request.id} 
+                  <tr
+                    key={request.id}
                     className={`hover:bg-gray-50 cursor-pointer ${
                       request.blocked ? 'bg-red-50' : ''
                     }`}
@@ -500,43 +525,49 @@ export const NetworkLogger: React.FC<NetworkLoggerProps> = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
                         {getStatusIcon(request.status)}
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${
-                          request.blocked 
-                            ? 'bg-red-100 text-red-800'
-                            : request.status && request.status >= 200 && request.status < 300
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}>
+                        <span
+                          className={`px-2 py-1 rounded text-xs font-medium ${
+                            request.blocked
+                              ? 'bg-red-100 text-red-800'
+                              : request.status && request.status >= 200 && request.status < 300
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-gray-100 text-gray-800'
+                          }`}
+                        >
                           {request.blocked ? 'BLOCKED' : request.status || 'PENDING'}
                         </span>
                       </div>
                     </td>
-                    
+
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
                         {getCategoryIcon(request.category)}
                         <span className="text-sm font-medium">{request.method}</span>
                       </div>
                     </td>
-                    
+
                     <td className="px-6 py-4">
                       <div className="max-w-md">
-                        <p className="text-sm font-medium text-gray-900 truncate">{request.domain}</p>
+                        <p className="text-sm font-medium text-gray-900 truncate">
+                          {request.domain}
+                        </p>
                         <p className="text-xs text-gray-500 truncate">{request.url}</p>
                       </div>
                     </td>
-                    
+
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {formatSize(request.size)}
                     </td>
-                    
+
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{formatDuration(request.duration)}</div>
+                      <div className="text-sm text-gray-900">
+                        {formatDuration(request.duration)}
+                      </div>
                       <div className="text-xs text-gray-500">
                         {new Date(request.timestamp).toLocaleTimeString()}
                       </div>
                     </td>
-                    
+
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
                         {getSecurityIcon(request.securityState)}
@@ -565,7 +596,7 @@ export const NetworkLogger: React.FC<NetworkLoggerProps> = () => {
                 <XCircle className="w-5 h-5" />
               </button>
             </div>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">URL</label>
@@ -573,29 +604,29 @@ export const NetworkLogger: React.FC<NetworkLoggerProps> = () => {
                   {selectedRequest.url}
                 </p>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Method</label>
                   <p className="text-sm">{selectedRequest.method}</p>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Status</label>
                   <p className="text-sm">{selectedRequest.status || 'Pending'}</p>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Size</label>
                   <p className="text-sm">{formatSize(selectedRequest.size)}</p>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Duration</label>
                   <p className="text-sm">{formatDuration(selectedRequest.duration)}</p>
                 </div>
               </div>
-              
+
               {selectedRequest.blocked && selectedRequest.reason && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Block Reason</label>

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Filter, 
-  Plus, 
-  Trash2, 
-  Download, 
-  Upload, 
+import {
+  Filter,
+  Plus,
+  Trash2,
+  Download,
+  Upload,
   Save,
   Clock,
   CheckCircle,
@@ -14,7 +14,7 @@ import {
   RefreshCw,
   Star,
   Sparkles,
-  Gift
+  Gift,
 } from 'lucide-react';
 import { earlyAdopterService } from '../../shared/services/early-adopter.service';
 import { EarlyAdopterStatus } from '../../shared/constants/marketing';
@@ -50,7 +50,7 @@ export const CustomFilters: React.FC<CustomFiltersProps> = ({ currentTier }) => 
     description: '',
     enabled: true,
     isRegex: false,
-    isScheduled: false
+    isScheduled: false,
   });
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
   const [testResult, setTestResult] = useState<string>('');
@@ -66,7 +66,7 @@ export const CustomFilters: React.FC<CustomFiltersProps> = ({ currentTier }) => 
     try {
       const status = await earlyAdopterService.initializeUser();
       setEarlyAdopterStatus(status);
-    } catch (error) {
+    } catch {
       console.error('Failed to check early adopter status:', error);
     }
   };
@@ -77,7 +77,7 @@ export const CustomFilters: React.FC<CustomFiltersProps> = ({ currentTier }) => 
       if (result.customFilters) {
         setFilters(result.customFilters);
       }
-    } catch (error) {
+    } catch {
       console.error('Failed to load custom filters:', error);
     }
   };
@@ -86,13 +86,13 @@ export const CustomFilters: React.FC<CustomFiltersProps> = ({ currentTier }) => 
     try {
       await chrome.storage.local.set({ customFilters: updatedFilters });
       setFilters(updatedFilters);
-      
+
       // Notify content scripts
       chrome.runtime.sendMessage({
         action: 'customFiltersUpdated',
-        filters: updatedFilters
+        filters: updatedFilters,
       });
-    } catch (error) {
+    } catch {
       console.error('Failed to save filters:', error);
     }
   };
@@ -113,16 +113,18 @@ export const CustomFilters: React.FC<CustomFiltersProps> = ({ currentTier }) => 
       matchCount: 0,
       isRegex: newFilter.isRegex,
       isScheduled: newFilter.isScheduled,
-      schedule: newFilter.isScheduled ? {
-        days: selectedDays,
-        startTime: (document.getElementById('startTime') as HTMLInputElement)?.value,
-        endTime: (document.getElementById('endTime') as HTMLInputElement)?.value
-      } : undefined
+      schedule: newFilter.isScheduled
+        ? {
+            days: selectedDays,
+            startTime: (document.getElementById('startTime') as HTMLInputElement)?.value,
+            endTime: (document.getElementById('endTime') as HTMLInputElement)?.value,
+          }
+        : undefined,
     };
 
     const updatedFilters = [...filters, filter];
     saveFilters(updatedFilters);
-    
+
     // Reset form
     setNewFilter({
       name: '',
@@ -130,53 +132,55 @@ export const CustomFilters: React.FC<CustomFiltersProps> = ({ currentTier }) => 
       description: '',
       enabled: true,
       isRegex: false,
-      isScheduled: false
+      isScheduled: false,
     });
     setSelectedDays([]);
     setShowAddFilter(false);
   };
 
   const deleteFilter = (id: string) => {
-    const updatedFilters = filters.filter(f => f.id !== id);
+    const updatedFilters = filters.filter((f) => f.id !== id);
     saveFilters(updatedFilters);
   };
 
   const toggleFilter = (id: string) => {
-    const updatedFilters = filters.map(f => 
-      f.id === id ? { ...f, enabled: !f.enabled } : f
-    );
+    const updatedFilters = filters.map((f) => (f.id === id ? { ...f, enabled: !f.enabled } : f));
     saveFilters(updatedFilters);
   };
 
   const testSelector = async () => {
     if (!newFilter.selector) return;
-    
+
     setIsTestingSelector(true);
-    
+
     // Send message to content script to test selector
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (tab.id) {
-      chrome.tabs.sendMessage(tab.id, {
-        action: 'testSelector',
-        selector: newFilter.selector,
-        isRegex: newFilter.isRegex
-      }, (response) => {
-        if (response?.matchCount !== undefined) {
-          setTestResult(`Found ${response.matchCount} matching element(s)`);
-        } else {
-          setTestResult('Error testing selector');
+      chrome.tabs.sendMessage(
+        tab.id,
+        {
+          action: 'testSelector',
+          selector: newFilter.selector,
+          isRegex: newFilter.isRegex,
+        },
+        (response) => {
+          if (response?.matchCount !== undefined) {
+            setTestResult(`Found ${response.matchCount} matching element(s)`);
+          } else {
+            setTestResult('Error testing selector');
+          }
+          setIsTestingSelector(false);
         }
-        setIsTestingSelector(false);
-      });
+      );
     }
   };
 
   const exportFilters = () => {
     const dataStr = JSON.stringify(filters, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    
+    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+
     const exportFileDefaultName = `shieldpro-filters-${Date.now()}.json`;
-    
+
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
     linkElement.setAttribute('download', exportFileDefaultName);
@@ -187,11 +191,11 @@ export const CustomFilters: React.FC<CustomFiltersProps> = ({ currentTier }) => 
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'application/json';
-    
+
     input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
-      
+
       const reader = new FileReader();
       reader.onload = async (event) => {
         try {
@@ -201,13 +205,13 @@ export const CustomFilters: React.FC<CustomFiltersProps> = ({ currentTier }) => 
             await saveFilters(updatedFilters);
             alert(`Imported ${importedFilters.length} filters successfully!`);
           }
-        } catch (error) {
+        } catch {
           alert('Failed to import filters. Please check the file format.');
         }
       };
       reader.readAsText(file);
     };
-    
+
     input.click();
   };
 
@@ -232,7 +236,8 @@ export const CustomFilters: React.FC<CustomFiltersProps> = ({ currentTier }) => 
           <h2 className="text-xl font-bold text-gray-900">Custom Filters</h2>
         </div>
         <p className="text-gray-700 mb-4">
-          Upgrade to Tier 3 to unlock custom filter creation, element picker, and advanced blocking rules.
+          Upgrade to Tier 3 to unlock custom filter creation, element picker, and advanced blocking
+          rules.
         </p>
         <button className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors">
           Upgrade to Tier 3
@@ -250,14 +255,14 @@ export const CustomFilters: React.FC<CustomFiltersProps> = ({ currentTier }) => 
         <div className="flex items-center space-x-3">
           <Filter className="w-6 h-6 text-primary-600" />
           <h2 className="text-xl font-bold text-gray-900">Custom Filters</h2>
-          
+
           {/* Tier Badge */}
           <div className="flex items-center space-x-2">
             <span className="px-3 py-1 bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-700 text-xs rounded-full font-semibold flex items-center space-x-1">
               <Star className="w-3 h-3" />
               <span>Tier 3 Feature</span>
             </span>
-            
+
             {isEarlyAdopter && (
               <span className="px-3 py-1 bg-gradient-to-r from-yellow-100 to-amber-100 text-amber-700 text-xs rounded-full font-semibold flex items-center space-x-1 animate-pulse">
                 <Sparkles className="w-3 h-3" />
@@ -302,12 +307,10 @@ export const CustomFilters: React.FC<CustomFiltersProps> = ({ currentTier }) => 
       {showAddFilter && (
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
           <h3 className="text-lg font-semibold mb-4">Create New Filter</h3>
-          
+
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Filter Name
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Filter Name</label>
               <input
                 type="text"
                 value={newFilter.name}
@@ -316,7 +319,7 @@ export const CustomFilters: React.FC<CustomFiltersProps> = ({ currentTier }) => 
                 placeholder="e.g., Remove sidebar ads"
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Description (Optional)
@@ -351,9 +354,7 @@ export const CustomFilters: React.FC<CustomFiltersProps> = ({ currentTier }) => 
                 {isTestingSelector ? <RefreshCw className="w-4 h-4 animate-spin" /> : 'Test'}
               </button>
             </div>
-            {testResult && (
-              <p className="mt-2 text-sm text-gray-600">{testResult}</p>
-            )}
+            {testResult && <p className="mt-2 text-sm text-gray-600">{testResult}</p>}
           </div>
 
           <div className="mt-4 space-y-3">
@@ -392,19 +393,17 @@ export const CustomFilters: React.FC<CustomFiltersProps> = ({ currentTier }) => 
           {newFilter.isScheduled && (
             <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
               <h4 className="text-sm font-medium text-gray-700 mb-3">Schedule Settings</h4>
-              
+
               <div className="space-y-3">
                 <div>
                   <label className="block text-sm text-gray-600 mb-2">Active Days</label>
                   <div className="flex space-x-2">
-                    {daysOfWeek.map(day => (
+                    {daysOfWeek.map((day) => (
                       <button
                         key={day}
                         onClick={() => {
-                          setSelectedDays(prev =>
-                            prev.includes(day)
-                              ? prev.filter(d => d !== day)
-                              : [...prev, day]
+                          setSelectedDays((prev) =>
+                            prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
                           );
                         }}
                         className={`px-3 py-1 text-sm rounded ${
@@ -451,7 +450,7 @@ export const CustomFilters: React.FC<CustomFiltersProps> = ({ currentTier }) => 
                   description: '',
                   enabled: true,
                   isRegex: false,
-                  isScheduled: false
+                  isScheduled: false,
                 });
                 setTestResult('');
               }}
@@ -481,8 +480,11 @@ export const CustomFilters: React.FC<CustomFiltersProps> = ({ currentTier }) => 
             </p>
           </div>
         ) : (
-          filters.map(filter => (
-            <div key={filter.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+          filters.map((filter) => (
+            <div
+              key={filter.id}
+              className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4"
+            >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center space-x-2">
@@ -499,26 +501,29 @@ export const CustomFilters: React.FC<CustomFiltersProps> = ({ currentTier }) => 
                       </span>
                     )}
                   </div>
-                  
+
                   {filter.description && (
                     <p className="text-sm text-gray-600 mt-1">{filter.description}</p>
                   )}
-                  
+
                   <div className="mt-2 space-y-1">
                     <code className="text-xs text-gray-700 bg-gray-100 px-2 py-1 rounded block overflow-x-auto">
                       {filter.selector}
                     </code>
-                    
+
                     {filter.isScheduled && filter.schedule && (
                       <div className="text-xs text-gray-500">
                         Active: {filter.schedule.days.join(', ')}
                         {filter.schedule.startTime && filter.schedule.endTime && (
-                          <span> • {filter.schedule.startTime} - {filter.schedule.endTime}</span>
+                          <span>
+                            {' '}
+                            • {filter.schedule.startTime} - {filter.schedule.endTime}
+                          </span>
                         )}
                       </div>
                     )}
                   </div>
-                  
+
                   <div className="mt-2 flex items-center space-x-4 text-xs text-gray-500">
                     <span>Created: {new Date(filter.createdAt).toLocaleDateString()}</span>
                     <span>Matches: {filter.matchCount}</span>
@@ -527,7 +532,7 @@ export const CustomFilters: React.FC<CustomFiltersProps> = ({ currentTier }) => 
                     )}
                   </div>
                 </div>
-                
+
                 <div className="flex items-center space-x-2 ml-4">
                   <button
                     onClick={() => toggleFilter(filter.id)}
@@ -571,7 +576,7 @@ export const CustomFilters: React.FC<CustomFiltersProps> = ({ currentTier }) => 
             <div className="flex items-center space-x-2">
               <CheckCircle className="w-5 h-5 text-blue-600" />
               <span className="text-sm font-medium text-blue-900">
-                {filters.filter(f => f.enabled).length} active filters
+                {filters.filter((f) => f.enabled).length} active filters
               </span>
             </div>
             <span className="text-sm text-blue-700">
@@ -591,8 +596,8 @@ export const CustomFilters: React.FC<CustomFiltersProps> = ({ currentTier }) => 
                 🎊 Early Adopter Benefit Unlocked!
               </h4>
               <p className="text-xs text-purple-700">
-                As Early Adopter #{userNumber.toLocaleString()}, you have lifetime access to this Tier 3 feature. 
-                Custom filters help you block any specific elements on any website!
+                As Early Adopter #{userNumber.toLocaleString()}, you have lifetime access to this
+                Tier 3 feature. Custom filters help you block any specific elements on any website!
               </p>
             </div>
           </div>

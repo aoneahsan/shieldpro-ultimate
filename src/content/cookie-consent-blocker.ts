@@ -41,7 +41,7 @@ export class CookieConsentBlocker {
         childList: true,
         subtree: true,
         attributes: true,
-        attributeFilter: ['class', 'id', 'style']
+        attributeFilter: ['class', 'id', 'style'],
       });
     }
 
@@ -62,7 +62,7 @@ export class CookieConsentBlocker {
       'button[id*="deny"]',
       'a[class*="reject"]',
       'a[class*="decline"]',
-      
+
       // Specific cookie consent tools
       '[class*="cookiefirst-reject"]',
       '[id="onetrust-reject-all-handler"]',
@@ -70,54 +70,63 @@ export class CookieConsentBlocker {
       '#reject-all',
       '.reject-all',
       '.decline-all',
-      
+
       // Text-based selectors
       'button:contains("Reject")',
       'button:contains("Decline")',
       'button:contains("No thanks")',
       'button:contains("Only necessary")',
       'button:contains("Only essential")',
-      
+
       // Popular consent management platforms
       '.qc-cmp-button[mode="secondary"]',
       '.didomi-dismiss-button',
       '.cn-decline-cookie',
       '.cc-deny',
       '.cc-dismiss',
-      
+
       // Custom implementations
       '[data-action="reject"]',
       '[data-consent="reject"]',
       '[aria-label*="reject"]',
-      '[aria-label*="decline"]'
+      '[aria-label*="decline"]',
     ];
 
-    rejectSelectors.forEach(selector => {
+    rejectSelectors.forEach((selector) => {
       try {
         const elements = document.querySelectorAll(selector);
-        elements.forEach(element => {
+        elements.forEach((element) => {
           if (!this.processedElements.has(element)) {
             this.processedElements.add(element);
-            
+
             // Check if it's actually a reject button
             const text = element.textContent?.toLowerCase() || '';
-            const rejectKeywords = ['reject', 'decline', 'deny', 'refuse', 'no thanks', 'necessary', 'essential', 'dismiss'];
-            
-            if (rejectKeywords.some(keyword => text.includes(keyword))) {
+            const rejectKeywords = [
+              'reject',
+              'decline',
+              'deny',
+              'refuse',
+              'no thanks',
+              'necessary',
+              'essential',
+              'dismiss',
+            ];
+
+            if (rejectKeywords.some((keyword) => text.includes(keyword))) {
               // Click the reject button
               (element as HTMLElement).click();
               console.warn('ShieldPro: Auto-rejected cookies via', selector);
-              
+
               // Track rejection
               chrome.runtime.sendMessage({
                 action: 'adBlocked',
                 category: 'other',
-                domain: window.location.hostname
+                domain: window.location.hostname,
               });
             }
           }
         });
-      } catch (_e) {
+      } catch {
         // Silently ignore errors
       }
     });
@@ -137,20 +146,20 @@ export class CookieConsentBlocker {
       'input[type="checkbox"][name*="targeting"]',
       'input[type="checkbox"][name*="social"]',
       'input[type="checkbox"][class*="optional"]',
-      'input[type="checkbox"]:not([name*="necessary"]):not([name*="essential"]):not([name*="required"])'
+      'input[type="checkbox"]:not([name*="necessary"]):not([name*="essential"]):not([name*="required"])',
     ];
 
-    checkboxSelectors.forEach(selector => {
+    checkboxSelectors.forEach((selector) => {
       try {
         const checkboxes = document.querySelectorAll(selector);
-        checkboxes.forEach(checkbox => {
+        checkboxes.forEach((checkbox) => {
           if ((checkbox as HTMLInputElement).checked) {
             (checkbox as HTMLInputElement).checked = false;
             // Trigger change event
             checkbox.dispatchEvent(new Event('change', { bubbles: true }));
           }
         });
-      } catch (_e) {
+      } catch {
         // Silently ignore errors
       }
     });
@@ -161,20 +170,20 @@ export class CookieConsentBlocker {
       'button[class*="confirm"]',
       'button[class*="accept-selected"]',
       'button:contains("Save")',
-      'button:contains("Confirm")'
+      'button:contains("Confirm")',
     ];
 
     setTimeout(() => {
-      saveSelectors.forEach(selector => {
+      saveSelectors.forEach((selector) => {
         try {
           const saveButton = document.querySelector(selector) as HTMLElement;
           if (saveButton && !this.processedElements.has(saveButton)) {
             saveButton.click();
             this.processedElements.add(saveButton);
           }
-        } catch (_e) {
-        // Silently ignore errors
-      }
+        } catch {
+          // Silently ignore errors
+        }
       });
     }, 500);
   }
@@ -197,7 +206,7 @@ export class CookieConsentBlocker {
       '[id*="cookie-consent"]',
       '[id*="cookie-notice"]',
       '[id*="gdpr"]',
-      
+
       // Popular consent tools
       '#onetrust-consent-sdk',
       '#onetrust-banner-sdk',
@@ -213,40 +222,51 @@ export class CookieConsentBlocker {
       '.cli-modal-backdrop',
       '.trustarc-banner-container',
       '.truste_box_overlay',
-      
+
       // Overlay/backdrop elements
       '[class*="cookie-overlay"]',
       '[class*="consent-overlay"]',
       '[class*="modal-backdrop"]',
       'div[class*="overlay"]:has([class*="cookie"])',
-      
+
       // Bottom/top bars
       'div[style*="position: fixed"][style*="bottom"]',
-      'div[style*="position: fixed"][style*="top"]'
+      'div[style*="position: fixed"][style*="top"]',
     ];
 
-    bannerSelectors.forEach(selector => {
+    bannerSelectors.forEach((selector) => {
       try {
         const elements = document.querySelectorAll(selector);
-        elements.forEach(element => {
+        elements.forEach((element) => {
           // Check if it's likely a cookie banner
           const text = element.textContent?.toLowerCase() || '';
-          const cookieKeywords = ['cookie', 'consent', 'privacy', 'gdpr', 'data protection', 'personalised ads'];
-          
-          if (cookieKeywords.some(keyword => text.includes(keyword))) {
+          const cookieKeywords = [
+            'cookie',
+            'consent',
+            'privacy',
+            'gdpr',
+            'data protection',
+            'personalised ads',
+          ];
+
+          if (cookieKeywords.some((keyword) => text.includes(keyword))) {
             (element as HTMLElement).style.display = 'none';
             element.remove();
-            
+
             // Remove body class that might prevent scrolling
             document.body.classList.remove('cookie-consent-open', 'modal-open', 'no-scroll');
-            document.documentElement.classList.remove('cookie-consent-open', 'modal-open', 'no-scroll');
-            
+            document.documentElement.classList.remove(
+              'cookie-consent-open',
+              'modal-open',
+              'no-scroll'
+            );
+
             // Restore scrolling
             document.body.style.overflow = '';
             document.documentElement.style.overflow = '';
           }
         });
-      } catch (_e) {
+      } catch {
         // Silently ignore errors
       }
     });
@@ -352,7 +372,7 @@ export class CookieConsentBlocker {
       }
     `;
 
-    document.head.appendChild(_style);
+    document.head.appendChild(style);
   }
 }
 

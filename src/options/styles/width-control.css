@@ -48,7 +48,13 @@
 
 /* Dark mode adjustments */
 .dark .slider {
-  background: linear-gradient(to right, rgb(59, 130, 246) 0%, rgb(59, 130, 246) var(--progress), rgb(55, 65, 81) var(--progress), rgb(55, 65, 81) 100%);
+  background: linear-gradient(
+    to right,
+    rgb(59, 130, 246) 0%,
+    rgb(59, 130, 246) var(--progress),
+    rgb(55, 65, 81) var(--progress),
+    rgb(55, 65, 81) 100%
+  );
 }
 
 .dark .slider::-webkit-slider-thumb {

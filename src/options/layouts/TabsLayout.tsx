@@ -6,12 +6,15 @@ export const TabsLayout: React.FC<LayoutProps> = ({ tabs, activeTab, onTabChange
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg">
       <div className="border-b border-gray-200 dark:border-gray-700">
         <div className="relative">
-          <nav className="flex overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 px-6" aria-label="Tabs">
+          <nav
+            className="flex overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 px-6"
+            aria-label="Tabs"
+          >
             <div className="flex space-x-6 min-w-max">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
-                
+
                 return (
                   <button
                     key={tab.id}
@@ -23,7 +26,7 @@ export const TabsLayout: React.FC<LayoutProps> = ({ tabs, activeTab, onTabChange
                     }
                     aria-current={isActive ? 'page' : undefined}
                     style={{
-                      borderBottomColor: isActive ? 'var(--primary-500, #3b82f6)' : 'transparent'
+                      borderBottomColor: isActive ? 'var(--primary-500, #3b82f6)' : 'transparent',
                     }}
                   >
                     <Icon className="w-5 h-5 flex-shrink-0" />
@@ -36,9 +39,7 @@ export const TabsLayout: React.FC<LayoutProps> = ({ tabs, activeTab, onTabChange
         </div>
       </div>
 
-      <div className="p-6">
-        {children}
-      </div>
+      <div className="p-6">{children}</div>
     </div>
   );
 };

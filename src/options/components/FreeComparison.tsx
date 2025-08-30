@@ -14,7 +14,7 @@ export function FreeComparison() {
         'Custom Filters': { available: true, premium: false },
         'Malware Protection': { available: false },
         'AI-Powered Blocking': { available: false },
-      }
+      },
     },
     {
       name: 'AdGuard',
@@ -28,7 +28,7 @@ export function FreeComparison() {
         'Custom Filters': { available: true, premium: true },
         'Malware Protection': { available: true, premium: true },
         'AI-Powered Blocking': { available: false },
-      }
+      },
     },
     {
       name: 'uBlock Origin',
@@ -42,8 +42,8 @@ export function FreeComparison() {
         'Custom Filters': { available: true, premium: false },
         'Malware Protection': { available: true, premium: false },
         'AI-Powered Blocking': { available: false },
-      }
-    }
+      },
+    },
   ];
 
   const ourFeatures = {
@@ -109,13 +109,13 @@ export function FreeComparison() {
           </h3>
           <p className="mt-2 opacity-90">See what competitors charge for vs what we offer FREE</p>
         </div>
-        
+
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
                 <th className="px-6 py-4 text-left text-sm font-semibold">Feature</th>
-                {competitors.map(comp => (
+                {competitors.map((comp) => (
                   <th key={comp.name} className="px-4 py-4 text-center text-sm font-semibold">
                     <div>{comp.name}</div>
                     <div className="text-red-500 text-xs mt-1">{comp.price}</div>
@@ -131,7 +131,7 @@ export function FreeComparison() {
               {Object.entries(ourFeatures).map(([feature, info]) => (
                 <tr key={feature} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                   <td className="px-6 py-4 text-sm font-medium">{feature}</td>
-                  {competitors.map(comp => {
+                  {competitors.map((comp) => {
                     const f = comp.features[feature as keyof typeof comp.features];
                     return (
                       <td key={comp.name} className="px-4 py-4 text-center">
@@ -140,12 +140,16 @@ export function FreeComparison() {
                         ) : f.premium ? (
                           <div>
                             <DollarSign className="w-5 h-5 text-orange-500 mx-auto" />
-                            <span className="text-xs text-orange-600 dark:text-orange-400">Premium</span>
+                            <span className="text-xs text-orange-600 dark:text-orange-400">
+                              Premium
+                            </span>
                           </div>
                         ) : f.manual ? (
                           <div>
                             <Check className="w-5 h-5 text-yellow-500 mx-auto" />
-                            <span className="text-xs text-yellow-600 dark:text-yellow-400">Manual</span>
+                            <span className="text-xs text-yellow-600 dark:text-yellow-400">
+                              Manual
+                            </span>
                           </div>
                         ) : (
                           <Check className="w-5 h-5 text-green-500 mx-auto" />
@@ -174,14 +178,25 @@ export function FreeComparison() {
         </h3>
         <div className="grid grid-cols-2 gap-4">
           {[
-            { icon: '🎮', title: 'Progressive Tier System', desc: 'Unlock through engagement, not payment' },
+            {
+              icon: '🎮',
+              title: 'Progressive Tier System',
+              desc: 'Unlock through engagement, not payment',
+            },
             { icon: '🤖', title: 'AI Detection', desc: 'Machine learning ad blocking' },
-            { icon: '🏆', title: 'Early Adopter Rewards', desc: 'First 100k users get everything forever' },
+            {
+              icon: '🏆',
+              title: 'Early Adopter Rewards',
+              desc: 'First 100k users get everything forever',
+            },
             { icon: '☁️', title: 'Cloud Sync', desc: 'Settings sync across all devices' },
             { icon: '🛡️', title: 'Security Suite', desc: 'Built-in malware & phishing protection' },
             { icon: '📊', title: 'Advanced Analytics', desc: 'Detailed blocking statistics' },
-          ].map(item => (
-            <div key={item.title} className="flex items-start space-x-3 p-4 bg-white dark:bg-gray-800 rounded-lg">
+          ].map((item) => (
+            <div
+              key={item.title}
+              className="flex items-start space-x-3 p-4 bg-white dark:bg-gray-800 rounded-lg"
+            >
               <span className="text-2xl">{item.icon}</span>
               <div>
                 <h4 className="font-semibold text-sm">{item.title}</h4>

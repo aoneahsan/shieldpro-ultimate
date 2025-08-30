@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { 
-  Download, 
+import {
+  Download,
   Upload,
   Trash2,
   LogOut,
@@ -8,14 +8,21 @@ import {
   Bell,
   Globe,
   Palette,
-  ChevronRight
+  ChevronRight,
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Separator } from '../ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '../ui/dialog';
 import { ProfileCard } from './ProfileCard';
 import { SyncSettings } from './SyncSettings';
 import { UserProfile } from '../../services/firebase.service';
@@ -42,7 +49,7 @@ export const ProfileManagement: React.FC = () => {
         title: 'Profile Updated',
         description: 'Your profile has been updated successfully.',
       });
-    } catch (error) {
+    } catch {
       console.error('Failed to update profile:', error);
       toast({
         title: 'Update Failed',
@@ -59,7 +66,7 @@ export const ProfileManagement: React.FC = () => {
         profile: profile,
         settings: await chrome.storage.local.get(),
         exportDate: new Date().toISOString(),
-        version: '1.0.0'
+        version: '1.0.0',
       };
 
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -74,7 +81,7 @@ export const ProfileManagement: React.FC = () => {
         title: 'Data Exported',
         description: 'Your profile data has been exported successfully.',
       });
-    } catch (error) {
+    } catch {
       console.error('Failed to export data:', error);
       toast({
         title: 'Export Failed',
@@ -115,7 +122,7 @@ export const ProfileManagement: React.FC = () => {
 
       // Reload to apply changes
       window.location.reload();
-    } catch (error) {
+    } catch {
       console.error('Failed to import data:', error);
       toast({
         title: 'Import Failed',
@@ -147,7 +154,7 @@ export const ProfileManagement: React.FC = () => {
 
       // Redirect to login
       window.location.href = '/popup.html';
-    } catch (error) {
+    } catch {
       console.error('Failed to delete account:', error);
       toast({
         title: 'Deletion Failed',
@@ -168,7 +175,7 @@ export const ProfileManagement: React.FC = () => {
         description: 'You have been signed out successfully.',
       });
       window.location.href = '/popup.html';
-    } catch (error) {
+    } catch {
       console.error('Failed to sign out:', error);
       toast({
         title: 'Sign Out Failed',
@@ -186,10 +193,7 @@ export const ProfileManagement: React.FC = () => {
             <p className="text-center text-muted-foreground">
               Please sign in to manage your profile
             </p>
-            <Button 
-              className="w-full mt-4"
-              onClick={() => window.location.href = '/popup.html'}
-            >
+            <Button className="w-full mt-4" onClick={() => (window.location.href = '/popup.html')}>
               Go to Sign In
             </Button>
           </CardContent>
@@ -217,11 +221,7 @@ export const ProfileManagement: React.FC = () => {
         </TabsList>
 
         <TabsContent value="profile" className="space-y-4">
-          <ProfileCard 
-            profile={profile} 
-            loading={loading}
-            onUpdate={handleProfileUpdate}
-          />
+          <ProfileCard profile={profile} loading={loading} onUpdate={handleProfileUpdate} />
 
           {/* Quick Settings */}
           <Card>
@@ -269,9 +269,7 @@ export const ProfileManagement: React.FC = () => {
           <Card>
             <CardHeader>
               <CardTitle>Privacy Settings</CardTitle>
-              <CardDescription>
-                Control how your data is collected and used
-              </CardDescription>
+              <CardDescription>Control how your data is collected and used</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-3">
@@ -319,9 +317,7 @@ export const ProfileManagement: React.FC = () => {
           <Card>
             <CardHeader>
               <CardTitle>Data Management</CardTitle>
-              <CardDescription>
-                Export or import your profile data
-              </CardDescription>
+              <CardDescription>Export or import your profile data</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
@@ -331,10 +327,7 @@ export const ProfileManagement: React.FC = () => {
                     Download all your profile data and settings
                   </p>
                 </div>
-                <Button 
-                  variant="outline"
-                  onClick={() => setShowExportDialog(true)}
-                >
+                <Button variant="outline" onClick={() => setShowExportDialog(true)}>
                   <Download className="h-4 w-4 mr-2" />
                   Export
                 </Button>
@@ -376,17 +369,13 @@ export const ProfileManagement: React.FC = () => {
           <Card className="border-destructive">
             <CardHeader>
               <CardTitle className="text-destructive">Account Actions</CardTitle>
-              <CardDescription>
-                Permanent actions that affect your account
-              </CardDescription>
+              <CardDescription>Permanent actions that affect your account</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">Sign Out</p>
-                  <p className="text-sm text-muted-foreground">
-                    Sign out from all devices
-                  </p>
+                  <p className="text-sm text-muted-foreground">Sign out from all devices</p>
                 </div>
                 <Button variant="outline" onClick={handleSignOut}>
                   <LogOut className="h-4 w-4 mr-2" />
@@ -401,10 +390,7 @@ export const ProfileManagement: React.FC = () => {
                     Permanently delete your account and all data
                   </p>
                 </div>
-                <Button 
-                  variant="destructive"
-                  onClick={() => setShowDeleteDialog(true)}
-                >
+                <Button variant="destructive" onClick={() => setShowDeleteDialog(true)}>
                   <Trash2 className="h-4 w-4 mr-2" />
                   Delete Account
                 </Button>
@@ -420,8 +406,8 @@ export const ProfileManagement: React.FC = () => {
           <DialogHeader>
             <DialogTitle>Delete Account</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete your account? This action cannot be undone.
-              All your data, settings, and progress will be permanently removed.
+              Are you sure you want to delete your account? This action cannot be undone. All your
+              data, settings, and progress will be permanently removed.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -432,11 +418,7 @@ export const ProfileManagement: React.FC = () => {
             >
               Cancel
             </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDeleteAccount}
-              disabled={deleting}
-            >
+            <Button variant="destructive" onClick={handleDeleteAccount} disabled={deleting}>
               {deleting ? 'Deleting...' : 'Delete Account'}
             </Button>
           </DialogFooter>
@@ -450,8 +432,8 @@ export const ProfileManagement: React.FC = () => {
             <DialogTitle>Export Profile Data</DialogTitle>
             <DialogDescription>
               Your profile data will be exported as a JSON file. This includes your profile
-              information, settings, and preferences. Keep this file safe as it contains
-              sensitive information.
+              information, settings, and preferences. Keep this file safe as it contains sensitive
+              information.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -462,10 +444,7 @@ export const ProfileManagement: React.FC = () => {
             >
               Cancel
             </Button>
-            <Button
-              onClick={handleExportData}
-              disabled={exporting}
-            >
+            <Button onClick={handleExportData} disabled={exporting}>
               {exporting ? 'Exporting...' : 'Export Data'}
             </Button>
           </DialogFooter>

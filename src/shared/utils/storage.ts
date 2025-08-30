@@ -16,7 +16,7 @@ export class StorageManager {
     try {
       const result = await chrome.storage.local.get('settings');
       return result.settings || DEFAULT_SETTINGS;
-    } catch (error) {
+    } catch {
       console.error('Failed to get settings:', error);
       return DEFAULT_SETTINGS;
     }
@@ -27,7 +27,7 @@ export class StorageManager {
       const currentSettings = await this.getSettings();
       const newSettings = { ...currentSettings, ...settings };
       await chrome.storage.local.set({ settings: newSettings });
-    } catch (error) {
+    } catch {
       console.error('Failed to save settings:', error);
     }
   }
@@ -40,7 +40,7 @@ export class StorageManager {
     try {
       const result = await chrome.storage.local.get('stats');
       return result.stats || DEFAULT_STATS;
-    } catch (error) {
+    } catch {
       console.error('Failed to get stats:', error);
       return DEFAULT_STATS;
     }
@@ -51,12 +51,15 @@ export class StorageManager {
       const currentStats = await this.getStats();
       const newStats = { ...currentStats, ...update };
       await chrome.storage.local.set({ stats: newStats });
-    } catch (error) {
+    } catch {
       console.error('Failed to update stats:', error);
     }
   }
 
-  async incrementBlockedCount(domain: string, category: keyof BlockingStats['categoryStats'] = 'ads'): Promise<void> {
+  async incrementBlockedCount(
+    domain: string,
+    category: keyof BlockingStats['categoryStats'] = 'ads'
+  ): Promise<void> {
     try {
       const stats = await this.getStats();
       // const now = Date.now();
@@ -77,7 +80,7 @@ export class StorageManager {
       stats.categoryStats[category]++;
 
       await this.updateStats(stats);
-    } catch (error) {
+    } catch {
       console.error('Failed to increment blocked count:', error);
     }
   }
@@ -89,7 +92,7 @@ export class StorageManager {
         settings.whitelist.push(domain);
         await this.setSettings({ whitelist: settings.whitelist });
       }
-    } catch (error) {
+    } catch {
       console.error('Failed to add to whitelist:', error);
     }
   }
@@ -97,9 +100,9 @@ export class StorageManager {
   async removeFromWhitelist(domain: string): Promise<void> {
     try {
       const settings = await this.getSettings();
-      settings.whitelist = settings.whitelist.filter(d => d !== domain);
+      settings.whitelist = settings.whitelist.filter((d) => d !== domain);
       await this.setSettings({ whitelist: settings.whitelist });
-    } catch (error) {
+    } catch {
       console.error('Failed to remove from whitelist:', error);
     }
   }
@@ -107,10 +110,10 @@ export class StorageManager {
   async isWhitelisted(domain: string): Promise<boolean> {
     try {
       const settings = await this.getSettings();
-      return settings.whitelist.some(whitelistedDomain => {
+      return settings.whitelist.some((whitelistedDomain) => {
         return domain === whitelistedDomain || domain.endsWith(`.${whitelistedDomain}`);
       });
-    } catch (error) {
+    } catch {
       console.error('Failed to check whitelist:', error);
       return false;
     }
@@ -122,7 +125,7 @@ export class StorageManager {
       const newState = !settings.enabled;
       await this.setSettings({ enabled: newState });
       return newState;
-    } catch (error) {
+    } catch {
       console.error('Failed to toggle extension:', error);
       return true;
     }
@@ -131,7 +134,7 @@ export class StorageManager {
   async clearStats(): Promise<void> {
     try {
       await chrome.storage.local.set({ stats: DEFAULT_STATS });
-    } catch (error) {
+    } catch {
       console.error('Failed to clear stats:', error);
     }
   }
@@ -140,7 +143,7 @@ export class StorageManager {
     try {
       const result = await chrome.storage.local.get('filters');
       return result.filters || {};
-    } catch (error) {
+    } catch {
       console.error('Failed to get filters:', error);
       return {};
     }
@@ -149,7 +152,7 @@ export class StorageManager {
   async setFilters(filters: any): Promise<void> {
     try {
       await chrome.storage.local.set({ filters });
-    } catch (error) {
+    } catch {
       console.error('Failed to set filters:', error);
     }
   }
@@ -158,7 +161,7 @@ export class StorageManager {
     try {
       const settings = await this.getSettings();
       return settings.whitelist || [];
-    } catch (error) {
+    } catch {
       console.error('Failed to get whitelist:', error);
       return [];
     }
@@ -167,7 +170,7 @@ export class StorageManager {
   async setWhitelist(whitelist: string[]): Promise<void> {
     try {
       await this.setSettings({ whitelist });
-    } catch (error) {
+    } catch {
       console.error('Failed to set whitelist:', error);
     }
   }
@@ -176,7 +179,7 @@ export class StorageManager {
     try {
       const result = await chrome.storage.local.get('blacklist');
       return result.blacklist || [];
-    } catch (error) {
+    } catch {
       console.error('Failed to get blacklist:', error);
       return [];
     }
@@ -185,7 +188,7 @@ export class StorageManager {
   async setBlacklist(blacklist: string[]): Promise<void> {
     try {
       await chrome.storage.local.set({ blacklist });
-    } catch (error) {
+    } catch {
       console.error('Failed to set blacklist:', error);
     }
   }
@@ -194,7 +197,7 @@ export class StorageManager {
     try {
       const result = await chrome.storage.local.get('customRules');
       return result.customRules || [];
-    } catch (error) {
+    } catch {
       console.error('Failed to get custom rules:', error);
       return [];
     }
@@ -203,7 +206,7 @@ export class StorageManager {
   async setCustomRules(customRules: any[]): Promise<void> {
     try {
       await chrome.storage.local.set({ customRules });
-    } catch (error) {
+    } catch {
       console.error('Failed to set custom rules:', error);
     }
   }

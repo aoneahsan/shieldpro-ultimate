@@ -13,7 +13,7 @@ import {
   Filter,
   ToggleLeft,
   ToggleRight,
-  Database
+  Database,
 } from 'lucide-react';
 
 interface FilterList {
@@ -62,7 +62,7 @@ const BUILTIN_LISTS: FilterList[] = [
     format: 'easylist',
     priority: 1,
     isSubscribed: true,
-    tags: ['essential', 'ads', 'popular']
+    tags: ['essential', 'ads', 'popular'],
   },
   {
     id: 'easyprivacy',
@@ -81,7 +81,7 @@ const BUILTIN_LISTS: FilterList[] = [
     format: 'easylist',
     priority: 2,
     isSubscribed: true,
-    tags: ['privacy', 'tracking', 'essential']
+    tags: ['privacy', 'tracking', 'essential'],
   },
   {
     id: 'malware-domains',
@@ -98,8 +98,8 @@ const BUILTIN_LISTS: FilterList[] = [
     format: 'hosts',
     priority: 3,
     isSubscribed: false,
-    tags: ['security', 'malware', 'phishing']
-  }
+    tags: ['security', 'malware', 'phishing'],
+  },
 ];
 
 const COMMUNITY_LISTS: FilterList[] = [
@@ -118,7 +118,7 @@ const COMMUNITY_LISTS: FilterList[] = [
     format: 'easylist',
     priority: 10,
     isSubscribed: false,
-    tags: ['social', 'widgets', 'performance']
+    tags: ['social', 'widgets', 'performance'],
   },
   {
     id: 'peter-lowe',
@@ -135,8 +135,8 @@ const COMMUNITY_LISTS: FilterList[] = [
     format: 'hosts',
     priority: 11,
     isSubscribed: false,
-    tags: ['ads', 'servers', 'lightweight']
-  }
+    tags: ['ads', 'servers', 'lightweight'],
+  },
 ];
 
 export const FilterListManager: React.FC<FilterListManagerProps> = ({ currentTier }) => {
@@ -152,7 +152,7 @@ export const FilterListManager: React.FC<FilterListManagerProps> = ({ currentTie
     format: 'easylist',
     autoUpdate: true,
     updateInterval: 24,
-    tags: []
+    tags: [],
   });
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
   const [updateProgress, setUpdateProgress] = useState<{ [key: string]: number }>({});
@@ -172,7 +172,7 @@ export const FilterListManager: React.FC<FilterListManagerProps> = ({ currentTie
         await chrome.storage.local.set({ filterLists: initialLists });
         setLists(initialLists);
       }
-    } catch (error) {
+    } catch {
       console.error('Failed to load filter lists:', error);
     }
   };
@@ -181,13 +181,13 @@ export const FilterListManager: React.FC<FilterListManagerProps> = ({ currentTie
     try {
       await chrome.storage.local.set({ filterLists: updatedLists });
       setLists(updatedLists);
-      
+
       // Notify background script
       chrome.runtime.sendMessage({
         action: 'filterListsUpdated',
-        lists: updatedLists
+        lists: updatedLists,
       });
-    } catch (error) {
+    } catch {
       console.error('Failed to save filter lists:', error);
     }
   };
@@ -208,17 +208,17 @@ export const FilterListManager: React.FC<FilterListManagerProps> = ({ currentTie
       updateInterval: newList.updateInterval || 168,
       filterCount: 0,
       blockedCount: 0,
-      category: newList.category as any || 'custom',
+      category: (newList.category as any) || 'custom',
       source: 'custom',
-      format: newList.format as any || 'easylist',
+      format: (newList.format as any) || 'easylist',
       priority: lists.length + 1,
       isSubscribed: true,
-      tags: newList.tags || []
+      tags: newList.tags || [],
     };
 
     const updatedLists = [...lists, list];
     await saveFilterLists(updatedLists);
-    
+
     // Reset form
     setNewList({
       name: '',
@@ -228,7 +228,7 @@ export const FilterListManager: React.FC<FilterListManagerProps> = ({ currentTie
       format: 'easylist',
       autoUpdate: true,
       updateInterval: 24,
-      tags: []
+      tags: [],
     });
     setShowAddList(false);
 
@@ -237,19 +237,19 @@ export const FilterListManager: React.FC<FilterListManagerProps> = ({ currentTie
   };
 
   const toggleList = async (id: string) => {
-    const updatedLists = lists.map(list =>
+    const updatedLists = lists.map((list) =>
       list.id === id ? { ...list, enabled: !list.enabled } : list
     );
     await saveFilterLists(updatedLists);
   };
 
   const deleteList = async (id: string) => {
-    if (lists.find(l => l.id === id)?.source === 'builtin') {
+    if (lists.find((l) => l.id === id)?.source === 'builtin') {
       alert('Cannot delete built-in filter lists');
       return;
     }
 
-    const updatedLists = lists.filter(list => list.id !== id);
+    const updatedLists = lists.filter((list) => list.id !== id);
     await saveFilterLists(updatedLists);
   };
 
@@ -260,29 +260,29 @@ export const FilterListManager: React.FC<FilterListManagerProps> = ({ currentTie
     try {
       // Simulate progress updates
       const progressInterval = setInterval(() => {
-        setUpdateProgress(prev => ({
+        setUpdateProgress((prev) => ({
           ...prev,
-          [id]: Math.min((prev[id] || 0) + 10, 90)
+          [id]: Math.min((prev[id] || 0) + 10, 90),
         }));
       }, 200);
 
       // Send update request to background script
       const response = await chrome.runtime.sendMessage({
         action: 'updateFilterList',
-        listId: id
+        listId: id,
       });
 
       clearInterval(progressInterval);
       setUpdateProgress({ ...updateProgress, [id]: 100 });
 
       if (response?.success) {
-        const updatedLists = lists.map(list =>
+        const updatedLists = lists.map((list) =>
           list.id === id
             ? {
                 ...list,
                 lastUpdated: Date.now(),
                 lastChecked: Date.now(),
-                filterCount: response.filterCount || list.filterCount
+                filterCount: response.filterCount || list.filterCount,
               }
             : list
         );
@@ -290,13 +290,13 @@ export const FilterListManager: React.FC<FilterListManagerProps> = ({ currentTie
       }
 
       setTimeout(() => {
-        setUpdateProgress(prev => {
+        setUpdateProgress((prev) => {
           const newProgress = { ...prev };
           delete newProgress[id];
           return newProgress;
         });
       }, 1000);
-    } catch (error) {
+    } catch {
       console.error('Failed to update filter list:', error);
       alert('Failed to update filter list');
     } finally {
@@ -305,14 +305,14 @@ export const FilterListManager: React.FC<FilterListManagerProps> = ({ currentTie
   };
 
   const updateAllLists = async () => {
-    for (const list of lists.filter(l => l.enabled && l.autoUpdate)) {
+    for (const list of lists.filter((l) => l.enabled && l.autoUpdate)) {
       await updateFilterList(list.id);
-      await new Promise(resolve => setTimeout(resolve, 500)); // Rate limiting
+      await new Promise((resolve) => setTimeout(resolve, 500)); // Rate limiting
     }
   };
 
   const subscribeToList = async (listId: string) => {
-    const communityList = COMMUNITY_LISTS.find(l => l.id === listId);
+    const communityList = COMMUNITY_LISTS.find((l) => l.id === listId);
     if (!communityList) return;
 
     const updatedLists = [...lists, { ...communityList, isSubscribed: true }];
@@ -324,12 +324,12 @@ export const FilterListManager: React.FC<FilterListManagerProps> = ({ currentTie
     const exportData = {
       version: '1.0',
       timestamp: Date.now(),
-      lists: lists.filter(l => l.source === 'custom')
+      lists: lists.filter((l) => l.source === 'custom'),
     };
 
     const dataStr = JSON.stringify(exportData, null, 2);
     const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-    
+
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
     linkElement.setAttribute('download', `filter-lists-${Date.now()}.json`);
@@ -340,11 +340,11 @@ export const FilterListManager: React.FC<FilterListManagerProps> = ({ currentTie
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'application/json';
-    
+
     input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
-      
+
       const reader = new FileReader();
       reader.onload = async (event) => {
         try {
@@ -352,19 +352,19 @@ export const FilterListManager: React.FC<FilterListManagerProps> = ({ currentTie
           if (data.lists && Array.isArray(data.lists)) {
             const importedLists = data.lists.map((list: FilterList) => ({
               ...list,
-              id: `imported-${Date.now()}-${Math.random()}`
+              id: `imported-${Date.now()}-${Math.random()}`,
             }));
             const updatedLists = [...lists, ...importedLists];
             await saveFilterLists(updatedLists);
             alert(`Imported ${importedLists.length} filter lists successfully!`);
           }
-        } catch (error) {
+        } catch {
           alert('Failed to import filter lists. Please check the file format.');
         }
       };
       reader.readAsText(file);
     };
-    
+
     input.click();
   };
 
@@ -376,7 +376,8 @@ export const FilterListManager: React.FC<FilterListManagerProps> = ({ currentTie
           <h2 className="text-xl font-bold text-gray-900">Filter List Manager</h2>
         </div>
         <p className="text-gray-700 mb-4">
-          Upgrade to Tier 4 to unlock advanced filter list management, custom subscriptions, and import/export functionality.
+          Upgrade to Tier 4 to unlock advanced filter list management, custom subscriptions, and
+          import/export functionality.
         </p>
         <button className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors">
           Upgrade to Tier 4
@@ -385,13 +386,14 @@ export const FilterListManager: React.FC<FilterListManagerProps> = ({ currentTie
     );
   }
 
-  const filteredLists = lists.filter(list => {
-    const matchesSearch = searchQuery === '' || 
+  const filteredLists = lists.filter((list) => {
+    const matchesSearch =
+      searchQuery === '' ||
       list.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       list.description?.toLowerCase().includes(searchQuery.toLowerCase());
-    
+
     const matchesCategory = selectedCategory === 'all' || list.category === selectedCategory;
-    
+
     return matchesSearch && matchesCategory;
   });
 
@@ -453,7 +455,7 @@ export const FilterListManager: React.FC<FilterListManagerProps> = ({ currentTie
           />
         </div>
         <div className="flex space-x-2">
-          {categories.map(category => (
+          {categories.map((category) => (
             <button
               key={category}
               onClick={() => setSelectedCategory(category)}
@@ -473,12 +475,10 @@ export const FilterListManager: React.FC<FilterListManagerProps> = ({ currentTie
       {showAddList && (
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
           <h3 className="text-lg font-semibold mb-4">Add Custom Filter List</h3>
-          
+
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                List Name
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">List Name</label>
               <input
                 type="text"
                 value={newList.name}
@@ -487,11 +487,9 @@ export const FilterListManager: React.FC<FilterListManagerProps> = ({ currentTie
                 placeholder="e.g., Custom Ad Block List"
               />
             </div>
-            
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Category
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
               <select
                 value={newList.category}
                 onChange={(e) => setNewList({ ...newList, category: e.target.value as any })}
@@ -507,9 +505,7 @@ export const FilterListManager: React.FC<FilterListManagerProps> = ({ currentTie
           </div>
 
           <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Filter List URL
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Filter List URL</label>
             <input
               type="url"
               value={newList.url}
@@ -534,9 +530,7 @@ export const FilterListManager: React.FC<FilterListManagerProps> = ({ currentTie
 
           <div className="mt-4 grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Format
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Format</label>
               <select
                 value={newList.format}
                 onChange={(e) => setNewList({ ...newList, format: e.target.value as any })}
@@ -556,7 +550,9 @@ export const FilterListManager: React.FC<FilterListManagerProps> = ({ currentTie
               <input
                 type="number"
                 value={newList.updateInterval}
-                onChange={(e) => setNewList({ ...newList, updateInterval: parseInt(e.target.value) })}
+                onChange={(e) =>
+                  setNewList({ ...newList, updateInterval: parseInt(e.target.value) })
+                }
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
                 min="1"
                 max="720"
@@ -588,7 +584,7 @@ export const FilterListManager: React.FC<FilterListManagerProps> = ({ currentTie
                   format: 'easylist',
                   autoUpdate: true,
                   updateInterval: 24,
-                  tags: []
+                  tags: [],
                 });
               }}
               className="px-4 py-2 text-gray-600 hover:text-gray-800"
@@ -613,28 +609,39 @@ export const FilterListManager: React.FC<FilterListManagerProps> = ({ currentTie
             <p className="text-gray-600">No filter lists found</p>
           </div>
         ) : (
-          filteredLists.map(list => (
-            <div key={list.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+          filteredLists.map((list) => (
+            <div
+              key={list.id}
+              className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4"
+            >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center space-x-2">
                     <h4 className="font-medium text-gray-900">{list.name}</h4>
-                    <span className={`px-2 py-0.5 text-xs rounded ${
-                      list.source === 'builtin' 
-                        ? 'bg-blue-100 text-blue-700'
-                        : list.source === 'community'
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-purple-100 text-purple-700'
-                    }`}>
+                    <span
+                      className={`px-2 py-0.5 text-xs rounded ${
+                        list.source === 'builtin'
+                          ? 'bg-blue-100 text-blue-700'
+                          : list.source === 'community'
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-purple-100 text-purple-700'
+                      }`}
+                    >
                       {list.source}
                     </span>
-                    <span className={`px-2 py-0.5 text-xs rounded ${
-                      list.category === 'ads' ? 'bg-red-100 text-red-700' :
-                      list.category === 'privacy' ? 'bg-indigo-100 text-indigo-700' :
-                      list.category === 'malware' ? 'bg-orange-100 text-orange-700' :
-                      list.category === 'social' ? 'bg-pink-100 text-pink-700' :
-                      'bg-gray-100 text-gray-700'
-                    }`}>
+                    <span
+                      className={`px-2 py-0.5 text-xs rounded ${
+                        list.category === 'ads'
+                          ? 'bg-red-100 text-red-700'
+                          : list.category === 'privacy'
+                            ? 'bg-indigo-100 text-indigo-700'
+                            : list.category === 'malware'
+                              ? 'bg-orange-100 text-orange-700'
+                              : list.category === 'social'
+                                ? 'bg-pink-100 text-pink-700'
+                                : 'bg-gray-100 text-gray-700'
+                      }`}
+                    >
                       {list.category}
                     </span>
                   </div>
@@ -681,8 +688,11 @@ export const FilterListManager: React.FC<FilterListManagerProps> = ({ currentTie
                   {/* Tags */}
                   {list.tags && list.tags.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-1">
-                      {list.tags.map(tag => (
-                        <span key={tag} className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">
+                      {list.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded"
+                        >
                           {tag}
                         </span>
                       ))}
@@ -700,7 +710,11 @@ export const FilterListManager: React.FC<FilterListManagerProps> = ({ currentTie
                     }`}
                     title={list.enabled ? 'Disable' : 'Enable'}
                   >
-                    {list.enabled ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
+                    {list.enabled ? (
+                      <ToggleRight className="w-5 h-5" />
+                    ) : (
+                      <ToggleLeft className="w-5 h-5" />
+                    )}
                   </button>
                   <button
                     onClick={() => updateFilterList(list.id)}
@@ -708,7 +722,9 @@ export const FilterListManager: React.FC<FilterListManagerProps> = ({ currentTie
                     className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors disabled:opacity-50"
                     title="Update now"
                   >
-                    <RefreshCw className={`w-4 h-4 ${isUpdating === list.id ? 'animate-spin' : ''}`} />
+                    <RefreshCw
+                      className={`w-4 h-4 ${isUpdating === list.id ? 'animate-spin' : ''}`}
+                    />
                   </button>
                   {list.homepage && (
                     <a
@@ -742,8 +758,11 @@ export const FilterListManager: React.FC<FilterListManagerProps> = ({ currentTie
         <div className="mt-8">
           <h3 className="text-lg font-semibold mb-4">Available Community Lists</h3>
           <div className="space-y-3">
-            {COMMUNITY_LISTS.filter(cl => !lists.find(l => l.id === cl.id)).map(list => (
-              <div key={list.id} className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+            {COMMUNITY_LISTS.filter((cl) => !lists.find((l) => l.id === cl.id)).map((list) => (
+              <div
+                key={list.id}
+                className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4"
+              >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center space-x-2">
@@ -777,7 +796,7 @@ export const FilterListManager: React.FC<FilterListManagerProps> = ({ currentTie
         <div className="grid grid-cols-3 gap-4">
           <div className="text-center">
             <div className="text-2xl font-bold text-purple-600">
-              {lists.filter(l => l.enabled).length}
+              {lists.filter((l) => l.enabled).length}
             </div>
             <div className="text-sm text-gray-600">Active Lists</div>
           </div>

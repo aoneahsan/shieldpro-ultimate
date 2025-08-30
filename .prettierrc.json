@@ -9,12 +9,5 @@
   "arrowParens": "always",
   "endOfLine": "lf",
   "jsxSingleQuote": false,
-  "jsxBracketSameLine": false,
-  "importOrder": [
-    "^react",
-    "^@?\\w",
-    "^[./]"
-  ],
-  "importOrderSeparation": true,
-  "importOrderSortSpecifiers": true
+  "bracketSameLine": false
 }

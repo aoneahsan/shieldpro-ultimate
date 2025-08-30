@@ -50,7 +50,7 @@ ytd-video-masthead-ad-advertiser-info-renderer,
 }
 
 /* Feed Ads - More specific to avoid breaking content */
-ytd-rich-section-renderer[data-content-type="ad"],
+ytd-rich-section-renderer[data-content-type='ad'],
 ytd-rich-item-renderer:has(ytd-display-ad-renderer),
 ytd-rich-item-renderer:has(ytd-in-feed-ad-layout-renderer),
 .ytd-rich-grid-row-renderer:has(ytd-display-ad-renderer) {
@@ -93,8 +93,8 @@ ytm-promoted-sparkles-web-renderer {
 }
 
 /* Shorts Ads */
-ytd-reel-video-renderer:has([aria-label*="Sponsored"]),
-ytd-shorts-video-renderer:has([aria-label*="Sponsored"]) {
+ytd-reel-video-renderer:has([aria-label*='Sponsored']),
+ytd-shorts-video-renderer:has([aria-label*='Sponsored']) {
   display: none !important;
 }
 
@@ -126,6 +126,6 @@ ytd-compact-promoted-video-renderer {
 
 /* Premium upsell and notifications */
 ytd-mealbar-promo-renderer,
-ytd-statement-banner-renderer[data-style="STYLE_BANNER"] {
+ytd-statement-banner-renderer[data-style='STYLE_BANNER'] {
   display: none !important;
 }

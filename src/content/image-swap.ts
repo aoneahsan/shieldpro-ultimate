@@ -17,7 +17,7 @@ class ImageSwapper {
     categories: ['cats'],
     customImages: [],
     frequency: 25,
-    size: 'original'
+    size: 'original',
   };
 
   private imageProviders: Record<string, string[]> = {
@@ -25,45 +25,45 @@ class ImageSwapper {
       'https://cataas.com/cat',
       'https://cataas.com/cat/cute',
       'https://placekitten.com/300/250',
-      'https://source.unsplash.com/300x250/?cat'
+      'https://source.unsplash.com/300x250/?cat',
     ],
     dogs: [
       'https://placedog.net/300/250',
       'https://source.unsplash.com/300x250/?dog',
-      'https://picsum.photos/300/250?random=dog'
+      'https://picsum.photos/300/250?random=dog',
     ],
     nature: [
       'https://picsum.photos/300/250?nature',
       'https://source.unsplash.com/300x250/?nature,landscape',
       'https://source.unsplash.com/300x250/?forest',
-      'https://source.unsplash.com/300x250/?ocean'
+      'https://source.unsplash.com/300x250/?ocean',
     ],
     mountains: [
       'https://source.unsplash.com/300x250/?mountain',
       'https://source.unsplash.com/300x250/?alps',
-      'https://picsum.photos/300/250?mountain'
+      'https://picsum.photos/300/250?mountain',
     ],
     coffee: [
       'https://source.unsplash.com/300x250/?coffee',
       'https://source.unsplash.com/300x250/?cafe',
-      'https://picsum.photos/300/250?coffee'
+      'https://picsum.photos/300/250?coffee',
     ],
     space: [
       'https://source.unsplash.com/300x250/?space',
       'https://source.unsplash.com/300x250/?galaxy',
       'https://source.unsplash.com/300x250/?stars',
-      'https://source.unsplash.com/300x250/?nebula'
+      'https://source.unsplash.com/300x250/?nebula',
     ],
     abstract: [
       'https://source.unsplash.com/300x250/?abstract',
       'https://source.unsplash.com/300x250/?pattern',
-      'https://picsum.photos/300/250?blur=2'
+      'https://picsum.photos/300/250?blur=2',
     ],
     inspirational: [
       'https://source.unsplash.com/300x250/?inspiration',
       'https://source.unsplash.com/300x250/?motivation',
-      'https://picsum.photos/300/250?grayscale'
-    ]
+      'https://picsum.photos/300/250?grayscale',
+    ],
   };
 
   private processedElements = new WeakSet<HTMLElement>();
@@ -78,7 +78,7 @@ class ImageSwapper {
     const result = await chrome.storage.local.get('settings');
     if (result.settings?.imageSwap) {
       this.settings = { ...this.settings, ...result.settings.imageSwap };
-      
+
       if (this.settings.enabled) {
         this.startObserving();
       }
@@ -86,7 +86,7 @@ class ImageSwapper {
   }
 
   private setupMessageListener() {
-    chrome.runtime.onMessage.addListener((_request, sender, _sendResponse) => {
+    chrome.runtime.onMessage.addListener((_request, _sender, _sendResponse) => {
       if (request.action === 'updateImageSwap') {
         this.settings = request.settings;
         if (this.settings.enabled) {
@@ -107,7 +107,7 @@ class ImageSwapper {
     this.observer = new MutationObserver((_mutations) => {
       for (const mutation of mutations) {
         if (mutation.type === 'childList') {
-          mutation.addedNodes.forEach(node => {
+          mutation.addedNodes.forEach((node) => {
             if (node instanceof HTMLElement) {
               this.checkAndReplaceElement(_node);
             }
@@ -118,7 +118,7 @@ class ImageSwapper {
 
     this.observer.observe(document.body, {
       childList: true,
-      subtree: true
+      subtree: true,
     });
 
     // Process existing elements
@@ -147,34 +147,34 @@ class ImageSwapper {
       '.ad-unit',
       '.banner-ad',
       '.display-ad',
-      
+
       // Specific ad networks
       '.google-ads',
       '.googleads',
       '.doubleclick',
       '.adsense',
-      
+
       // Hidden or blocked elements
       '[style*="display: none !important"]',
       '[style*="display:none!important"]',
       '[style*="visibility: hidden"]',
       '.blocked-element',
-      
+
       // Empty containers that might have contained ads
       'div:empty:not([class]):not([id])',
       'iframe[src="about:blank"]',
-      'iframe[src=""]'
+      'iframe[src=""]',
     ];
 
-    adSelectors.forEach(_selector => {
+    adSelectors.forEach((_selector) => {
       try {
         const elements = document.querySelectorAll(_selector);
-        elements.forEach(_element => {
+        elements.forEach((_element) => {
           if (element instanceof HTMLElement && this.shouldReplaceElement(_element)) {
             this.replaceWithImage(_element);
           }
         });
-      } catch (error) {
+      } catch {
         console.error('Error with selector:', _selector, error);
       }
     });
@@ -186,18 +186,18 @@ class ImageSwapper {
   private checkForBlockedElements() {
     // Look for elements that were likely hidden by ad blocking
     const allElements = document.querySelectorAll('div, _iframe, ins');
-    
-    allElements.forEach(_element => {
+
+    allElements.forEach((_element) => {
       if (element instanceof HTMLElement) {
         const computed = window.getComputedStyle(_element);
         const rect = element.getBoundingClientRect();
-        
+
         // Check if element is hidden or has ad-like dimensions
         if (
-          (computed.display === 'none' || 
-           computed.visibility === 'hidden' ||
-           rect.width === 0 || 
-           rect.height === 0) &&
+          (computed.display === 'none' ||
+            computed.visibility === 'hidden' ||
+            rect.width === 0 ||
+            rect.height === 0) &&
           this.isLikelyAdContainer(_element)
         ) {
           this.replaceWithImage(_element);
@@ -212,7 +212,7 @@ class ImageSwapper {
     }
 
     // Check child elements
-    element.querySelectorAll('*').forEach(child => {
+    element.querySelectorAll('*').forEach((child) => {
       if (child instanceof HTMLElement && this.shouldReplaceElement(_child)) {
         this.replaceWithImage(_child);
       }
@@ -241,18 +241,29 @@ class ImageSwapper {
 
     // Common ad indicators
     const adKeywords = [
-      'ad', 'ads', 'adsense', 'doubleclick', 'banner',
-      'sponsor', 'promoted', 'advertisement', 'marketing',
-      'promo', 'commercial', 'widget'
+      'ad',
+      'ads',
+      'adsense',
+      'doubleclick',
+      'banner',
+      'sponsor',
+      'promoted',
+      'advertisement',
+      'marketing',
+      'promo',
+      'commercial',
+      'widget',
     ];
 
-    // Check for ad keywords
-    const hasAdKeyword = adKeywords.some(keyword => {
-      return (classNames.includes(_keyword) || id.includes(_keyword)) &&
-             !classNames.includes('add') &&
-             !classNames.includes('load') &&
-             !id.includes('add') &&
-             !id.includes('load');
+    // Check for ad _keywords
+    const hasAdKeyword = adKeywords.some((_keyword) => {
+      return (
+        (classNames.includes(__keyword) || id.includes(__keyword)) &&
+        !classNames.includes('add') &&
+        !classNames.includes('load') &&
+        !id.includes('add') &&
+        !id.includes('load')
+      );
     });
 
     // Check for iframe (common for ads)
@@ -268,25 +279,25 @@ class ImageSwapper {
     // Check dimensions (common ad sizes)
     const rect = element.getBoundingClientRect();
     const commonAdSizes = [
-      { w: 728, h: 90 },   // Leaderboard
-      { w: 300, h: 250 },  // Medium Rectangle
-      { w: 336, h: 280 },  // Large Rectangle
-      { w: 300, h: 600 },  // Half Page
-      { w: 320, h: 50 },   // Mobile Banner
-      { w: 320, h: 100 },  // Large Mobile Banner
-      { w: 250, h: 250 },  // Square
-      { w: 200, h: 200 },  // Small Square
-      { w: 468, h: 60 },   // Banner
-      { w: 120, h: 600 },  // Skyscraper
-      { w: 160, h: 600 },  // Wide Skyscraper
+      { w: 728, h: 90 }, // Leaderboard
+      { w: 300, h: 250 }, // Medium Rectangle
+      { w: 336, h: 280 }, // Large Rectangle
+      { w: 300, h: 600 }, // Half Page
+      { w: 320, h: 50 }, // Mobile Banner
+      { w: 320, h: 100 }, // Large Mobile Banner
+      { w: 250, h: 250 }, // Square
+      { w: 200, h: 200 }, // Small Square
+      { w: 468, h: 60 }, // Banner
+      { w: 120, h: 600 }, // Skyscraper
+      { w: 160, h: 600 }, // Wide Skyscraper
       { w: 300, h: 1050 }, // Portrait
-      { w: 970, h: 90 },   // Large Leaderboard
-      { w: 970, h: 250 },  // Billboard
-      { w: 980, h: 120 },  // Panorama
-      { w: 240, h: 400 },  // Vertical Rectangle
+      { w: 970, h: 90 }, // Large Leaderboard
+      { w: 970, h: 250 }, // Billboard
+      { w: 980, h: 120 }, // Panorama
+      { w: 240, h: 400 }, // Vertical Rectangle
     ];
 
-    const hasAdDimensions = commonAdSizes.some(size => {
+    const hasAdDimensions = commonAdSizes.some((size) => {
       return Math.abs(rect.width - size.w) < 10 && Math.abs(rect.height - size.h) < 10;
     });
 
@@ -338,7 +349,7 @@ class ImageSwapper {
       height: ${height}px;
       margin: 0 auto;
     `;
-    
+
     container.appendChild(_img);
 
     // Add subtle watermark
@@ -364,7 +375,7 @@ class ImageSwapper {
       element.style.display = 'block';
       element.style.visibility = 'visible';
       element.style.opacity = '1';
-      
+
       // Clear content and add image
       element.innerHTML = '';
       element.appendChild(_container);
@@ -375,7 +386,7 @@ class ImageSwapper {
     const allImages: string[] = [];
 
     // Add images from selected categories
-    this.settings.categories.forEach(category => {
+    this.settings.categories.forEach((category) => {
       if (this.imageProviders[category]) {
         allImages.push(...this.imageProviders[category]);
       }

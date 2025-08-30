@@ -45,7 +45,7 @@ export class FloatingVideoBlocker {
         childList: true,
         subtree: true,
         attributes: true,
-        attributeFilter: ['class', 'style', 'id']
+        attributeFilter: ['class', 'style', 'id'],
       });
     }
 
@@ -69,7 +69,7 @@ export class FloatingVideoBlocker {
       '[class*="video-sticky"]',
       '[class*="corner-video"]',
       '[class*="pinned-video"]',
-      
+
       // Platform-specific selectors
       '.video-js.vjs-pip-window',
       '.jwplayer.jw-flag-floating',
@@ -79,14 +79,14 @@ export class FloatingVideoBlocker {
       '.vimeo-player-container[style*="fixed"]',
       '.dailymotion-player[style*="fixed"]',
       '.twitch-player[style*="fixed"]',
-      
+
       // News sites common patterns
       '.video-container[style*="position: fixed"]',
       '.video-wrapper[style*="position: sticky"]',
       '.media-player[style*="position: fixed"]',
       '.article-video[style*="position: sticky"]',
       '.news-video[style*="position: fixed"]',
-      
+
       // Position-based selectors
       'div[style*="position: fixed"][style*="bottom"] video',
       'div[style*="position: fixed"][style*="right"] video',
@@ -98,7 +98,7 @@ export class FloatingVideoBlocker {
       'div[style*="position: fixed"] iframe[src*="twitch"]',
       'div[style*="position: fixed"] iframe[src*="facebook"]',
       'div[style*="position: fixed"] iframe[src*="twitter"]',
-      
+
       // Specific news sites
       '#cnn-video-float',
       '.bbc-media-player-floating',
@@ -108,23 +108,23 @@ export class FloatingVideoBlocker {
       '.foxnews-video-float',
       '.nbcnews-video-sticky',
       '.usatoday-video-float',
-      
+
       // Ad network video players
       '.outbrain-video-float',
       '.taboola-video-sticky',
-      '.revcontent-video-float'
+      '.revcontent-video-float',
     ];
 
-    selectors.forEach(_selector => {
+    selectors.forEach((_selector) => {
       try {
         const elements = document.querySelectorAll(_selector);
-        elements.forEach(_element => {
+        elements.forEach((_element) => {
           if (!this.processedElements.has(_element) && this.isFloatingVideo(_element)) {
             this.processedElements.add(_element);
             this.removeFloatingVideo(_element);
           }
         });
-      } catch (_e) {
+      } catch {
         // Ignore selector errors
       }
     });
@@ -136,36 +136,37 @@ export class FloatingVideoBlocker {
   private isFloatingVideo(element: Element): boolean {
     const styles = window.getComputedStyle(_element);
     const position = styles.position;
-    
+
     // Check if element is floating/sticky
     if (position === 'fixed' || position === 'sticky') {
       // Check if it contains video or is video-related
-      const hasVideo = element.querySelector('video, iframe') || 
-                      element.tagName === 'VIDEO' || 
-                      element.tagName === 'IFRAME';
-      
+      const hasVideo =
+        element.querySelector('video, iframe') ||
+        element.tagName === 'VIDEO' ||
+        element.tagName === 'IFRAME';
+
       if (_hasVideo) {
         // Check position on screen (usually bottom-right)
         const rect = element.getBoundingClientRect();
-        const isCorner = (rect.bottom > window.innerHeight * 0.5) &&
-                        (rect.right > window.innerWidth * 0.5);
-        
+        const isCorner =
+          rect.bottom > window.innerHeight * 0.5 && rect.right > window.innerWidth * 0.5;
+
         // Check size (floating videos are usually smaller)
-        const isSmall = rect.width < window.innerWidth * 0.5 &&
-                       rect.height < window.innerHeight * 0.5;
-        
+        const isSmall =
+          rect.width < window.innerWidth * 0.5 && rect.height < window.innerHeight * 0.5;
+
         return isCorner || isSmall;
       }
     }
-    
+
     return false;
   }
 
   private checkComputedStyles(): void {
     // Find all videos and iframes
     const mediaElements = document.querySelectorAll('video, iframe');
-    
-    mediaElements.forEach(_element => {
+
+    mediaElements.forEach((_element) => {
       const parent = element.parentElement;
       if (parent && !this.processedElements.has(_parent)) {
         if (this.isFloatingVideo(_parent)) {
@@ -178,7 +179,9 @@ export class FloatingVideoBlocker {
 
   private removeFloatingVideo(element: Element): void {
     // Try to remove gracefully first
-    const closeButton = element.querySelector('[class*="close"], [class*="dismiss"], [aria-label*="close"]');
+    const closeButton = element.querySelector(
+      '[class*="close"], [class*="dismiss"], [aria-label*="close"]'
+    );
     if (closeButton instanceof HTMLElement) {
       closeButton.click();
       this.blockedCount++;
@@ -196,11 +199,13 @@ export class FloatingVideoBlocker {
     }
 
     // Report to extension
-    chrome.runtime.sendMessage({
-      action: 'floatingVideoBlocked',
-      count: this.blockedCount,
-      domain: window.location.hostname
-    }).catch(() => {});
+    chrome.runtime
+      .sendMessage({
+        action: 'floatingVideoBlocked',
+        count: this.blockedCount,
+        domain: window.location.hostname,
+      })
+      .catch(() => {});
   }
 
   private injectStyles(): void {

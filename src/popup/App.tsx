@@ -2,11 +2,11 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { ExtensionSettings, BlockingStats, TabState } from '../shared/types';
 import { AccountManager } from './components/AccountManager';
 import { EarlyAdopterStatus } from '../shared/constants/marketing';
-import { 
-  Shield, 
-  Power, 
-  TrendingUp, 
-  Globe, 
+import {
+  Shield,
+  Power,
+  TrendingUp,
+  Globe,
   Settings,
   RefreshCw,
   Activity,
@@ -14,7 +14,7 @@ import {
   Youtube,
   Share2,
   Crown,
-  Gift
+  Gift,
 } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -30,23 +30,30 @@ const App: React.FC = () => {
   useEffect(() => {
     // Load cached data first for instant display
     loadCachedData();
-    
+
     // Then load fresh data in background
     loadDataInBackground();
-    
+
     // Set up background refresh every 5 seconds
     const interval = setInterval(() => {
       loadDataInBackground();
     }, 5000);
-    
+
     return () => clearInterval(interval);
   }, [loadDataInBackground]);
 
   const loadCachedData = async () => {
     try {
       // Get cached data from chrome storage for instant display
-      const cached = await chrome.storage.local.get(['cachedSettings', 'cachedStats', 'cachedTabState', 'cachedEarlyAdopter', 'authUser', 'authProfile']);
-      
+      const cached = await chrome.storage.local.get([
+        'cachedSettings',
+        'cachedStats',
+        'cachedTabState',
+        'cachedEarlyAdopter',
+        'authUser',
+        'authProfile',
+      ]);
+
       if (cached.cachedSettings) {
         const settingsData = cached.cachedSettings;
         // If early adopter, override tier to 5
@@ -55,7 +62,7 @@ const App: React.FC = () => {
             level: 5,
             name: 'Ultimate',
             unlockedAt: cached.cachedEarlyAdopter.installDate || Date.now(),
-            progress: 100
+            progress: 100,
           };
         }
         // But if user is authenticated, use their tier
@@ -67,22 +74,31 @@ const App: React.FC = () => {
         // Default settings if no cache
         setSettings({
           enabled: true,
-          tier: { level: 1, name: 'Basic', unlockedAt: Date.now(), progress: 0 }
+          tier: { level: 1, name: 'Basic', unlockedAt: Date.now(), progress: 0 },
         } as ExtensionSettings);
       }
-      
-      setStats(cached.cachedStats || { totalBlocked: 0, blockedToday: 0, categoryStats: {} } as BlockingStats);
-      setTabState(cached.cachedTabState || { domain: 'Loading...', blocked: 0, whitelisted: false } as TabState);
+
+      setStats(
+        cached.cachedStats ||
+          ({ totalBlocked: 0, blockedToday: 0, categoryStats: {} } as BlockingStats)
+      );
+      setTabState(
+        cached.cachedTabState ||
+          ({ domain: 'Loading...', blocked: 0, whitelisted: false } as TabState)
+      );
       setEarlyAdopterStatus(cached.cachedEarlyAdopter || null);
-      
+
       // Mark auth as checked if we have cache
       if ('authUser' in cached) {
         setAuthChecked(true);
       }
-    } catch (error) {
+    } catch {
       console.error('Failed to load cached data:', error);
       // Set defaults on error
-      setSettings({ enabled: true, tier: { level: 1, name: 'Basic', unlockedAt: Date.now(), progress: 0 } } as ExtensionSettings);
+      setSettings({
+        enabled: true,
+        tier: { level: 1, name: 'Basic', unlockedAt: Date.now(), progress: 0 },
+      } as ExtensionSettings);
       setStats({ totalBlocked: 0, blockedToday: 0, categoryStats: {} } as BlockingStats);
       setTabState({ domain: 'Loading...', blocked: 0, whitelisted: false } as TabState);
     }
@@ -94,41 +110,42 @@ const App: React.FC = () => {
         chrome.runtime.sendMessage({ action: 'getSettings' }),
         chrome.runtime.sendMessage({ action: 'getStats' }),
         chrome.runtime.sendMessage({ action: 'getTabState' }),
-        chrome.runtime.sendMessage({ action: 'getEarlyAdopterStatus' })
+        chrome.runtime.sendMessage({ action: 'getEarlyAdopterStatus' }),
       ]);
-      
+
       // Cache the data for next instant load
       await chrome.storage.local.set({
         cachedSettings: settingsRes,
         cachedStats: statsRes,
         cachedTabState: tabStateRes,
-        cachedEarlyAdopter: earlyAdopterRes
+        cachedEarlyAdopter: earlyAdopterRes,
       });
-      
+
       // Check if data has changed
-      const hasChanged = JSON.stringify(stats) !== JSON.stringify(statsRes) ||
-                        JSON.stringify(tabState) !== JSON.stringify(tabStateRes);
-      
+      const hasChanged =
+        JSON.stringify(stats) !== JSON.stringify(statsRes) ||
+        JSON.stringify(tabState) !== JSON.stringify(tabStateRes);
+
       if (hasChanged) {
         setHasNewData(true);
       }
-      
+
       // If early adopter, override tier to 5
       if (earlyAdopterRes?.isEarlyAdopter && settingsRes) {
         settingsRes.tier = {
           level: 5,
           name: 'Ultimate',
           unlockedAt: earlyAdopterRes.installDate || Date.now(),
-          progress: 100
+          progress: 100,
         };
       }
-      
+
       // Update state with fresh data
       setSettings(settingsRes);
       setStats(statsRes);
       setTabState(tabStateRes);
       setEarlyAdopterStatus(earlyAdopterRes);
-    } catch (error) {
+    } catch {
       console.error('Failed to load fresh data:', error);
     }
   }, []);
@@ -143,22 +160,22 @@ const App: React.FC = () => {
   const toggleExtension = async () => {
     try {
       const response = await chrome.runtime.sendMessage({ action: 'toggleExtension' });
-      setSettings(prev => prev ? { ...prev, enabled: response.enabled } : null);
-    } catch (error) {
+      setSettings((prev) => (prev ? { ...prev, enabled: response.enabled } : null));
+    } catch {
       console.error('Failed to toggle extension:', error);
     }
   };
 
   const toggleWhitelist = async () => {
     if (!tabState?.domain) return;
-    
+
     try {
-      const response = await chrome.runtime.sendMessage({ 
+      const response = await chrome.runtime.sendMessage({
         action: 'toggleWhitelist',
-        domain: tabState.domain 
+        domain: tabState.domain,
       });
-      setTabState(prev => prev ? { ...prev, whitelisted: response.whitelisted } : null);
-    } catch (error) {
+      setTabState((prev) => (prev ? { ...prev, whitelisted: response.whitelisted } : null));
+    } catch {
       console.error('Failed to toggle whitelist:', error);
     }
   };
@@ -172,7 +189,7 @@ const App: React.FC = () => {
       try {
         await chrome.runtime.sendMessage({ action: 'clearStats' });
         await loadData();
-      } catch (error) {
+      } catch {
         console.error('Failed to clear stats:', error);
       }
     }
@@ -189,16 +206,20 @@ const App: React.FC = () => {
   };
 
   const handleTierUpgrade = (newTier: number) => {
-    setSettings(prev => prev ? {
-      ...prev,
-      tier: {
-        ...prev.tier,
-        level: newTier,
-        name: getTierName(newTier),
-        unlockedAt: Date.now(),
-        progress: newTier * 20
-      }
-    } : null);
+    setSettings((prev) =>
+      prev
+        ? {
+            ...prev,
+            tier: {
+              ...prev.tier,
+              level: newTier,
+              name: getTierName(newTier),
+              unlockedAt: Date.now(),
+              progress: newTier * 20,
+            },
+          }
+        : null
+    );
   };
 
   const getTierName = (tier: number): string => {
@@ -207,12 +228,18 @@ const App: React.FC = () => {
   };
 
   const _getTierColor = (tier: number): string => {
-    const colors = ['bg-gray-500', 'bg-green-500', 'bg-blue-500', 'bg-purple-500', 'bg-gradient-to-r from-yellow-400 to-orange-500'];
+    const colors = [
+      'bg-gray-500',
+      'bg-green-500',
+      'bg-blue-500',
+      'bg-purple-500',
+      'bg-gradient-to-r from-yellow-400 to-orange-500',
+    ];
     return colors[tier - 1] || 'bg-gray-500';
   };
 
   // Early adopters always have Tier 5!
-  const actualTier = earlyAdopterStatus?.isEarlyAdopter ? 5 : (settings?.tier?.level || 1);
+  const actualTier = earlyAdopterStatus?.isEarlyAdopter ? 5 : settings?.tier?.level || 1;
   const currentTier = actualTier;
   const isEarlyAdopter = earlyAdopterStatus?.isEarlyAdopter || false;
   const hasYouTubeAccess = isEarlyAdopter || currentTier >= 2;
@@ -227,10 +254,13 @@ const App: React.FC = () => {
             <Shield className="w-5 h-5 text-white" />
             <h1 className="text-sm font-bold text-white">ShieldPro</h1>
             {hasNewData && !isRefreshing && (
-              <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" title="New data available" />
+              <div
+                className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"
+                title="New data available"
+              />
             )}
           </div>
-          
+
           <div className="flex items-center space-x-2">
             {/* Refresh button */}
             <button
@@ -240,13 +270,13 @@ const App: React.FC = () => {
             >
               <RefreshCw className="w-4 h-4 text-white" />
             </button>
-            
+
             {/* Power Toggle */}
             <button
               onClick={toggleExtension}
               className={`flex items-center space-x-2 px-3 py-1 rounded-full transition-all ${
-                settings?.enabled 
-                  ? 'bg-green-500 hover:bg-green-600' 
+                settings?.enabled
+                  ? 'bg-green-500 hover:bg-green-600'
                   : 'bg-red-500 hover:bg-red-600'
               }`}
             >
@@ -262,7 +292,9 @@ const App: React.FC = () => {
       <div className="p-3 space-y-2.5">
         {/* TIER STATUS - First thing users see */}
         {currentTier >= 2 && (
-          <div className={`${currentTier === 5 ? 'bg-gradient-to-r from-yellow-400 to-orange-400' : 'bg-gradient-to-r from-green-500 to-emerald-500'} text-white rounded-lg p-2.5 shadow-lg`}>
+          <div
+            className={`${currentTier === 5 ? 'bg-gradient-to-r from-yellow-400 to-orange-400' : 'bg-gradient-to-r from-green-500 to-emerald-500'} text-white rounded-lg p-2.5 shadow-lg`}
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Activity className="w-5 h-5" />
@@ -294,9 +326,7 @@ const App: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Gift className="w-4 h-4 flex-shrink-0" />
-                <span className="text-xs font-medium">
-                  Secure your lifetime benefits!
-                </span>
+                <span className="text-xs font-medium">Secure your lifetime benefits!</span>
               </div>
               <button
                 onClick={() => {
@@ -318,9 +348,7 @@ const App: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 flex-shrink-0" />
-                <span className="text-xs font-medium">
-                  Unlock YouTube blocking & more
-                </span>
+                <span className="text-xs font-medium">Unlock YouTube blocking & more</span>
               </div>
               <button
                 onClick={() => {
@@ -341,9 +369,11 @@ const App: React.FC = () => {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center space-x-3">
               <div className={`relative ${settings?.enabled ? 'animate-pulse' : ''}`}>
-                <div className={`w-3 h-3 rounded-full ${
-                  settings?.enabled ? 'bg-green-500' : 'bg-gray-400'
-                }`} />
+                <div
+                  className={`w-3 h-3 rounded-full ${
+                    settings?.enabled ? 'bg-green-500' : 'bg-gray-400'
+                  }`}
+                />
                 {settings?.enabled && (
                   <div className="absolute inset-0 w-3 h-3 rounded-full bg-green-400 animate-ping" />
                 )}
@@ -445,9 +475,7 @@ const App: React.FC = () => {
         {!isEarlyAdopter && currentTier < 2 && (
           <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg p-2.5 shadow-sm">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium">
-                Unlock YouTube blocking & more
-              </span>
+              <span className="text-xs font-medium">Unlock YouTube blocking & more</span>
               <button
                 onClick={() => {
                   const accountSection = document.getElementById('account-section');
@@ -480,23 +508,29 @@ const App: React.FC = () => {
         </div>
 
         {/* BELOW THE FOLD - Additional details */}
-        
+
         {/* Category Breakdown - Collapsible */}
         <details className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
           <summary className="p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors list-none">
             <div className="flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-gray-400 flex-shrink-0" />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Detailed Stats</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Detailed Stats
+              </span>
             </div>
           </summary>
           <div className="px-3 pb-3 space-y-1.5">
             <div className="flex items-center justify-between">
               <span className="text-xs text-gray-600 dark:text-gray-400">Ads Blocked</span>
-              <span className="text-xs font-medium text-gray-900 dark:text-gray-100">{stats?.categoryStats?.ads || 0}</span>
+              <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
+                {stats?.categoryStats?.ads || 0}
+              </span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-xs text-gray-600 dark:text-gray-400">Trackers</span>
-              <span className="text-xs font-medium text-gray-900 dark:text-gray-100">{stats?.categoryStats?.trackers || 0}</span>
+              <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
+                {stats?.categoryStats?.trackers || 0}
+              </span>
             </div>
             {hasYouTubeAccess && (
               <>
@@ -508,21 +542,24 @@ const App: React.FC = () => {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-gray-600 dark:text-gray-400">Social</span>
-                  <span className="text-xs font-medium text-gray-900 dark:text-gray-100">{stats?.categoryStats?.social || 0}</span>
+                  <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
+                    {stats?.categoryStats?.social || 0}
+                  </span>
                 </div>
               </>
             )}
             <div className="flex items-center justify-between">
               <span className="text-xs text-gray-600 dark:text-gray-400">Other</span>
-              <span className="text-xs font-medium text-gray-900 dark:text-gray-100">{stats?.categoryStats?.other || 0}</span>
+              <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
+                {stats?.categoryStats?.other || 0}
+              </span>
             </div>
           </div>
         </details>
 
-
         {/* Account Management Section - Below fold */}
         {/* Show these as separate, always-visible elements for better UX */}
-        
+
         {/* Early Adopter Account Creation Section */}
         {isEarlyAdopter && !earlyAdopterStatus?.hasAccount && (
           <>
@@ -544,7 +581,10 @@ const App: React.FC = () => {
             </div>
 
             {/* Account Creation Form - Always visible, not hidden in component state */}
-            <div id="account-section-form" className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm border border-gray-100 dark:border-gray-700">
+            <div
+              id="account-section-form"
+              className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm border border-gray-100 dark:border-gray-700"
+            >
               <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
                 <Gift className="w-4 h-4 text-green-600" />
                 Secure Your Lifetime Access
@@ -552,10 +592,7 @@ const App: React.FC = () => {
               <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
                 Create your free account now to lock in all benefits forever
               </p>
-              <AccountManager 
-                currentTier={5}
-                onTierUpgrade={handleTierUpgrade}
-              />
+              <AccountManager currentTier={5} onTierUpgrade={handleTierUpgrade} />
             </div>
           </>
         )}
@@ -581,11 +618,11 @@ const App: React.FC = () => {
             </div>
 
             {/* Account Creation Form */}
-            <div id="account-section-form" className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm border border-gray-100 dark:border-gray-700">
-              <AccountManager 
-                currentTier={currentTier}
-                onTierUpgrade={handleTierUpgrade}
-              />
+            <div
+              id="account-section-form"
+              className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm border border-gray-100 dark:border-gray-700"
+            >
+              <AccountManager currentTier={currentTier} onTierUpgrade={handleTierUpgrade} />
             </div>
           </>
         )}

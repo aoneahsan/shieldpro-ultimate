@@ -2,7 +2,12 @@ import React, { useState } from 'react';
 import { LayoutProps } from './types';
 import { Menu, X } from 'lucide-react';
 
-export const SidebarLayout: React.FC<LayoutProps> = ({ tabs, activeTab, onTabChange, children }) => {
+export const SidebarLayout: React.FC<LayoutProps> = ({
+  tabs,
+  activeTab,
+  onTabChange,
+  children,
+}) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
@@ -16,7 +21,7 @@ export const SidebarLayout: React.FC<LayoutProps> = ({ tabs, activeTab, onTabCha
       </button>
 
       {/* Sidebar */}
-      <aside 
+      <aside
         className={`
           fixed lg:relative inset-y-0 left-0 z-40
           w-64 bg-white dark:bg-gray-800 shadow-lg
@@ -29,7 +34,7 @@ export const SidebarLayout: React.FC<LayoutProps> = ({ tabs, activeTab, onTabCha
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
-              
+
               return (
                 <button
                   key={tab.id}
@@ -40,9 +45,10 @@ export const SidebarLayout: React.FC<LayoutProps> = ({ tabs, activeTab, onTabCha
                   className={`
                     w-full flex items-center space-x-3 px-4 py-3 rounded-lg
                     transition-all duration-200 text-left
-                    ${isActive
-                      ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-4 border-primary-500'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-200'
+                    ${
+                      isActive
+                        ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-4 border-primary-500'
+                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-200'
                     }
                   `}
                   aria-current={isActive ? 'page' : undefined}
@@ -67,9 +73,7 @@ export const SidebarLayout: React.FC<LayoutProps> = ({ tabs, activeTab, onTabCha
       {/* Main content */}
       <main className="flex-1 bg-gray-50 dark:bg-gray-900">
         <div className="p-6">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-            {children}
-          </div>
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">{children}</div>
         </div>
       </main>
     </div>

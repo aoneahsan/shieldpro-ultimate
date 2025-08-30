@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Shield, 
-  Lock, 
-  Unlock, 
-  Star, 
-  Zap, 
+import {
+  Shield,
+  Lock,
+  Unlock,
+  Star,
+  Zap,
   Crown,
   CheckCircle,
   Users,
   Globe,
   TrendingUp,
   Award,
-  Sparkles
+  Sparkles,
 } from 'lucide-react';
 import authService from '../services/auth.service';
 import { StorageManager } from '../shared/utils/storage';
@@ -30,7 +30,9 @@ interface TierInfo {
 
 const TiersPage: React.FC = () => {
   const [currentTier, setCurrentTier] = useState(1);
-  const [userProfile, setUserProfile] = useState<{displayName?: string; email?: string} | null>(null);
+  const [userProfile, setUserProfile] = useState<{ displayName?: string; email?: string } | null>(
+    null
+  );
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [referralCount, setReferralCount] = useState(0);
   const [weeklyEngagement, setWeeklyEngagement] = useState(0);
@@ -47,14 +49,14 @@ const TiersPage: React.FC = () => {
 
       const user = authService.getCurrentUser();
       const profile = authService.getUserProfile();
-      
+
       if (user && profile) {
         setIsLoggedIn(true);
         setUserProfile(profile);
         setReferralCount(profile.stats?.referralCount || 0);
         setWeeklyEngagement(profile.stats?.weeklyEngagement?.length || 0);
       }
-    } catch (error) {
+    } catch {
       console.error('Error loading user data:', error);
     }
   };
@@ -75,10 +77,10 @@ const TiersPage: React.FC = () => {
         '✓ Basic tracker blocking',
         '✓ Whitelist management',
         '✓ Real-time blocking counter',
-        '✓ On/off toggle'
+        '✓ On/off toggle',
       ],
       unlocked: true,
-      current: currentTier === 1
+      current: currentTier === 1,
     },
     {
       level: 2,
@@ -97,10 +99,10 @@ const TiersPage: React.FC = () => {
         '✓ Enhanced popup blocking',
         '✓ Notification blocking',
         '✓ Cross-device sync ready',
-        '✓ Referral code system'
+        '✓ Referral code system',
       ],
       unlocked: currentTier >= 2,
-      current: currentTier === 2
+      current: currentTier === 2,
     },
     {
       level: 3,
@@ -120,10 +122,10 @@ const TiersPage: React.FC = () => {
         '✓ RegEx filter support',
         '✓ Backup & restore',
         '✓ Advanced statistics dashboard',
-        '✓ 100+ additional blocking rules'
+        '✓ 100+ additional blocking rules',
       ],
       unlocked: currentTier >= 3,
-      current: currentTier === 3
+      current: currentTier === 3,
     },
     {
       level: 4,
@@ -144,10 +146,10 @@ const TiersPage: React.FC = () => {
         '✓ Script control panel',
         '✓ Network request logger',
         '✓ Premium filter lists',
-        '✓ Priority support'
+        '✓ Priority support',
       ],
       unlocked: currentTier >= 4,
-      current: currentTier === 4
+      current: currentTier === 4,
     },
     {
       level: 5,
@@ -168,11 +170,11 @@ const TiersPage: React.FC = () => {
         '✓ Community filter voting',
         '✓ Beta features access',
         '✓ Lifetime updates',
-        '✓ All future features'
+        '✓ All future features',
       ],
       unlocked: currentTier >= 5,
-      current: currentTier === 5
-    }
+      current: currentTier === 5,
+    },
   ];
 
   const getProgressToNextTier = () => {
@@ -180,23 +182,23 @@ const TiersPage: React.FC = () => {
       return { message: 'Create an account to unlock Tier 2', progress: 0 };
     }
     if (currentTier === 2) {
-      return { 
-        message: 'Complete your profile to unlock Tier 3', 
-        progress: userProfile?.displayName && userProfile?.photoURL ? 100 : 50 
+      return {
+        message: 'Complete your profile to unlock Tier 3',
+        progress: userProfile?.displayName && userProfile?.photoURL ? 100 : 50,
       };
     }
     if (currentTier === 3) {
       const progress = Math.min((referralCount / 30) * 100, 100);
-      return { 
-        message: `${referralCount}/30 referrals to unlock Tier 4`, 
-        progress 
+      return {
+        message: `${referralCount}/30 referrals to unlock Tier 4`,
+        progress,
       };
     }
     if (currentTier === 4) {
       const progress = (weeklyEngagement / 7) * 100;
-      return { 
-        message: `${weeklyEngagement}/7 days active this week for Tier 5`, 
-        progress 
+      return {
+        message: `${weeklyEngagement}/7 days active this week for Tier 5`,
+        progress,
       };
     }
     return { message: 'Maximum tier reached!', progress: 100 };
@@ -222,7 +224,9 @@ const TiersPage: React.FC = () => {
                 <div className="flex items-center space-x-3">
                   <div className="text-right">
                     <p className="text-sm font-medium text-gray-900">{userProfile.email}</p>
-                    <p className="text-xs text-gray-600">Tier {currentTier} - {tiers[currentTier - 1].name}</p>
+                    <p className="text-xs text-gray-600">
+                      Tier {currentTier} - {tiers[currentTier - 1].name}
+                    </p>
                   </div>
                   <div className="w-10 h-10 bg-gradient-to-r from-primary-400 to-primary-600 rounded-full flex items-center justify-center text-white font-bold">
                     {currentTier}
@@ -251,7 +255,7 @@ const TiersPage: React.FC = () => {
                 <span className="text-sm text-gray-600">{progressInfo.progress.toFixed(0)}%</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-3">
-                <div 
+                <div
                   className="bg-gradient-to-r from-primary-500 to-primary-600 h-3 rounded-full transition-all duration-500"
                   style={{ width: `${progressInfo.progress}%` }}
                 />
@@ -282,13 +286,9 @@ const TiersPage: React.FC = () => {
                       <p className="text-sm opacity-90">{tier.name}</p>
                     </div>
                   </div>
-                  {tier.unlocked ? (
-                    <Unlock className="w-6 h-6" />
-                  ) : (
-                    <Lock className="w-6 h-6" />
-                  )}
+                  {tier.unlocked ? <Unlock className="w-6 h-6" /> : <Lock className="w-6 h-6" />}
                 </div>
-                
+
                 {/* Progress Bar */}
                 <div className="space-y-2">
                   <div className="flex justify-between text-xs">
@@ -296,7 +296,7 @@ const TiersPage: React.FC = () => {
                     <span>{tier.progress}%</span>
                   </div>
                   <div className="w-full bg-white/20 rounded-full h-2">
-                    <div 
+                    <div
                       className="bg-white rounded-full h-2 transition-all duration-500"
                       style={{ width: `${tier.unlocked ? 100 : tier.progress}%` }}
                     />
@@ -332,7 +332,7 @@ const TiersPage: React.FC = () => {
               {/* Features */}
               <div className="p-4 space-y-2 max-h-96 overflow-y-auto">
                 {tier.features.map((feature, index) => (
-                  <div 
+                  <div
                     key={index}
                     className={`text-sm ${tier.unlocked ? 'text-gray-700' : 'text-gray-500'}`}
                   >
@@ -352,7 +352,7 @@ const TiersPage: React.FC = () => {
                     Unlocked
                   </button>
                 ) : (
-                  <button 
+                  <button
                     onClick={() => {
                       if (tier.level === 2) {
                         chrome.runtime.openOptionsPage();
@@ -371,7 +371,7 @@ const TiersPage: React.FC = () => {
         {/* How It Works Section */}
         <div className="mt-12 bg-white rounded-xl shadow-lg p-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">How the Tier System Works</h2>
-          
+
           <div className="grid md:grid-cols-2 gap-8">
             <div>
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Progressive Unlocking</h3>
@@ -382,7 +382,9 @@ const TiersPage: React.FC = () => {
                   </div>
                   <div>
                     <p className="font-medium text-gray-700">Start with Tier 1</p>
-                    <p className="text-sm text-gray-600">Basic protection available to everyone immediately</p>
+                    <p className="text-sm text-gray-600">
+                      Basic protection available to everyone immediately
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
@@ -391,7 +393,9 @@ const TiersPage: React.FC = () => {
                   </div>
                   <div>
                     <p className="font-medium text-gray-700">Create Account for Tier 2</p>
-                    <p className="text-sm text-gray-600">Sign up to unlock YouTube blocking and advanced features</p>
+                    <p className="text-sm text-gray-600">
+                      Sign up to unlock YouTube blocking and advanced features
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
@@ -400,7 +404,9 @@ const TiersPage: React.FC = () => {
                   </div>
                   <div>
                     <p className="font-medium text-gray-700">Complete Profile for Tier 3</p>
-                    <p className="text-sm text-gray-600">Add your name and photo to unlock custom filters</p>
+                    <p className="text-sm text-gray-600">
+                      Add your name and photo to unlock custom filters
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
@@ -409,7 +415,9 @@ const TiersPage: React.FC = () => {
                   </div>
                   <div>
                     <p className="font-medium text-gray-700">Share for Tier 4</p>
-                    <p className="text-sm text-gray-600">Invite 30 friends to unlock premium features</p>
+                    <p className="text-sm text-gray-600">
+                      Invite 30 friends to unlock premium features
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
@@ -418,7 +426,9 @@ const TiersPage: React.FC = () => {
                   </div>
                   <div>
                     <p className="font-medium text-gray-700">Stay Active for Tier 5</p>
-                    <p className="text-sm text-gray-600">Use the extension 7 days a week for ultimate features</p>
+                    <p className="text-sm text-gray-600">
+                      Use the extension 7 days a week for ultimate features
+                    </p>
                   </div>
                 </div>
               </div>
@@ -431,28 +441,36 @@ const TiersPage: React.FC = () => {
                   <Shield className="w-5 h-5 text-primary-600 mt-0.5" />
                   <div>
                     <p className="font-medium text-gray-700">Progressive Protection</p>
-                    <p className="text-sm text-gray-600">Start with basic protection and unlock more as you engage</p>
+                    <p className="text-sm text-gray-600">
+                      Start with basic protection and unlock more as you engage
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
                   <Users className="w-5 h-5 text-primary-600 mt-0.5" />
                   <div>
                     <p className="font-medium text-gray-700">Community Driven</p>
-                    <p className="text-sm text-gray-600">Help others discover better browsing by sharing</p>
+                    <p className="text-sm text-gray-600">
+                      Help others discover better browsing by sharing
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
                   <TrendingUp className="w-5 h-5 text-primary-600 mt-0.5" />
                   <div>
                     <p className="font-medium text-gray-700">Continuous Improvement</p>
-                    <p className="text-sm text-gray-600">New features added regularly to higher tiers</p>
+                    <p className="text-sm text-gray-600">
+                      New features added regularly to higher tiers
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
                   <Globe className="w-5 h-5 text-primary-600 mt-0.5" />
                   <div>
                     <p className="font-medium text-gray-700">Privacy First</p>
-                    <p className="text-sm text-gray-600">Your data stays private, no tracking or selling</p>
+                    <p className="text-sm text-gray-600">
+                      Your data stays private, no tracking or selling
+                    </p>
                   </div>
                 </div>
               </div>
@@ -480,7 +498,8 @@ const TiersPage: React.FC = () => {
                     </button>
                   </div>
                   <p className="text-sm text-gray-600 mt-2">
-                    Share this code with friends. You need {Math.max(0, 30 - referralCount)} more referrals for Tier 4!
+                    Share this code with friends. You need {Math.max(0, 30 - referralCount)} more
+                    referrals for Tier 4!
                   </p>
                 </div>
                 <div className="text-center">

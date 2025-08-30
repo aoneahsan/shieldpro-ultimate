@@ -1,9 +1,4 @@
-import { 
-  ref, 
-  uploadBytes, 
-  getDownloadURL, 
-  deleteObject
-} from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { storage } from '../utils/firebase';
 
 class StorageService {
@@ -38,7 +33,7 @@ class StorageService {
 
       // Upload file
       const snapshot = await uploadBytes(storageRef, processedFile);
-      
+
       // Get download URL
       const downloadURL = await getDownloadURL(snapshot.ref);
 
@@ -46,7 +41,7 @@ class StorageService {
       await this.cleanupOldProfileImages(userId, fileName);
 
       return downloadURL;
-    } catch (error) {
+    } catch {
       console.error('Failed to upload profile image:', error);
       throw error;
     }
@@ -63,7 +58,7 @@ class StorageService {
 
       const storageRef = ref(storage, path);
       await deleteObject(storageRef);
-    } catch (error) {
+    } catch {
       console.error('Failed to delete profile image:', error);
       // Don't throw - image might already be deleted
     }
@@ -85,10 +80,10 @@ class StorageService {
   private async processImage(file: File): Promise<Blob> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      
+
       reader.onload = (e) => {
         const img = new Image();
-        
+
         img.onload = () => {
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
@@ -174,7 +169,7 @@ class StorageService {
   }
 }
 
-export const uploadProfileImage = (userId: string, file: File) => 
+export const uploadProfileImage = (userId: string, file: File) =>
   StorageService.getInstance().uploadProfileImage(userId, file);
 
 export const deleteProfileImage = (photoURL: string) =>

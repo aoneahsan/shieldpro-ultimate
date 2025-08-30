@@ -7,8 +7,24 @@
 export class SafeInjection {
   private static instance: SafeInjection;
   private criticalElements = new Set([
-    'body', 'html', 'head', 'main', 'article', 'section', 'nav', 'header', 'footer',
-    'video', 'audio', 'canvas', 'iframe', 'form', 'input', 'button', 'select', 'textarea'
+    'body',
+    'html',
+    'head',
+    'main',
+    'article',
+    'section',
+    'nav',
+    'header',
+    'footer',
+    'video',
+    'audio',
+    'canvas',
+    'iframe',
+    'form',
+    'input',
+    'button',
+    'select',
+    'textarea',
   ]);
 
   static getInstance(): SafeInjection {
@@ -37,13 +53,13 @@ export class SafeInjection {
       const style = document.createElement('style');
       style.id = id;
       style.textContent = css;
-      
+
       // Inject into head or body
       const target = document.head || document.documentElement;
       target.appendChild(_style);
-      
+
       return true;
-    } catch (error) {
+    } catch {
       console.error('CSS injection failed:', error);
       return false;
     }
@@ -60,7 +76,7 @@ export class SafeInjection {
       /\*\s*\{[^}]*display\s*:\s*none/i, // Universal selector
     ];
 
-    return unsafePatterns.some(pattern => pattern.test(_css));
+    return unsafePatterns.some((pattern) => pattern.test(_css));
   }
 
   /**
@@ -85,7 +101,7 @@ export class SafeInjection {
       element.remove();
       console.debug(`🗑️ Safely removed ${context} element:`, element.tagName);
       return true;
-    } catch (error) {
+    } catch {
       console.debug('Safe removal failed:', error);
       return false;
     }
@@ -95,7 +111,8 @@ export class SafeInjection {
    * Hide element instead of removing it
    */
   private safeHideElement(element: HTMLElement): void {
-    element.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important; height: 0 !important; width: 0 !important; overflow: hidden !important;';
+    element.style.cssText =
+      'display: none !important; visibility: hidden !important; opacity: 0 !important; height: 0 !important; width: 0 !important; overflow: hidden !important;';
   }
 
   /**
@@ -103,7 +120,7 @@ export class SafeInjection {
    */
   private isCriticalElement(element: Element): boolean {
     const tagName = element.tagName.toLowerCase();
-    
+
     // Critical HTML elements
     if (this.criticalElements.has(_tagName)) {
       return true;
@@ -119,15 +136,28 @@ export class SafeInjection {
     // Elements with critical IDs or classes (site-specific)
     const id = element.id.toLowerCase();
     const className = element.className.toLowerCase();
-    
+
     const criticalIdentifiers = [
-      'content', 'main', 'primary', 'wrapper', 'container', 'app', 'root',
-      'player', 'video-player', 'audio-player', 'navigation', 'nav', 'menu',
-      'header', 'footer', 'sidebar'
+      'content',
+      'main',
+      'primary',
+      'wrapper',
+      'container',
+      'app',
+      'root',
+      'player',
+      'video-player',
+      'audio-player',
+      'navigation',
+      'nav',
+      'menu',
+      'header',
+      'footer',
+      'sidebar',
     ];
 
-    return criticalIdentifiers.some(identifier => 
-      id.includes(_identifier) || className.includes(_identifier)
+    return criticalIdentifiers.some(
+      (identifier) => id.includes(_identifier) || className.includes(_identifier)
     );
   }
 
@@ -136,12 +166,18 @@ export class SafeInjection {
    */
   private hasCriticalChildren(element: Element): boolean {
     const criticalSelectors = [
-      'video', 'audio', 'canvas', 'iframe[src*="player"]', 
-      '[role="main"]', '[role="navigation"]', '[role="application"]',
-      'form', 'button[type="submit"]'
+      'video',
+      'audio',
+      'canvas',
+      'iframe[src*="player"]',
+      '[role="main"]',
+      '[role="navigation"]',
+      '[role="application"]',
+      'form',
+      'button[type="submit"]',
     ];
 
-    return criticalSelectors.some(selector => element.querySelector(_selector));
+    return criticalSelectors.some((selector) => element.querySelector(_selector));
   }
 
   /**
@@ -151,21 +187,23 @@ export class SafeInjection {
     // Create a clone for testing
     const clone = element.cloneNode(_true) as HTMLElement;
     clone.style.cssText = 'position: absolute; top: -9999px; left: -9999px; visibility: hidden;';
-    
+
     try {
       document.body.appendChild(_clone);
-      
+
       // Test basic functionality (simplified check)
-      const hasInteractiveElements = clone.querySelector('button, _input, select, _textarea, a[href]');
+      const hasInteractiveElements = clone.querySelector(
+        'button, _input, select, _textarea, a[href]'
+      );
       const hasMediaElements = clone.querySelector('video, _audio, canvas, iframe');
       const hasFormElements = clone.querySelector('form');
-      
+
       // Remove test clone
       clone.remove();
-      
+
       // Consider unsafe if has interactive/media/form elements
       return !(hasInteractiveElements || hasMediaElements || hasFormElements);
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -177,15 +215,21 @@ export class SafeInjection {
     // Check for common breakage signs
     const healthChecks = [
       () => document.body && document.body.style.display !== 'none',
-      () => document.querySelectorAll('video, audio').length === 0 || 
-            Array.from(document.querySelectorAll('video, audio')).some(el => 
-              (el as HTMLVideoElement | HTMLAudioElement).readyState > 0),
-      () => !document.body.innerHTML.includes('blocked') || 
-            !document.body.innerHTML.includes('error')
+      () =>
+        document.querySelectorAll('video, audio').length === 0 ||
+        Array.from(document.querySelectorAll('video, audio')).some(
+          (el) => (el as HTMLVideoElement | HTMLAudioElement).readyState > 0
+        ),
+      () =>
+        !document.body.innerHTML.includes('blocked') || !document.body.innerHTML.includes('error'),
     ];
 
-    const isHealthy = healthChecks.every(check => {
-      try { return check(); } catch { return false; }
+    const isHealthy = healthChecks.every((check) => {
+      try {
+        return check();
+      } catch {
+        return false;
+      }
     });
 
     if (!isHealthy) {
@@ -200,9 +244,9 @@ export class SafeInjection {
       chrome.runtime.sendMessage({
         action: 'siteHealthIssue',
         url: window.location.href,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
-    } catch (error) {
+    } catch {
       console.debug('Failed to report health issue:', error);
     }
   }
@@ -212,21 +256,37 @@ export class SafeInjection {
    */
   shouldSkipBlocking(): boolean {
     const hostname = window.location.hostname.toLowerCase();
-    
+
     // Critical sites that should have minimal blocking
     const criticalSites = [
-      'banking', 'paypal', 'amazon', 'google', 'microsoft', 'apple',
-      'gov.', '.edu', 'login', 'auth', 'payment', 'checkout'
+      'banking',
+      'paypal',
+      'amazon',
+      'google',
+      'microsoft',
+      'apple',
+      'gov.',
+      '.edu',
+      'login',
+      'auth',
+      'payment',
+      'checkout',
     ];
 
     // Sites known to break with aggressive blocking
     const problematicSites = [
-      'netflix.com', 'hulu.com', 'disney', 'hbo', 'prime',
-      'twitch.tv', 'mixer.com', 'vimeo.com'
+      'netflix.com',
+      'hulu.com',
+      'disney',
+      'hbo',
+      'prime',
+      'twitch.tv',
+      'mixer.com',
+      'vimeo.com',
     ];
 
     const allProtectedSites = [...criticalSites, ...problematicSites];
-    
-    return allProtectedSites.some(site => hostname.includes(_site));
+
+    return allProtectedSites.some((site) => hostname.includes(_site));
   }
 }

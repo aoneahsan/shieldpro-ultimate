@@ -18,7 +18,7 @@ export class PerformanceMonitor {
   private metrics: TierMetrics = {
     tier1: this.createEmptyMetrics(1),
     tier2: this.createEmptyMetrics(2),
-    overall: this.createEmptyMetrics(0)
+    overall: this.createEmptyMetrics(0),
   };
 
   private startTime = Date.now();
@@ -37,7 +37,7 @@ export class PerformanceMonitor {
       cpuUsage: 0,
       networkSaved: 0,
       tier,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
   }
 
@@ -61,11 +61,11 @@ export class PerformanceMonitor {
         chrome.system.memory.getInfo((info) => {
           const usedMemory = info.capacity - info.availableCapacity;
           const usagePercent = (usedMemory / info.capacity) * 100;
-          
+
           this.metrics.overall.memoryUsage = usagePercent;
         });
       }
-    } catch (error) {
+    } catch {
       console.error('Failed to get memory usage:', error);
     }
   }
@@ -75,14 +75,14 @@ export class PerformanceMonitor {
     if (chrome.declarativeNetRequest && chrome.declarativeNetRequest.onRuleMatchedDebug) {
       chrome.declarativeNetRequest.onRuleMatchedDebug.addListener(async (info) => {
         const startTime = performance.now();
-        
+
         // Track which tier's rule was matched
         const ruleId = info.rule.ruleId;
         const tier = this.getRuleTier(ruleId);
-        
+
         // Calculate blocking time
         const blockingTime = performance.now() - startTime;
-        
+
         // Update metrics
         if (tier === 1) {
           this.metrics.tier1.blockedRequests++;
@@ -91,20 +91,20 @@ export class PerformanceMonitor {
           this.metrics.tier2.blockedRequests++;
           this.metrics.tier2.blockingTime += blockingTime;
         }
-        
+
         this.metrics.overall.blockedRequests++;
         this.metrics.overall.blockingTime += blockingTime;
-        
+
         // Estimate network saved (average ad size)
         const estimatedSize = this.estimateRequestSize(info.request.url);
         this.metrics.overall.networkSaved += estimatedSize;
-        
+
         if (tier === 1) {
           this.metrics.tier1.networkSaved += estimatedSize;
         } else if (tier === 2) {
           this.metrics.tier2.networkSaved += estimatedSize;
         }
-        
+
         // Track timing
         this.requestTimings.set(info.request.url, blockingTime);
       });
@@ -213,8 +213,12 @@ Efficiency:
   private countTrackerBlocks(): string {
     let count = 0;
     this.requestTimings.forEach((_time, url) => {
-      if (url.includes('analytics') || url.includes('tracking') || 
-          url.includes('facebook') || url.includes('twitter')) {
+      if (
+        url.includes('analytics') ||
+        url.includes('tracking') ||
+        url.includes('facebook') ||
+        url.includes('twitter')
+      ) {
         count++;
       }
     });
@@ -235,11 +239,11 @@ Efficiency:
       const data = {
         metrics: this.metrics,
         report: this.getPerformanceReport(),
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
-      
+
       await chrome.storage.local.set({ performanceMetrics: data });
-    } catch (error) {
+    } catch {
       console.error('Failed to save performance metrics:', error);
     }
   }
@@ -250,7 +254,7 @@ Efficiency:
       if (result.performanceMetrics) {
         this.metrics = result.performanceMetrics.metrics;
       }
-    } catch (error) {
+    } catch {
       console.error('Failed to load performance metrics:', error);
     }
   }
@@ -259,7 +263,7 @@ Efficiency:
     this.metrics = {
       tier1: this.createEmptyMetrics(1),
       tier2: this.createEmptyMetrics(2),
-      overall: this.createEmptyMetrics(0)
+      overall: this.createEmptyMetrics(0),
     };
     this.requestTimings.clear();
     this.blockingSizes.clear();

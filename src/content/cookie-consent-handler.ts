@@ -18,88 +18,72 @@ export class CookieConsentHandler {
       'button:contains("No thanks")',
       'button:contains("I decline")',
       'a:contains("Reject all")',
-      'a:contains("Decline all")'
+      'a:contains("Decline all")',
     ],
-    
+
     // Platform-specific selectors
     platforms: {
       // OneTrust
       onetrust: [
         '.ot-pc-refuse-all-handler',
         '#onetrust-reject-all-handler',
-        '.onetrust-close-btn-handler.banner-close-button'
+        '.onetrust-close-btn-handler.banner-close-button',
       ],
-      
+
       // Cookiebot
       cookiebot: [
         '#CybotCookiebotDialogBodyButtonDecline',
         '[data-cookiebanner-reject]',
-        '.CybotCookiebotDialogBodyButton[data-cookiebanner-reject]'
+        '.CybotCookiebotDialogBodyButton[data-cookiebanner-reject]',
       ],
-      
+
       // TrustArc / TRUSTe
-      trustarc: [
-        '.trustarc-decline-button',
-        '#truste-consent-decline',
-        '.truste-button2'
-      ],
-      
+      trustarc: ['.trustarc-decline-button', '#truste-consent-decline', '.truste-button2'],
+
       // Quantcast
       quantcast: [
-        '[onclick*="__qcCmp(\'setConsent\', _false)"]',
+        '[onclick*="__qcCmp(\'setConsent\', false)"]',
         '.qc-cmp-button[mode="secondary"]',
-        '.qc-cmp-button.qc-cmp-secondary-button'
+        '.qc-cmp-button.qc-cmp-secondary-button',
       ],
-      
+
       // Google Consent
       google: [
         '[jsname="tWT92d"]', // Reject all button
         'button[aria-label*="Reject"]',
-        '#W0wltc' // "Reject all" on YouTube
+        '#W0wltc', // "Reject all" on YouTube
       ],
-      
+
       // Facebook
       facebook: [
         '[data-cookiebanner="accept_only_essential_button"]',
-        '[data-testid="cookie-policy-banner-decline"]'
+        '[data-testid="cookie-policy-banner-decline"]',
       ],
-      
+
       // Amazon
-      amazon: [
-        'input[aria-labelledby*="decline"]',
-        '#sp-cc-rejectall-link'
-      ],
-      
+      amazon: ['input[aria-labelledby*="decline"]', '#sp-cc-rejectall-link'],
+
       // Didomi
       didomi: [
         '#didomi-notice-disagree-button',
-        '.didomi-components-button.didomi-button-secondary'
+        '.didomi-components-button.didomi-button-secondary',
       ],
-      
+
       // Usercentrics
       usercentrics: [
         '[data-testid="uc-deny-all-button"]',
-        '.sc-gsDKAQ.fmuRqt' // Deny button class
+        '.sc-gsDKAQ.fmuRqt', // Deny button class
       ],
-      
+
       // Civic Cookie Control
-      civic: [
-        '.ccc-reject-button',
-        '.ccc-banner-decline-button'
-      ],
-      
+      civic: ['.ccc-reject-button', '.ccc-banner-decline-button'],
+
       // Crownpeak
-      crownpeak: [
-        '.cp-reject-all',
-        '#cp-reject-all-btn'
-      ],
-      
+      crownpeak: ['.cp-reject-all', '#cp-reject-all-btn'],
+
       // Termly
-      termly: [
-        '.t-declineAllButton',
-        '#termly-reject-all'
-      ]
-    }
+      termly: ['.t-declineAllButton', '#termly-reject-all'],
+    },
   };
 
   private rejectedDomains: Set<string> = new Set();
@@ -109,7 +93,7 @@ export class CookieConsentHandler {
   init() {
     // Check if cookie consent already rejected for this domain
     this.loadRejectedDomains();
-    
+
     if (!this.rejectedDomains.has(window.location.hostname)) {
       this.detectAndRejectCookies();
       this.startObserver();
@@ -126,7 +110,7 @@ export class CookieConsentHandler {
   private async saveRejectedDomain(domain: string) {
     this.rejectedDomains.add(domain);
     await chrome.storage.local.set({
-      rejectedCookieDomains: Array.from(this.rejectedDomains)
+      rejectedCookieDomains: Array.from(this.rejectedDomains),
     });
   }
 
@@ -134,9 +118,9 @@ export class CookieConsentHandler {
     // Try platform-specific selectors first
     for (const [platform, selectors] of Object.entries(this.consentSelectors.platforms)) {
       for (const selector of selectors) {
-        const element = this.findElement(_selector);
-        if (_element) {
-          this.rejectCookies(_element, platform);
+        const element = this.findElement(selector);
+        if (element) {
+          this.rejectCookies(element, platform);
           return;
         }
       }
@@ -144,9 +128,9 @@ export class CookieConsentHandler {
 
     // Try generic selectors
     for (const selector of this.consentSelectors.generic) {
-      const element = this.findElement(_selector);
-      if (_element) {
-        this.rejectCookies(_element, 'generic');
+      const element = this.findElement(selector);
+      if (element) {
+        this.rejectCookies(element, 'generic');
         return;
       }
     }
@@ -159,7 +143,7 @@ export class CookieConsentHandler {
         const [baseSelector, text] = selector.split(':contains');
         const cleanText = text.replace(/[()'"]/g, '');
         const elements = document.querySelectorAll(baseSelector);
-        
+
         for (const element of elements) {
           if (element.textContent?.toLowerCase().includes(cleanText.toLowerCase())) {
             return element as HTMLElement;
@@ -167,9 +151,9 @@ export class CookieConsentHandler {
         }
         return null;
       }
-      
+
       // Regular selector
-      return document.querySelector(_selector) as HTMLElement;
+      return document.querySelector(selector) as HTMLElement;
     } catch {
       return null;
     }
@@ -179,48 +163,50 @@ export class CookieConsentHandler {
     try {
       // Click the reject button
       element.click();
-      
+
       // For some platforms, we need to trigger additional events
       const clickEvent = new MouseEvent('click', {
         view: window,
         bubbles: true,
-        cancelable: true
+        cancelable: true,
       });
       element.dispatchEvent(clickEvent);
-      
+
       // Save that we've rejected cookies for this domain
       this.saveRejectedDomain(window.location.hostname);
-      
+
       // Report to background script
-      chrome.runtime.sendMessage({
-        action: 'cookiesRejected',
-        platform,
-        domain: window.location.hostname
-      }).catch(() => {});
-      
+      chrome.runtime
+        .sendMessage({
+          action: 'cookiesRejected',
+          platform,
+          domain: window.location.hostname,
+        })
+        .catch(() => {});
+
       // Stop observing once rejected
       this.stopObserver();
-      
+
       console.warn(`ShieldPro: Auto-rejected cookies via ${platform}`);
-    } catch (error) {
+    } catch {
       console.error('Failed to reject cookies:', error);
     }
   }
 
   private startObserver() {
     if (this.observerActive) return;
-    
+
     // Wait for document.body to be available
     if (!document.body) {
       // If body is not ready, wait and try again
       setTimeout(() => this.startObserver(), 100);
       return;
     }
-    
+
     this.observerActive = true;
     let attempts = 0;
     const maxAttempts = 20; // Try for 10 seconds
-    
+
     this.observer = new MutationObserver(() => {
       if (attempts++ < maxAttempts) {
         this.detectAndRejectCookies();
@@ -228,12 +214,12 @@ export class CookieConsentHandler {
         this.stopObserver();
       }
     });
-    
+
     this.observer.observe(document.body, {
       childList: true,
-      subtree: true
+      subtree: true,
     });
-    
+
     // Stop observing after 10 seconds
     setTimeout(() => this.stopObserver(), 10000);
   }
@@ -254,7 +240,7 @@ export class CookieConsentHandler {
   public getStats() {
     return {
       rejectedDomains: this.rejectedDomains.size,
-      domains: Array.from(this.rejectedDomains)
+      domains: Array.from(this.rejectedDomains),
     };
   }
 }

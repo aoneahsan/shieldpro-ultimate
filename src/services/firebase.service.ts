@@ -3,20 +3,20 @@
  * Handles all Firebase operations including auth, _Firestore, and cloud functions
  */
 
-import { 
-  doc, 
-  getDoc, 
-  setDoc, 
-  collection, 
-  query, 
-  where, 
+import {
+  doc,
+  getDoc,
+  setDoc,
+  collection,
+  query,
+  where,
   getDocs,
   deleteDoc,
   Timestamp,
   serverTimestamp,
   increment,
   onSnapshot,
-  Unsubscribe
+  Unsubscribe,
 } from 'firebase/firestore';
 import { auth, firestore as db } from '../utils/firebase';
 import { User } from 'firebase/auth';
@@ -89,45 +89,49 @@ class FirebaseService {
 
       if (userSnap.exists()) {
         // Update last active using setDoc with merge
-        await setDoc(userRef, {
-          stats: {
-            lastActive: serverTimestamp()
+        await setDoc(
+          userRef,
+          {
+            stats: {
+              lastActive: serverTimestamp(),
+            },
+            updatedAt: serverTimestamp(),
           },
-          updatedAt: serverTimestamp()
-        }, { merge: true });
+          { merge: true }
+        );
         return userSnap.data() as UserProfile;
       }
 
-    // Create new profile
-    const referralCode = this.generateReferralCode(user.uid);
-    const newProfile: UserProfile = {
-      uid: user.uid,
-      email: user.email!,
-      displayName: user.displayName || undefined,
-      photoURL: user.photoURL || undefined,
-      tier: {
-        level: 2, // Tier 2 automatically unlocked on account creation
-        name: 'Enhanced',
-        unlockedAt: Timestamp.now(),
-        progress: 20
-      },
-      referralCode,
-      referralCount: 0,
-      settings: {
-        syncEnabled: true,
-        notifications: true,
-        theme: 'auto',
-        language: 'en'
-      },
-      stats: {
-        totalBlocked: 0,
-        installDate: Timestamp.now(),
-        lastActive: Timestamp.now(),
-        weeklyEngagement: {}
-      },
-      createdAt: Timestamp.now(),
-      updatedAt: Timestamp.now()
-    };
+      // Create new profile
+      const referralCode = this.generateReferralCode(user.uid);
+      const newProfile: UserProfile = {
+        uid: user.uid,
+        email: user.email!,
+        displayName: user.displayName || undefined,
+        photoURL: user.photoURL || undefined,
+        tier: {
+          level: 2, // Tier 2 automatically unlocked on account creation
+          name: 'Enhanced',
+          unlockedAt: Timestamp.now(),
+          progress: 20,
+        },
+        referralCode,
+        referralCount: 0,
+        settings: {
+          syncEnabled: true,
+          notifications: true,
+          theme: 'auto',
+          language: 'en',
+        },
+        stats: {
+          totalBlocked: 0,
+          installDate: Timestamp.now(),
+          lastActive: Timestamp.now(),
+          weeklyEngagement: {},
+        },
+        createdAt: Timestamp.now(),
+        updatedAt: Timestamp.now(),
+      };
 
       await setDoc(userRef, newProfile);
 
@@ -136,7 +140,7 @@ class FirebaseService {
         code: referralCode,
         userId: user.uid,
         usedBy: [],
-        createdAt: Timestamp.now()
+        createdAt: Timestamp.now(),
       });
 
       return newProfile;
@@ -152,7 +156,7 @@ class FirebaseService {
           level: 1,
           name: 'Basic',
           unlockedAt: Timestamp.now(),
-          progress: 0
+          progress: 0,
         },
         referralCode: '',
         referralCount: 0,
@@ -160,16 +164,16 @@ class FirebaseService {
           syncEnabled: false,
           notifications: false,
           theme: 'auto',
-          language: 'en'
+          language: 'en',
         },
         stats: {
           totalBlocked: 0,
           installDate: Timestamp.now(),
           lastActive: Timestamp.now(),
-          weeklyEngagement: {}
+          weeklyEngagement: {},
         },
         createdAt: Timestamp.now(),
-        updatedAt: Timestamp.now()
+        updatedAt: Timestamp.now(),
       };
     }
   }
@@ -181,7 +185,7 @@ class FirebaseService {
     try {
       const userRef = doc(db, 'users', uid);
       const userSnap = await getDoc(userRef);
-      
+
       if (userSnap.exists()) {
         return userSnap.data() as UserProfile;
       }
@@ -203,10 +207,14 @@ class FirebaseService {
   async updateUserProfile(uid: string, updates: Partial<UserProfile>): Promise<void> {
     const userRef = doc(db, 'users', uid);
     // Use setDoc with merge to handle non-existent documents
-    await setDoc(userRef, {
-      ...updates,
-      updatedAt: serverTimestamp()
-    }, { merge: true });
+    await setDoc(
+      userRef,
+      {
+        ...updates,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
   }
 
   /**
@@ -217,9 +225,9 @@ class FirebaseService {
     if (!profile) return false;
 
     // Check if profile is complete
-    const isComplete = 
-      profile.displayName && 
-      profile.photoURL && 
+    const isComplete =
+      profile.displayName &&
+      profile.photoURL &&
       profile.settings.notifications !== undefined &&
       profile.settings.theme &&
       profile.settings.language;
@@ -231,8 +239,8 @@ class FirebaseService {
           level: 3,
           name: 'Professional',
           unlockedAt: Timestamp.now(),
-          progress: 40
-        }
+          progress: 40,
+        },
       });
       return true;
     }
@@ -266,37 +274,49 @@ class FirebaseService {
       }
 
       // Apply referral using setDoc with merge
-      await setDoc(_referralRef, {
-        usedBy: [...referralData.usedBy, userId]
-      }, { merge: true });
+      await setDoc(
+        _referralRef,
+        {
+          usedBy: [...referralData.usedBy, userId],
+        },
+        { merge: true }
+      );
 
       // Update referrer's count using setDoc with merge
       const referrerRef = doc(db, 'users', referralData.userId);
-      await setDoc(_referrerRef, {
-        referralCount: increment(1),
-        updatedAt: serverTimestamp()
-      }, { merge: true });
+      await setDoc(
+        _referrerRef,
+        {
+          referralCount: increment(1),
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true }
+      );
 
       // Update user's referredBy
       await this.updateUserProfile(_userId, {
-        referredBy: referralData.userId
+        referredBy: referralData.userId,
       });
 
       // Check if referrer reached Tier 4 (30 referrals)
       const referrerProfile = await this.getUserProfile(referralData.userId);
-      if (referrerProfile && referrerProfile.referralCount >= 30 && referrerProfile.tier.level < 4) {
+      if (
+        referrerProfile &&
+        referrerProfile.referralCount >= 30 &&
+        referrerProfile.tier.level < 4
+      ) {
         await this.updateUserProfile(referralData.userId, {
           tier: {
             level: 4,
             name: 'Premium',
             unlockedAt: Timestamp.now(),
-            progress: 60
-          }
+            progress: 60,
+          },
         });
       }
 
       return true;
-    } catch (error) {
+    } catch {
       console.error('Failed to apply referral code:', error);
       return false;
     }
@@ -308,7 +328,7 @@ class FirebaseService {
   async updateWeeklyEngagement(uid: string): Promise<void> {
     const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
     const profile = await this.getUserProfile(uid);
-    
+
     if (!profile) {
       console.log('User profile does not exist, skipping weekly engagement update');
       return;
@@ -318,15 +338,19 @@ class FirebaseService {
     weeklyEngagement[today] = true;
 
     // Use setDoc with merge to handle non-existent documents
-    await setDoc(doc(db, 'users', uid), {
-      stats: {
-        weeklyEngagement: {
-          [today]: true
+    await setDoc(
+      doc(db, 'users', uid),
+      {
+        stats: {
+          weeklyEngagement: {
+            [today]: true,
+          },
+          lastActive: serverTimestamp(),
         },
-        lastActive: serverTimestamp()
+        updatedAt: serverTimestamp(),
       },
-      updatedAt: serverTimestamp()
-    }, { merge: true });
+      { merge: true }
+    );
 
     // Check for Tier 5 eligibility
     const daysActive = Object.values(_weeklyEngagement).filter(_Boolean).length;
@@ -336,8 +360,8 @@ class FirebaseService {
           level: 5,
           name: 'Ultimate',
           unlockedAt: Timestamp.now(),
-          progress: 100
-        }
+          progress: 100,
+        },
       });
     }
   }
@@ -347,10 +371,14 @@ class FirebaseService {
    */
   async syncSettings(uid: string, settings: any): Promise<void> {
     // Use setDoc with merge to handle non-existent documents
-    await setDoc(doc(db, 'users', uid), {
-      extensionSettings: settings,
-      updatedAt: serverTimestamp()
-    }, { merge: true });
+    await setDoc(
+      doc(db, 'users', uid),
+      {
+        extensionSettings: settings,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
   }
 
   /**
@@ -381,12 +409,14 @@ class FirebaseService {
       if (doc.exists()) {
         const profile = doc.data() as UserProfile;
         // Notify extension about profile changes
-        chrome.runtime.sendMessage({
-          type: 'PROFILE_UPDATED',
-          data: profile
-        }).catch(() => {
-          // Ignore if no listeners
-        });
+        chrome.runtime
+          .sendMessage({
+            type: 'PROFILE_UPDATED',
+            data: profile,
+          })
+          .catch(() => {
+            // Ignore if no listeners
+          });
       }
     });
   }
@@ -425,29 +455,23 @@ class FirebaseService {
       await deleteDoc(userRef);
 
       // Delete referral data
-      const referralQuery = query(
-        collection(db, 'referrals'),
-        where('userId', '==', uid)
-      );
+      const referralQuery = query(collection(db, 'referrals'), where('userId', '==', uid));
       const referralSnapshot = await getDocs(referralQuery);
-      const deletePromises = referralSnapshot.docs.map(doc => deleteDoc(doc.ref));
-      
+      const deletePromises = referralSnapshot.docs.map((doc) => deleteDoc(doc.ref));
+
       // Delete sync data
       const syncRef = doc(db, 'sync', uid);
       deletePromises.push(deleteDoc(syncRef));
 
       // Delete device registrations
-      const devicesQuery = query(
-        collection(db, 'devices'),
-        where('userId', '==', uid)
-      );
+      const devicesQuery = query(collection(db, 'devices'), where('userId', '==', uid));
       const devicesSnapshot = await getDocs(devicesQuery);
-      devicesSnapshot.docs.forEach(doc => {
+      devicesSnapshot.docs.forEach((doc) => {
         deletePromises.push(deleteDoc(doc.ref));
       });
 
       await Promise.all(deletePromises);
-    } catch (error) {
+    } catch {
       console.error('Failed to delete user data:', error);
       throw error;
     }

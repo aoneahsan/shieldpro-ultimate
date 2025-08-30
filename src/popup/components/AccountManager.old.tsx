@@ -35,28 +35,28 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
           setAuthLoading(false);
           return;
         }
-      } catch (error) {
+      } catch {
         console.error('Error checking logout flag:', error);
       }
-      
+
       setAuthLoading(true);
       try {
         // Wait for Firebase auth to initialize first
         await authService.waitForAuth();
-        
+
         // Now get the actual auth state
         const user = authService.getCurrentUser();
         const profile = authService.getUserProfile();
-        
+
         console.log('Auth check result:', user?.email || 'null');
-        
+
         setCurrentUser(user);
         setUserProfile(profile);
-        
+
         if (user && profile?.tier?.level) {
           onTierUpgrade(profile.tier.level);
         }
-      } catch (error) {
+      } catch {
         console.error('Failed to check auth:', error);
         setCurrentUser(null);
         setUserProfile(null);
@@ -64,7 +64,7 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
         setAuthLoading(false);
       }
     };
-    
+
     checkAuth();
   }, [onTierUpgrade]);
 
@@ -77,12 +77,12 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
     try {
       // Create account with Firebase Auth
       const user = await authService.signUp(email, password, displayName, referralCode);
-      
+
       if (user) {
         setSuccess('Account created successfully! Tier 2 features unlocked!');
         setCurrentUser(user);
         onTierUpgrade(2);
-        
+
         // Update local storage
         const storage = StorageManager.getInstance();
         await storage.setSettings({
@@ -90,17 +90,17 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
             level: 2,
             name: 'Enhanced',
             unlockedAt: Date.now(),
-            progress: 20
-          }
+            progress: 20,
+          },
         });
-        
+
         // Send message to background to update tier rules
-        await chrome.runtime.sendMessage({ 
-          action: 'tierUpgraded', 
+        await chrome.runtime.sendMessage({
+          action: 'tierUpgraded',
           tier: 2,
-          userId: user.uid 
+          userId: user.uid,
         });
-        
+
         setTimeout(() => {
           setShowSignup(false);
           setSuccess('');
@@ -121,16 +121,16 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
 
     try {
       const user = await authService.signIn(email, password);
-      
+
       if (user) {
         const profile = authService.getUserProfile();
         const tierLevel = profile?.tier?.level || 2;
-        
+
         setSuccess(`Welcome back! Tier ${tierLevel} features active.`);
         setCurrentUser(user);
         setUserProfile(profile);
         onTierUpgrade(tierLevel);
-        
+
         // Update local storage
         const storage = StorageManager.getInstance();
         await storage.setSettings({
@@ -138,17 +138,17 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
             level: 2,
             name: 'Enhanced',
             unlockedAt: Date.now(),
-            progress: 20
-          }
+            progress: 20,
+          },
         });
-        
+
         // Send message to background to update tier rules
-        await chrome.runtime.sendMessage({ 
-          action: 'tierUpgraded', 
+        await chrome.runtime.sendMessage({
+          action: 'tierUpgraded',
           tier: tierLevel,
-          userId: user.uid 
+          userId: user.uid,
         });
-        
+
         setTimeout(() => {
           setShowLogin(false);
           setSuccess('');
@@ -164,18 +164,18 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
   const handleSignOut = async () => {
     try {
       console.log('Starting sign out...');
-      
+
       // First clear local state immediately for instant UI update
       setCurrentUser(null);
       setUserProfile(null);
       setShowSignup(false);
       setShowLogin(false);
       setAuthLoading(false);
-      
+
       // Clear chrome storage auth cache FIRST
       await chrome.storage.local.remove(['authUser', 'authProfile']);
       console.log('Cleared chrome storage auth cache');
-      
+
       // Update tier in storage
       const storage = StorageManager.getInstance();
       await storage.setSettings({
@@ -183,27 +183,29 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
           level: 1,
           name: 'Basic',
           unlockedAt: Date.now(),
-          progress: 0
-        }
+          progress: 0,
+        },
       });
-      
+
       // Update tier immediately for UI
       onTierUpgrade(1);
-      
+
       // Send message to background to update tier rules (no await to make it faster)
-      chrome.runtime.sendMessage({ 
-        action: 'tierUpgraded', 
-        tier: 1
-      }).catch(() => {}); // Ignore errors
-      
+      chrome.runtime
+        .sendMessage({
+          action: 'tierUpgraded',
+          tier: 1,
+        })
+        .catch(() => {}); // Ignore errors
+
       // Sign out from Firebase (will set forceLoggedOut flag)
       await authService.signOut();
       console.log('Signed out from Firebase');
-      
+
       // Force clear any remaining auth state
       setCurrentUser(null);
       setUserProfile(null);
-      
+
       // Show success message
       setSuccess('Signed out successfully');
       setTimeout(() => setSuccess(''), 2000);
@@ -233,10 +235,14 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
         <div className="flex items-center justify-between">
           <div className="flex-1">
             <h3 className="font-semibold text-lg">Account Active</h3>
-            <p className="text-sm opacity-90">Tier {currentTier} - {userProfile?.tier?.name || 'Enhanced'}</p>
+            <p className="text-sm opacity-90">
+              Tier {currentTier} - {userProfile?.tier?.name || 'Enhanced'}
+            </p>
             <p className="text-xs opacity-75 mt-1">{currentUser.email}</p>
             {userProfile?.stats?.referralCode && (
-              <p className="text-xs opacity-75 mt-1">Referral Code: {userProfile.stats.referralCode}</p>
+              <p className="text-xs opacity-75 mt-1">
+                Referral Code: {userProfile.stats.referralCode}
+              </p>
             )}
           </div>
           <button
@@ -245,8 +251,12 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
             title="Sign Out"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+              />
             </svg>
           </button>
         </div>
@@ -258,25 +268,17 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
     return (
       <div className="bg-white rounded-lg border border-gray-200 p-4">
         <h3 className="text-lg font-semibold mb-3">Create Account for Tier 2</h3>
-        
-        {error && (
-          <div className="bg-red-50 text-red-600 p-2 rounded mb-3 text-sm">
-            {error}
-          </div>
-        )}
-        
+
+        {error && <div className="bg-red-50 text-red-600 p-2 rounded mb-3 text-sm">{error}</div>}
+
         {success && (
-          <div className="bg-green-50 text-green-600 p-2 rounded mb-3 text-sm">
-            {success}
-          </div>
+          <div className="bg-green-50 text-green-600 p-2 rounded mb-3 text-sm">{success}</div>
         )}
-        
+
         <form onSubmit={showLogin ? handleLogin : handleSignup}>
           {!showLogin && (
             <div className="mb-3">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Display Name
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Display Name</label>
               <input
                 type="text"
                 value={displayName}
@@ -287,11 +289,9 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
               />
             </div>
           )}
-          
+
           <div className="mb-3">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
             <input
               type="email"
               value={email}
@@ -302,11 +302,9 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
               disabled={loading}
             />
           </div>
-          
+
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Password
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
             <input
               type="password"
               value={password}
@@ -318,7 +316,7 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
               minLength={6}
             />
           </div>
-          
+
           {!showLogin && (
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -334,14 +332,20 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
               />
             </div>
           )}
-          
+
           <div className="flex gap-2">
             <button
               type="submit"
               disabled={loading}
               className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2 px-4 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 disabled:opacity-50"
             >
-              {loading ? (showLogin ? 'Signing In...' : 'Creating...') : (showLogin ? 'Sign In' : 'Create Account')}
+              {loading
+                ? showLogin
+                  ? 'Signing In...'
+                  : 'Creating...'
+                : showLogin
+                  ? 'Sign In'
+                  : 'Create Account'}
             </button>
             <button
               type="button"
@@ -353,7 +357,7 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
             </button>
           </div>
         </form>
-        
+
         <div className="mt-3 text-center">
           <button
             type="button"
@@ -364,10 +368,10 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
             }}
             className="text-sm text-blue-600 hover:text-blue-700"
           >
-            {showLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
+            {showLogin ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
           </button>
         </div>
-        
+
         <div className="mt-4 pt-4 border-t border-gray-200">
           <h4 className="font-medium text-sm mb-2">Tier 2 Features:</h4>
           <ul className="text-xs text-gray-600 space-y-1">
@@ -399,9 +403,18 @@ export const AccountManager: React.FC<AccountManagerProps> = ({ currentTier, onT
         </div>
         <div className="ml-3">
           <div className="bg-white rounded-full p-2">
-            <svg className="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                    d="M13 10V3L4 14h7v7l9-11h-7z" />
+            <svg
+              className="w-6 h-6 text-amber-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 10V3L4 14h7v7l9-11h-7z"
+              />
             </svg>
           </div>
         </div>

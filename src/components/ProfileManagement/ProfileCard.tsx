@@ -15,11 +15,7 @@ interface ProfileCardProps {
   onUpdate: (updates: Partial<UserProfile>) => Promise<void>;
 }
 
-export const ProfileCard: React.FC<ProfileCardProps> = ({ 
-  profile, 
-  loading = false, 
-  onUpdate 
-}) => {
+export const ProfileCard: React.FC<ProfileCardProps> = ({ profile, loading = false, onUpdate }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [displayName, setDisplayName] = useState(profile?.displayName || '');
   const [uploading, setUploading] = useState(false);
@@ -29,7 +25,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
     try {
       await onUpdate({ displayName });
       setIsEditing(false);
-    } catch (error) {
+    } catch {
       console.error('Failed to update profile:', error);
     }
   };
@@ -47,7 +43,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
     try {
       const photoURL = await uploadProfileImage(profile.uid, file);
       await onUpdate({ photoURL });
-    } catch (error) {
+    } catch {
       console.error('Failed to upload avatar:', error);
     } finally {
       setUploading(false);
@@ -83,11 +79,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
         <CardTitle className="flex items-center justify-between">
           <span>Profile Information</span>
           {!isEditing && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsEditing(true)}
-            >
+            <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)}>
               <Edit2 className="h-4 w-4" />
             </Button>
           )}
@@ -127,7 +119,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
               onChange={handleAvatarChange}
             />
           </div>
-          
+
           <div className="flex-1 space-y-2">
             {isEditing ? (
               <div className="flex items-center space-x-2">
@@ -145,18 +137,14 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
                 </Button>
               </div>
             ) : (
-              <h3 className="text-lg font-semibold">
-                {profile.displayName || 'Anonymous User'}
-              </h3>
+              <h3 className="text-lg font-semibold">{profile.displayName || 'Anonymous User'}</h3>
             )}
             <p className="text-sm text-muted-foreground">{profile.email}</p>
             <div className="flex items-center space-x-2">
               <Badge variant="secondary">
                 Tier {profile.tier.level} - {profile.tier.name}
               </Badge>
-              <Badge variant="outline">
-                {profile.tier.progress}% Progress
-              </Badge>
+              <Badge variant="outline">{profile.tier.progress}% Progress</Badge>
             </div>
           </div>
         </div>

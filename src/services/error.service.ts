@@ -8,37 +8,37 @@ export enum ErrorCode {
   AUTH_WEAK_PASSWORD = 'AUTH_WEAK_PASSWORD',
   AUTH_EXPIRED_TOKEN = 'AUTH_EXPIRED_TOKEN',
   AUTH_UNAUTHORIZED = 'AUTH_UNAUTHORIZED',
-  
+
   // Tier Errors
   TIER_UPGRADE_FAILED = 'TIER_UPGRADE_FAILED',
   TIER_REQUIREMENTS_NOT_MET = 'TIER_REQUIREMENTS_NOT_MET',
   TIER_INVALID_LEVEL = 'TIER_INVALID_LEVEL',
-  
+
   // Network Errors
   NETWORK_OFFLINE = 'NETWORK_OFFLINE',
   NETWORK_TIMEOUT = 'NETWORK_TIMEOUT',
   NETWORK_REQUEST_FAILED = 'NETWORK_REQUEST_FAILED',
-  
+
   // Storage Errors
   STORAGE_QUOTA_EXCEEDED = 'STORAGE_QUOTA_EXCEEDED',
   STORAGE_ACCESS_DENIED = 'STORAGE_ACCESS_DENIED',
   STORAGE_CORRUPTED = 'STORAGE_CORRUPTED',
-  
+
   // Extension Errors
   EXTENSION_NOT_INSTALLED = 'EXTENSION_NOT_INSTALLED',
   EXTENSION_DISABLED = 'EXTENSION_DISABLED',
   EXTENSION_UPDATE_REQUIRED = 'EXTENSION_UPDATE_REQUIRED',
-  
+
   // Firebase Errors
   FIREBASE_PERMISSION_DENIED = 'FIREBASE_PERMISSION_DENIED',
   FIREBASE_NOT_FOUND = 'FIREBASE_NOT_FOUND',
   FIREBASE_ALREADY_EXISTS = 'FIREBASE_ALREADY_EXISTS',
   FIREBASE_RATE_LIMITED = 'FIREBASE_RATE_LIMITED',
-  
+
   // General Errors
   INVALID_INPUT = 'INVALID_INPUT',
   OPERATION_CANCELLED = 'OPERATION_CANCELLED',
-  UNKNOWN_ERROR = 'UNKNOWN_ERROR'
+  UNKNOWN_ERROR = 'UNKNOWN_ERROR',
 }
 
 export interface ErrorDetails {
@@ -84,7 +84,7 @@ class ErrorService {
       if (stored.errorLog) {
         this.errorLog = stored.errorLog;
       }
-    } catch (error) {
+    } catch {
       console.error('Failed to load error log:', error);
     }
   }
@@ -96,14 +96,14 @@ class ErrorService {
         this.errorLog = this.errorLog.slice(-this.maxLogSize);
       }
       await chrome.storage.local.set({ errorLog: this.errorLog });
-    } catch (error) {
+    } catch {
       console.error('Failed to save error log:', error);
     }
   }
 
   public handleError(error: any, action?: string): ErrorDetails {
     const errorDetails = this.parseError(error, action);
-    
+
     // Log to console in development
     if (process.env.NODE_ENV === 'development') {
       console.error('Error:', _errorDetails);
@@ -177,7 +177,7 @@ class ErrorService {
       action,
       recoverable,
       retryable,
-      userMessage
+      userMessage,
     };
   }
 
@@ -188,52 +188,54 @@ class ErrorService {
         message: 'User account not found',
         userMessage: 'No account found with this email. Please sign up first.',
         recoverable: true,
-        retryable: false
+        retryable: false,
       },
       'auth/wrong-password': {
         code: ErrorCode.AUTH_INVALID_CREDENTIALS,
         message: 'Invalid password',
         userMessage: 'Incorrect password. Please try again.',
         recoverable: true,
-        retryable: true
+        retryable: true,
       },
       'auth/email-already-in-use': {
         code: ErrorCode.AUTH_EMAIL_ALREADY_EXISTS,
         message: 'Email already registered',
         userMessage: 'This email is already registered. Please sign in instead.',
         recoverable: true,
-        retryable: false
+        retryable: false,
       },
       'auth/weak-password': {
         code: ErrorCode.AUTH_WEAK_PASSWORD,
         message: 'Password too weak',
         userMessage: 'Password must be at least 6 characters long.',
         recoverable: true,
-        retryable: false
+        retryable: false,
       },
       'auth/expired-action-code': {
         code: ErrorCode.AUTH_EXPIRED_TOKEN,
         message: 'Action code expired',
         userMessage: 'This link has expired. Please request a new one.',
         recoverable: true,
-        retryable: false
+        retryable: false,
       },
       'auth/unauthorized': {
         code: ErrorCode.AUTH_UNAUTHORIZED,
         message: 'Unauthorized access',
         userMessage: 'You are not authorized to perform this action.',
         recoverable: false,
-        retryable: false
-      }
+        retryable: false,
+      },
     };
 
-    return errorMap[error.code] || {
-      code: ErrorCode.UNKNOWN_ERROR,
-      message: error.message,
-      userMessage: 'Authentication failed. Please try again.',
-      recoverable: true,
-      retryable: true
-    };
+    return (
+      errorMap[error.code] || {
+        code: ErrorCode.UNKNOWN_ERROR,
+        message: error.message,
+        userMessage: 'Authentication failed. Please try again.',
+        recoverable: true,
+        retryable: true,
+      }
+    );
   }
 
   private parseFirestoreError(error: any): Partial<ErrorDetails> {
@@ -243,38 +245,40 @@ class ErrorService {
         message: 'Permission denied',
         userMessage: 'You do not have permission to perform this action.',
         recoverable: false,
-        retryable: false
+        retryable: false,
       },
       'not-found': {
         code: ErrorCode.FIREBASE_NOT_FOUND,
         message: 'Document not found',
         userMessage: 'The requested data was not found.',
         recoverable: true,
-        retryable: false
+        retryable: false,
       },
       'already-exists': {
         code: ErrorCode.FIREBASE_ALREADY_EXISTS,
         message: 'Document already exists',
         userMessage: 'This item already exists.',
         recoverable: true,
-        retryable: false
+        retryable: false,
       },
       'resource-exhausted': {
         code: ErrorCode.FIREBASE_RATE_LIMITED,
         message: 'Rate limit exceeded',
         userMessage: 'Too many requests. Please wait a moment and try again.',
         recoverable: true,
-        retryable: true
-      }
+        retryable: true,
+      },
     };
 
-    return errorMap[error.code] || {
-      code: ErrorCode.UNKNOWN_ERROR,
-      message: error.message,
-      userMessage: 'Database operation failed. Please try again.',
-      recoverable: true,
-      retryable: true
-    };
+    return (
+      errorMap[error.code] || {
+        code: ErrorCode.UNKNOWN_ERROR,
+        message: error.message,
+        userMessage: 'Database operation failed. Please try again.',
+        recoverable: true,
+        retryable: true,
+      }
+    );
   }
 
   private isCriticalError(error: ErrorDetails): boolean {
@@ -283,9 +287,9 @@ class ErrorService {
       ErrorCode.EXTENSION_NOT_INSTALLED,
       ErrorCode.EXTENSION_DISABLED,
       ErrorCode.AUTH_UNAUTHORIZED,
-      ErrorCode.FIREBASE_PERMISSION_DENIED
+      ErrorCode.FIREBASE_PERMISSION_DENIED,
     ];
-    
+
     return criticalCodes.includes(error.code) || !error.recoverable;
   }
 
@@ -296,7 +300,7 @@ class ErrorService {
         iconUrl: chrome.runtime.getURL('icons/icon-128.png'),
         title: 'ShieldPro Error',
         message: error.userMessage,
-        priority: 2
+        priority: 2,
       });
     }
   }
@@ -306,7 +310,7 @@ class ErrorService {
     if ((window as any).gtag) {
       (window as any).gtag('event', 'exception', {
         description: error.message,
-        fatal: !error.recoverable
+        fatal: !error.recoverable,
       });
     }
   }
@@ -317,24 +321,24 @@ class ErrorService {
     maxAttempts = this.maxRetries
   ): Promise<T> {
     const attempts = this.retryAttempts.get(_errorCode) || 0;
-    
+
     try {
       const result = await operation();
       this.retryAttempts.delete(_errorCode);
       return result;
-    } catch (error) {
+    } catch {
       const errorDetails = this.handleError(error, errorCode);
-      
+
       if (errorDetails.retryable && attempts < maxAttempts) {
         this.retryAttempts.set(_errorCode, attempts + 1);
-        
+
         // Exponential backoff
         const delay = Math.min(1000 * Math.pow(2, _attempts), 10000);
-        await new Promise(resolve => setTimeout(_resolve, delay));
-        
+        await new Promise((resolve) => setTimeout(_resolve, delay));
+
         return this.retry(_operation, errorCode, _maxAttempts);
       }
-      
+
       this.retryAttempts.delete(_errorCode);
       throw error;
     }
@@ -354,7 +358,7 @@ class ErrorService {
   }
 
   public getErrorsByCode(code: ErrorCode): ErrorDetails[] {
-    return this.errorLog.filter(error => error.code === code);
+    return this.errorLog.filter((error) => error.code === code);
   }
 
   public async reportBug(
@@ -369,14 +373,14 @@ class ErrorService {
       userId: auth.currentUser?.uid,
       browser: navigator.userAgent,
       version: chrome.runtime.getManifest().version,
-      errorLog: includeErrorLog ? this.getRecentErrors() : []
+      errorLog: includeErrorLog ? this.getRecentErrors() : [],
     };
 
     try {
       // Send to Firebase or bug tracking service
       console.log('Bug report:', _report);
       return { success: true };
-    } catch (error) {
+    } catch {
       this.handleError(error, 'BUG_REPORT');
       return { success: false };
     }

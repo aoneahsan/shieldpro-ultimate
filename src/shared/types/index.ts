@@ -58,12 +58,12 @@ export const DEFAULT_SETTINGS: ExtensionSettings = {
     level: 1,
     name: 'Basic',
     unlockedAt: Date.now(),
-    progress: 0
+    progress: 0,
   },
   notifications: true,
   showBadge: true,
   autoUpdate: true,
-  developerMode: false
+  developerMode: false,
 };
 
 export const DEFAULT_STATS: BlockingStats = {
@@ -79,6 +79,6 @@ export const DEFAULT_STATS: BlockingStats = {
     malware: 0,
     social: 0,
     youtube: 0,
-    other: 0
-  }
+    other: 0,
+  },
 };

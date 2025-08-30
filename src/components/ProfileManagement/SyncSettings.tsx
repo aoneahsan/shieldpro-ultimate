@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Cloud, 
-  CloudOff, 
-  RefreshCw, 
-  Check, 
+import {
+  Cloud,
+  CloudOff,
+  RefreshCw,
+  Check,
   AlertCircle,
   Smartphone,
   Monitor,
   Tablet,
   Clock,
   Wifi,
-  WifiOff
+  WifiOff,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Switch } from '../ui/switch';
@@ -51,7 +51,7 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({ profile, onUpdate })
 
     // Load sync status
     loadSyncStatus();
-    
+
     // Load connected devices
     loadDevices();
 
@@ -75,7 +75,7 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({ profile, onUpdate })
       const status = await SyncService.getInstance().getSyncStatus();
       setLastSyncTime(status.lastSync);
       setSyncStatus(status.status);
-    } catch (error) {
+    } catch {
       console.error('Failed to load sync status:', error);
     }
   };
@@ -84,7 +84,7 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({ profile, onUpdate })
     try {
       const deviceList = await SyncService.getInstance().getConnectedDevices();
       setDevices(deviceList);
-    } catch (error) {
+    } catch {
       console.error('Failed to load devices:', error);
     }
   };
@@ -95,14 +95,14 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({ profile, onUpdate })
       await onUpdate({
         settings: {
           ...profile?.settings,
-          syncEnabled: enabled
-        }
+          syncEnabled: enabled,
+        },
       });
-      
+
       if (enabled) {
         await handleManualSync();
       }
-    } catch (error) {
+    } catch {
       console.error('Failed to update sync settings:', error);
       setSyncEnabled(!enabled); // Revert on error
     }
@@ -116,13 +116,13 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({ profile, onUpdate })
 
     setSyncing(true);
     setSyncStatus('syncing');
-    
+
     try {
       await SyncService.getInstance().syncNow();
       setSyncStatus('success');
       setLastSyncTime(new Date());
       await loadDevices(); // Refresh device list
-    } catch (error) {
+    } catch {
       console.error('Sync failed:', error);
       setSyncStatus('error');
     } finally {
@@ -134,7 +134,7 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({ profile, onUpdate })
     try {
       await SyncService.getInstance().removeDevice(deviceId);
       await loadDevices();
-    } catch (error) {
+    } catch {
       console.error('Failed to remove device:', error);
     }
   };
@@ -152,7 +152,7 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({ profile, onUpdate })
 
   const getRelativeTime = (date: Date) => {
     const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
-    
+
     if (seconds < 60) return 'Just now';
     if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
     if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
@@ -198,9 +198,7 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({ profile, onUpdate })
               )}
             </div>
           </CardTitle>
-          <CardDescription>
-            Sync your settings and data across all your devices
-          </CardDescription>
+          <CardDescription>Sync your settings and data across all your devices</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Sync Toggle */}
@@ -218,11 +216,7 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({ profile, onUpdate })
                 Automatically sync your data across devices
               </p>
             </div>
-            <Switch
-              checked={syncEnabled}
-              onCheckedChange={handleSyncToggle}
-              disabled={!isOnline}
-            />
+            <Switch checked={syncEnabled} onCheckedChange={handleSyncToggle} disabled={!isOnline} />
           </div>
 
           {!isOnline && (
@@ -237,14 +231,12 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({ profile, onUpdate })
           {syncEnabled && (
             <>
               <Separator />
-              
+
               {/* Last Sync Info */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                   <Clock className="h-4 w-4" />
-                  <span>
-                    Last synced: {lastSyncTime ? getRelativeTime(lastSyncTime) : 'Never'}
-                  </span>
+                  <span>Last synced: {lastSyncTime ? getRelativeTime(lastSyncTime) : 'Never'}</span>
                 </div>
                 <Button
                   size="sm"
@@ -266,9 +258,7 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({ profile, onUpdate })
         <Card>
           <CardHeader>
             <CardTitle>Connected Devices</CardTitle>
-            <CardDescription>
-              Devices that have access to your synced data
-            </CardDescription>
+            <CardDescription>Devices that have access to your synced data</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -299,11 +289,7 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({ profile, onUpdate })
                       </div>
                     </div>
                     {!device.isCurrentDevice && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => removeDevice(device.id)}
-                      >
+                      <Button size="sm" variant="ghost" onClick={() => removeDevice(device.id)}>
                         Remove
                       </Button>
                     )}

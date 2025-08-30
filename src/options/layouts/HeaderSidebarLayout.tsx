@@ -2,16 +2,34 @@ import React, { useState, useRef, useEffect } from 'react';
 import { LayoutProps } from './types';
 import { ChevronDown, Menu, X } from 'lucide-react';
 
-export const HeaderSidebarLayout: React.FC<LayoutProps> = ({ tabs, activeTab, onTabChange, children }) => {
+export const HeaderSidebarLayout: React.FC<LayoutProps> = ({
+  tabs,
+  activeTab,
+  onTabChange,
+  children,
+}) => {
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Group tabs by sections for header
   const groupedTabs = {
-    basic: tabs.filter(t => ['general', 'filters', 'privacy', 'whitelist', 'tiers'].includes(t.id)),
-    advanced: tabs.filter(t => ['themes', 'custom-filters', 'image-swap', 'backup-sync'].includes(t.id)),
-    expert: tabs.filter(t => ['filter-lists', 'whitelist-manager', 'regex-patterns', 'scripts', 'network', 'security'].includes(t.id))
+    basic: tabs.filter((t) =>
+      ['general', 'filters', 'privacy', 'whitelist', 'tiers'].includes(t.id)
+    ),
+    advanced: tabs.filter((t) =>
+      ['themes', 'custom-filters', 'image-swap', 'backup-sync'].includes(t.id)
+    ),
+    expert: tabs.filter((t) =>
+      [
+        'filter-lists',
+        'whitelist-manager',
+        'regex-patterns',
+        'scripts',
+        'network',
+        'security',
+      ].includes(t.id)
+    ),
   };
 
   useEffect(() => {
@@ -26,16 +44,16 @@ export const HeaderSidebarLayout: React.FC<LayoutProps> = ({ tabs, activeTab, on
   }, []);
 
   const getActiveSection = () => {
-    if (groupedTabs.basic.find(t => t.id === activeTab)) return 'basic';
-    if (groupedTabs.advanced.find(t => t.id === activeTab)) return 'advanced';
-    if (groupedTabs.expert.find(t => t.id === activeTab)) return 'expert';
+    if (groupedTabs.basic.find((t) => t.id === activeTab)) return 'basic';
+    if (groupedTabs.advanced.find((t) => t.id === activeTab)) return 'advanced';
+    if (groupedTabs.expert.find((t) => t.id === activeTab)) return 'expert';
     return 'basic';
   };
 
   const sectionLabels = {
     basic: 'Basic Settings',
-    advanced: 'Advanced Features',  
-    expert: 'Expert Tools'
+    advanced: 'Advanced Features',
+    expert: 'Expert Tools',
   };
 
   return (
@@ -49,7 +67,7 @@ export const HeaderSidebarLayout: React.FC<LayoutProps> = ({ tabs, activeTab, on
       </button>
 
       {/* Sidebar */}
-      <aside 
+      <aside
         className={`
           fixed lg:relative inset-y-0 left-0 z-40
           w-64 bg-white dark:bg-gray-800 shadow-lg
@@ -60,7 +78,9 @@ export const HeaderSidebarLayout: React.FC<LayoutProps> = ({ tabs, activeTab, on
       >
         {/* Sidebar Header */}
         <div className="hidden lg:block px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Quick Navigation</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            Quick Navigation
+          </h3>
         </div>
 
         {/* Sidebar Navigation */}
@@ -69,7 +89,7 @@ export const HeaderSidebarLayout: React.FC<LayoutProps> = ({ tabs, activeTab, on
             {/* Group tabs by section in sidebar */}
             {Object.entries(groupedTabs).map(([section, sectionTabs]) => {
               if (sectionTabs.length === 0) return null;
-              
+
               return (
                 <div key={section}>
                   <h4 className="px-4 mb-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -79,7 +99,7 @@ export const HeaderSidebarLayout: React.FC<LayoutProps> = ({ tabs, activeTab, on
                     {sectionTabs.map((tab) => {
                       const Icon = tab.icon;
                       const isActive = activeTab === tab.id;
-                      
+
                       return (
                         <button
                           key={tab.id}
@@ -90,9 +110,10 @@ export const HeaderSidebarLayout: React.FC<LayoutProps> = ({ tabs, activeTab, on
                           className={`
                             w-full flex items-center space-x-3 px-4 py-2 rounded-lg
                             transition-all duration-200 text-left text-sm
-                            ${isActive
-                              ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-4 border-primary-500'
-                              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-200'
+                            ${
+                              isActive
+                                ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-4 border-primary-500'
+                                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-200'
                             }
                           `}
                           aria-current={isActive ? 'page' : undefined}
@@ -137,14 +158,19 @@ export const HeaderSidebarLayout: React.FC<LayoutProps> = ({ tabs, activeTab, on
                         onClick={() => setDropdownOpen(isOpen ? null : section)}
                         className={`
                           flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors text-sm
-                          ${isActive 
-                            ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400' 
-                            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+                          ${
+                            isActive
+                              ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
+                              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
                           }
                         `}
                       >
-                        <span className="font-medium">{sectionLabels[section as keyof typeof sectionLabels]}</span>
-                        <ChevronDown className={`w-3 h-3 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                        <span className="font-medium">
+                          {sectionLabels[section as keyof typeof sectionLabels]}
+                        </span>
+                        <ChevronDown
+                          className={`w-3 h-3 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+                        />
                       </button>
 
                       {/* Dropdown Menu */}
@@ -164,9 +190,10 @@ export const HeaderSidebarLayout: React.FC<LayoutProps> = ({ tabs, activeTab, on
                                 className={`
                                   w-full flex items-center space-x-3 px-4 py-2.5
                                   transition-colors text-left text-sm
-                                  ${isTabActive
-                                    ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
-                                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                  ${
+                                    isTabActive
+                                      ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
+                                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
                                   }
                                 `}
                               >
@@ -187,7 +214,7 @@ export const HeaderSidebarLayout: React.FC<LayoutProps> = ({ tabs, activeTab, on
                 <span className="text-gray-500 dark:text-gray-400">Current:</span>
                 <div className="flex items-center space-x-2">
                   {(() => {
-                    const currentTab = tabs.find(t => t.id === activeTab);
+                    const currentTab = tabs.find((t) => t.id === activeTab);
                     const Icon = currentTab?.icon;
                     return (
                       <>
@@ -206,9 +233,7 @@ export const HeaderSidebarLayout: React.FC<LayoutProps> = ({ tabs, activeTab, on
 
         {/* Main Content */}
         <main className="flex-1 p-6">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-            {children}
-          </div>
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">{children}</div>
         </main>
       </div>
     </div>

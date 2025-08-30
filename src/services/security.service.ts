@@ -52,7 +52,8 @@ export class SecurityService {
 
     // Listen for navigation events
     chrome.webNavigation?.onBeforeNavigate.addListener((_details) => {
-      if (details.frameId === 0) { // Main frame only
+      if (details.frameId === 0) {
+        // Main frame only
         this.checkUrl(details.url, details.tabId);
       }
     });
@@ -75,7 +76,7 @@ export class SecurityService {
           severity: 9,
           blocked: true,
           timestamp: Date.now(),
-          details: 'Domain identified as malware distributor'
+          details: 'Domain identified as malware distributor',
         };
 
         await this.handleThreat(_threat, tabId);
@@ -90,7 +91,7 @@ export class SecurityService {
           severity: 8,
           blocked: true,
           timestamp: Date.now(),
-          details: 'Domain identified as phishing site'
+          details: 'Domain identified as phishing site',
         };
 
         await this.handleThreat(_threat, tabId);
@@ -105,7 +106,7 @@ export class SecurityService {
           severity: 6,
           blocked: true,
           timestamp: Date.now(),
-          details: 'Cryptomining script detected'
+          details: 'Cryptomining script detected',
         };
 
         await this.handleThreat(_threat, tabId);
@@ -121,7 +122,7 @@ export class SecurityService {
           severity: suspiciousScore,
           blocked: suspiciousScore > 8,
           timestamp: Date.now(),
-          details: `Suspicious URL pattern detected (score: ${suspiciousScore})`
+          details: `Suspicious URL pattern detected (score: ${suspiciousScore})`,
         };
 
         if (threat.blocked) {
@@ -131,7 +132,7 @@ export class SecurityService {
       }
 
       return null;
-    } catch (error) {
+    } catch {
       console.error('Error checking URL:', error);
       return null;
     }
@@ -151,9 +152,11 @@ export class SecurityService {
     if (threat.blocked && tabId) {
       try {
         await chrome.tabs.update(_tabId, {
-          url: chrome.runtime.getURL(`/blocked.html?reason=${threat.type}&url=${encodeURIComponent(threat.url)}`)
+          url: chrome.runtime.getURL(
+            `/blocked.html?reason=${threat.type}&url=${encodeURIComponent(threat.url)}`
+          ),
         });
-      } catch (error) {
+      } catch {
         console.error('Failed to redirect blocked page:', error);
       }
     }
@@ -165,17 +168,19 @@ export class SecurityService {
         iconUrl: chrome.runtime.getURL('/icons/icon-48.png'),
         title: 'ShieldPro Security Alert',
         message: `Blocked ${threat.type}: ${new URL(threat.url).hostname}`,
-        priority: 2
+        priority: 2,
       });
     }
 
     // Send message to popup/options
-    chrome.runtime.sendMessage({
-      type: 'SECURITY_THREAT_DETECTED',
-      data: threat
-    }).catch(() => {
-      // Ignore if no listeners
-    });
+    chrome.runtime
+      .sendMessage({
+        type: 'SECURITY_THREAT_DETECTED',
+        data: threat,
+      })
+      .catch(() => {
+        // Ignore if no listeners
+      });
   }
 
   /**
@@ -183,12 +188,21 @@ export class SecurityService {
    */
   private isCryptominingUrl(url: string): boolean {
     const cryptominingPatterns = [
-      'coinhive', 'jsecoin', 'cryptoloot', 'minergate',
-      'coinpot', 'crypto-loot', 'webminepool', 'mining',
-      'miner.js', 'authedmine', 'coin-have', 'minero'
+      'coinhive',
+      'jsecoin',
+      'cryptoloot',
+      'minergate',
+      'coinpot',
+      'crypto-loot',
+      'webminepool',
+      'mining',
+      'miner.js',
+      'authedmine',
+      'coin-have',
+      'minero',
     ];
 
-    return cryptominingPatterns.some(pattern => url.includes(_pattern));
+    return cryptominingPatterns.some((pattern) => url.includes(_pattern));
   }
 
   /**
@@ -207,7 +221,7 @@ export class SecurityService {
       { pattern: /[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/i, score: 3 }, // IP address
       { pattern: /bit\.ly|tinyurl|shorturl/i, score: 2 }, // URL shorteners
       { pattern: /exe$|zip$|rar$/i, score: 4 }, // Executable files
-      { pattern: /urgent|immediate|suspended|expired/i, score: 3 }
+      { pattern: /urgent|immediate|suspended|expired/i, score: 3 },
     ];
 
     suspiciousPatterns.forEach(({ pattern, score: points }) => {
@@ -230,12 +244,12 @@ export class SecurityService {
    */
   public async checkPhishingProtection(url: string): Promise<boolean> {
     const domain = new URL(url).hostname;
-    
+
     // Check against known phishing domains
     if (this.phishingDomains.has(domain)) {
       return true;
     }
-    
+
     // Check for phishing patterns
     const phishingPatterns = [
       /secure.*paypal.*(?:verify|update|confirm)/i,
@@ -245,10 +259,10 @@ export class SecurityService {
       /(?:bank|banking).*(?:verify|secure|update).*(?:account|login)/i,
       /(?:netflix|netfl1x).*(?:payment|billing|suspend)/i,
       /(?:facebook|faceb00k).*(?:security|verify|locked)/i,
-      /(?:google|g00gle|googIe).*(?:account|verify|suspended)/i
+      /(?:google|g00gle|googIe).*(?:account|verify|suspended)/i,
     ];
-    
-    return phishingPatterns.some(pattern => pattern.test(url));
+
+    return phishingPatterns.some((pattern) => pattern.test(url));
   }
 
   /**
@@ -263,13 +277,13 @@ export class SecurityService {
           'malware-test-domain.com',
           'virus-distribution.net',
           'trojan-host.org',
-          'ransomware-site.com'
+          'ransomware-site.com',
         ],
         phishingDomains: [
           'fake-paypal-login.com',
           'amazon-security-check.net',
           'microsoft-account-verify.com',
-          'apple-id-verification.org'
+          'apple-id-verification.org',
         ],
         cryptominingDomains: [
           'coinhive.com',
@@ -277,8 +291,8 @@ export class SecurityService {
           'cryptoloot.pro',
           'coin-have.com',
           'crypto-loot.com',
-          'webminepool.com'
-        ]
+          'webminepool.com',
+        ],
       };
 
       this.loadSecurityData(_securityData);
@@ -287,11 +301,11 @@ export class SecurityService {
       // Cache the data
       await chrome.storage.local.set({
         securityData,
-        lastSecurityUpdate: this.lastUpdate
+        lastSecurityUpdate: this.lastUpdate,
       });
 
       console.log('Security database updated successfully');
-    } catch (error) {
+    } catch {
       console.error('Failed to update security database:', error);
     }
   }
@@ -320,7 +334,7 @@ export class SecurityService {
       phishingBlocked: 0,
       cryptominingBlocked: 0,
       suspiciousBlocked: 0,
-      lastThreat: null
+      lastThreat: null,
     };
 
     current.totalThreats++;
@@ -335,14 +349,16 @@ export class SecurityService {
    */
   public async getSecurityStats(): Promise<any> {
     const stats = await chrome.storage.local.get('securityStats');
-    return stats.securityStats || {
-      totalThreats: 0,
-      malwareBlocked: 0,
-      phishingBlocked: 0,
-      cryptominingBlocked: 0,
-      suspiciousBlocked: 0,
-      lastThreat: null
-    };
+    return (
+      stats.securityStats || {
+        totalThreats: 0,
+        malwareBlocked: 0,
+        phishingBlocked: 0,
+        cryptominingBlocked: 0,
+        suspiciousBlocked: 0,
+        lastThreat: null,
+      }
+    );
   }
 
   /**
@@ -364,7 +380,10 @@ export class SecurityService {
   /**
    * Add custom domain to blocklist
    */
-  public async addCustomThreatDomain(domain: string, category: 'malware' | 'phishing' | 'cryptomining'): Promise<void> {
+  public async addCustomThreatDomain(
+    domain: string,
+    category: 'malware' | 'phishing' | 'cryptomining'
+  ): Promise<void> {
     switch (category) {
       case 'malware':
         this.malwareDomains.add(domain);
@@ -379,8 +398,12 @@ export class SecurityService {
 
     // Update stored data
     const data = await chrome.storage.local.get('securityData');
-    const current = data.securityData || { malwareDomains: [], phishingDomains: [], cryptominingDomains: [] };
-    
+    const current = data.securityData || {
+      malwareDomains: [],
+      phishingDomains: [],
+      cryptominingDomains: [],
+    };
+
     if (!current[`${category}Domains`].includes(domain)) {
       current[`${category}Domains`].push(domain);
       await chrome.storage.local.set({ securityData: current });
@@ -390,7 +413,10 @@ export class SecurityService {
   /**
    * Remove domain from custom blocklist
    */
-  public async removeCustomThreatDomain(domain: string, category: 'malware' | 'phishing' | 'cryptomining'): Promise<void> {
+  public async removeCustomThreatDomain(
+    domain: string,
+    category: 'malware' | 'phishing' | 'cryptomining'
+  ): Promise<void> {
     switch (category) {
       case 'malware':
         this.malwareDomains.delete(domain);
@@ -405,9 +431,15 @@ export class SecurityService {
 
     // Update stored data
     const data = await chrome.storage.local.get('securityData');
-    const current = data.securityData || { malwareDomains: [], phishingDomains: [], cryptominingDomains: [] };
-    
-    current[`${category}Domains`] = current[`${category}Domains`].filter((d: string) => d !== domain);
+    const current = data.securityData || {
+      malwareDomains: [],
+      phishingDomains: [],
+      cryptominingDomains: [],
+    };
+
+    current[`${category}Domains`] = current[`${category}Domains`].filter(
+      (d: string) => d !== domain
+    );
     await chrome.storage.local.set({ securityData: current });
   }
 }
