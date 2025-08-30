@@ -27,15 +27,16 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import { getFirestore, doc, setDoc, getDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
         
-        // Your Firebase config
+        // Your Firebase config - REPLACE WITH YOUR OWN CONFIG
+        // Copy these values from your Firebase Console -> Project Settings
         const firebaseConfig = {
-            apiKey: "AIzaSyCPaLxIRR0r5YJAJytYTKcWaFO-WVj9vZo",
-            authDomain: "shieldpro-ultimate.firebaseapp.com",
-            projectId: "shieldpro-ultimate",
-            storageBucket: "shieldpro-ultimate.firebasestorage.app",
-            messagingSenderId: "959439973287",
-            appId: "1:959439973287:web:d982bb6f9f892c60a51797",
-            measurementId: "G-TGKM6X1NYW"
+            apiKey: "YOUR_API_KEY_HERE",
+            authDomain: "YOUR_AUTH_DOMAIN_HERE",
+            projectId: "YOUR_PROJECT_ID_HERE",
+            storageBucket: "YOUR_STORAGE_BUCKET_HERE",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID_HERE",
+            appId: "YOUR_APP_ID_HERE",
+            measurementId: "YOUR_MEASUREMENT_ID_HERE"
         };
         
         // Initialize Firebase

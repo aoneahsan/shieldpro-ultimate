@@ -18,6 +18,9 @@ shieldpro-*.zip
 dev/
 development/
 staging/
+dist-firefox/
+dist-chrome/
+dist-edge/
 
 # Environment variables
 .env
