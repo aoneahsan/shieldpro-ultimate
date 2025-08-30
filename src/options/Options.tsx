@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Shield, Users, Settings, Filter, Globe, Lock, Check, Download, Upload, Network, Code, Zap, ShieldX, Database, List, Sparkles, Gift, Star, X, Palette, Image, Cloud } from 'lucide-react';
+import { Shield, Users, Settings, Filter, Globe, Lock, Check, Download, Upload, Network, Code, Zap, ShieldX, Database, List, Sparkles, Gift, Star, X, Palette, Image, Cloud, Info } from 'lucide-react';
 import { CustomFilters } from './components/CustomFilters';
 import { AdvancedWhitelist } from './components/AdvancedWhitelist';
 import { FilterListManager } from './components/FilterListManager';
@@ -634,10 +634,333 @@ function WhitelistSettings() {
 }
 
 function TierSettings() {
+  const [currentTier, setCurrentTier] = useState(1);
+  const [isEarlyAdopter, setIsEarlyAdopter] = useState(false);
+  const [userStats, setUserStats] = useState({
+    isLoggedIn: false,
+    profileComplete: 0,
+    referralCount: 0,
+    weeklyEngagement: 0,
+    lastActiveDate: null as string | null
+  });
+
+  useEffect(() => {
+    loadTierData();
+  }, []);
+
+  const loadTierData = async () => {
+    const storage = StorageManager.getInstance();
+    const settings = await storage.getSettings();
+    setCurrentTier(settings.tier?.level || 1);
+    
+    // Check early adopter status
+    try {
+      const { earlyAdopterService } = await import('../shared/services/early-adopter.service');
+      const status = await earlyAdopterService.initializeUser();
+      setIsEarlyAdopter(status.isEarlyAdopter);
+    } catch (error) {
+      console.error('Error checking early adopter status:', error);
+    }
+    
+    // Load user stats
+    const stats = await chrome.storage.local.get(['userStats']);
+    if (stats.userStats) {
+      setUserStats(stats.userStats);
+    }
+  };
+
+  const tierData = [
+    {
+      tier: 1,
+      name: 'Basic',
+      icon: Shield,
+      color: 'gray',
+      requirement: 'Free - No signup required',
+      features: [
+        'Basic ad blocking (50+ rules)',
+        'Popup blocker',
+        'Cookie consent auto-dismiss',
+        'Basic statistics'
+      ],
+      unlocked: true,
+      progress: 100
+    },
+    {
+      tier: 2,
+      name: 'Member',
+      icon: Users,
+      color: 'blue',
+      requirement: 'Create free account',
+      features: [
+        'YouTube ad blocking',
+        'Advanced tracker blocking (40+ networks)',
+        'Social media widget blocking',
+        'Custom themes',
+        'Session recording prevention'
+      ],
+      unlocked: userStats.isLoggedIn,
+      progress: userStats.isLoggedIn ? 100 : 0
+    },
+    {
+      tier: 3,
+      name: 'Pro',
+      icon: Star,
+      color: 'purple',
+      requirement: 'Complete profile (100%)',
+      features: [
+        'Custom filter rules',
+        'Image replacement',
+        'Backup & sync settings',
+        'Advanced whitelist management',
+        'Import/Export filters'
+      ],
+      unlocked: userStats.profileComplete >= 100,
+      progress: userStats.profileComplete
+    },
+    {
+      tier: 4,
+      name: 'Elite',
+      icon: Zap,
+      color: 'orange',
+      requirement: 'Refer 30 friends',
+      features: [
+        'Filter list subscriptions',
+        'Regex pattern matching',
+        'Script control panel',
+        'Network request logger',
+        'Advanced security features'
+      ],
+      unlocked: userStats.referralCount >= 30,
+      progress: Math.min(100, (userStats.referralCount / 30) * 100)
+    },
+    {
+      tier: 5,
+      name: 'Ultimate',
+      icon: Sparkles,
+      color: 'gradient',
+      requirement: 'Weekly active usage',
+      features: [
+        'AI-powered ad detection',
+        'Real-time filter updates',
+        'Priority support',
+        'Beta features access',
+        'Custom filter sharing'
+      ],
+      unlocked: currentTier >= 5,
+      progress: userStats.weeklyEngagement
+    }
+  ];
+
+  if (isEarlyAdopter) {
+    return (
+      <div className="space-y-6">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Tier Progress</h2>
+        
+        {/* Early Adopter Special Status */}
+        <div className="bg-gradient-to-r from-purple-600 via-pink-500 to-orange-500 rounded-xl p-6 text-white">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-3">
+              <Gift className="w-10 h-10" />
+              <div>
+                <h3 className="text-2xl font-bold">Early Adopter - All Tiers Unlocked!</h3>
+                <p className="text-white/90">You have lifetime access to all features from all 5 tiers</p>
+              </div>
+            </div>
+            <div className="text-4xl">🎉</div>
+          </div>
+          
+          <div className="grid grid-cols-5 gap-2 mt-6">
+            {[1, 2, 3, 4, 5].map((tier) => (
+              <div key={tier} className="bg-white/20 backdrop-blur-sm rounded-lg p-3 text-center">
+                <div className="text-2xl font-bold">Tier {tier}</div>
+                <Check className="w-6 h-6 mx-auto mt-1" />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* All Features List */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Your Unlocked Features</h3>
+          {tierData.map((tier) => (
+            <div key={tier.tier} className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center space-x-2">
+                  <tier.icon className="w-5 h-5 text-green-600" />
+                  <h4 className="font-medium text-gray-900 dark:text-white">
+                    Tier {tier.tier}: {tier.name}
+                  </h4>
+                </div>
+                <Check className="w-5 h-5 text-green-600" />
+              </div>
+              <ul className="space-y-1 ml-7">
+                {tier.features.map((feature, idx) => (
+                  <li key={idx} className="text-sm text-gray-700 dark:text-gray-300 flex items-center">
+                    <Check className="w-3 h-3 mr-2 text-green-500" />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Tier Progress</h2>
       <p className="text-gray-600 dark:text-gray-400">Track your tier progress and unlock new features</p>
+      
+      {/* Current Status */}
+      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Current Tier</h3>
+            <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+              Tier {currentTier} - {tierData[currentTier - 1]?.name}
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-sm text-gray-600 dark:text-gray-400">Next Tier</p>
+            <p className="text-lg font-semibold text-gray-900 dark:text-white">
+              {currentTier < 5 ? `Tier ${currentTier + 1} - ${tierData[currentTier]?.name}` : 'Max Level'}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Tier Progression */}
+      <div className="space-y-6">
+        {tierData.map((tier, index) => {
+          const Icon = tier.icon;
+          const isUnlocked = tier.unlocked;
+          const isCurrent = currentTier === tier.tier;
+          
+          return (
+            <div
+              key={tier.tier}
+              className={`relative rounded-lg border-2 transition-all ${
+                isUnlocked
+                  ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+                  : isCurrent
+                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                  : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
+              }`}
+            >
+              {/* Connection Line */}
+              {index < tierData.length - 1 && (
+                <div className={`absolute left-8 top-full h-6 w-0.5 -translate-x-1/2 ${
+                  isUnlocked ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'
+                }`} />
+              )}
+              
+              <div className="p-6">
+                <div className="flex items-start space-x-4">
+                  {/* Icon */}
+                  <div className={`flex-shrink-0 w-16 h-16 rounded-full flex items-center justify-center ${
+                    isUnlocked
+                      ? 'bg-green-500 text-white'
+                      : isCurrent
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-gray-200 dark:bg-gray-700 text-gray-500'
+                  }`}>
+                    <Icon className="w-8 h-8" />
+                  </div>
+                  
+                  {/* Content */}
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                          Tier {tier.tier}: {tier.name}
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {tier.requirement}
+                        </p>
+                      </div>
+                      {isUnlocked && (
+                        <div className="flex items-center space-x-1 text-green-600">
+                          <Check className="w-5 h-5" />
+                          <span className="text-sm font-medium">Unlocked</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Progress Bar */}
+                    {!isUnlocked && tier.tier > 1 && (
+                      <div className="mb-3">
+                        <div className="flex items-center justify-between text-sm mb-1">
+                          <span className="text-gray-600 dark:text-gray-400">Progress</span>
+                          <span className="text-gray-900 dark:text-white font-medium">
+                            {Math.round(tier.progress)}%
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                          <div
+                            className="bg-blue-500 h-2 rounded-full transition-all"
+                            style={{ width: `${tier.progress}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Features */}
+                    <div className="mt-3">
+                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Features:</p>
+                      <ul className="space-y-1">
+                        {tier.features.map((feature, idx) => (
+                          <li
+                            key={idx}
+                            className={`text-sm flex items-start ${
+                              isUnlocked
+                                ? 'text-gray-700 dark:text-gray-300'
+                                : 'text-gray-500 dark:text-gray-500'
+                            }`}
+                          >
+                            <span className="mr-2">•</span>
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    
+                    {/* Action Button */}
+                    {!isUnlocked && isCurrent && (
+                      <div className="mt-4">
+                        <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+                          {tier.tier === 2 && 'Create Account'}
+                          {tier.tier === 3 && 'Complete Profile'}
+                          {tier.tier === 4 && 'Invite Friends'}
+                          {tier.tier === 5 && 'Stay Active'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Tips Section */}
+      <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4 border border-yellow-200 dark:border-yellow-800">
+        <div className="flex items-start space-x-3">
+          <Info className="w-5 h-5 text-yellow-600 mt-0.5" />
+          <div>
+            <h4 className="font-medium text-gray-900 dark:text-white mb-1">Pro Tip</h4>
+            <p className="text-sm text-gray-700 dark:text-gray-300">
+              {currentTier === 1 && "Create a free account to instantly unlock Tier 2 and get YouTube ad blocking!"}
+              {currentTier === 2 && "Complete your profile to unlock Tier 3 and get custom filter rules!"}
+              {currentTier === 3 && "Invite 30 friends to unlock Tier 4 and access advanced security features!"}
+              {currentTier === 4 && "Stay active weekly to reach Tier 5 and get AI-powered ad detection!"}
+              {currentTier === 5 && "You've reached the highest tier! Enjoy all premium features!"}
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
