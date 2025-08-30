@@ -42,7 +42,6 @@
     "dev:install": "node scripts/install-extension.js",
     "dev:reload": "node scripts/reload-extension.js",
     "analyze": "vite build --mode production && vite-bundle-visualizer",
-    "format:check": "prettier --check src/**/*.{ts,tsx,json,css}",
     "prepare": "husky",
     "size": "size-limit",
     "precommit": "yarn type-check && yarn lint && yarn test:unit",

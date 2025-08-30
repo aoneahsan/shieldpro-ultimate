@@ -40,7 +40,7 @@ const App: React.FC = () => {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [loadDataInBackground]);
+  }, []);
 
   const loadCachedData = async () => {
     try {
@@ -145,10 +145,10 @@ const App: React.FC = () => {
       setStats(statsRes);
       setTabState(tabStateRes);
       setEarlyAdopterStatus(earlyAdopterRes);
-    } catch {
+    } catch (error) {
       console.error('Failed to load fresh data:', error);
     }
-  }, []);
+  }, [stats, tabState]);
 
   const refreshData = async () => {
     setIsRefreshing(true);
