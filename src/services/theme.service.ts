@@ -115,7 +115,7 @@ class ThemeService {
       fontFamily: this.currentTheme?.fontFamily || 'system'
     };
 
-    await this.saveAndApplyTheme(_themeConfig);
+    await this.saveAndApplyTheme(themeConfig);
   }
 
   async setCustomTheme(colors: ThemeColors): Promise<void> {
@@ -126,7 +126,7 @@ class ThemeService {
       fontFamily: this.currentTheme?.fontFamily || 'system'
     };
 
-    await this.saveAndApplyTheme(_themeConfig);
+    await this.saveAndApplyTheme(themeConfig);
   }
 
   async setFontSize(size: string): Promise<void> {
@@ -207,9 +207,9 @@ class ThemeService {
       document.body.style.fontSize = sizeMap[fontSize];
     }
 
-    if (_fontFamily) {
+    if (fontFamily) {
       const fontMap: Record<string, string> = {
-        system: '-apple-system, _BlinkMacSystemFont, "Segoe UI", _Roboto, sans-serif',
+        system: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
         serif: 'Georgia, "Times New Roman", serif',
         mono: '"Courier New", monospace',
         comic: '"Comic Sans MS", cursive',
@@ -226,7 +226,7 @@ class ThemeService {
     if (!styleEl) {
       styleEl = document.createElement('style');
       styleEl.id = 'theme-overrides';
-      document.head.appendChild(_styleEl);
+      document.head.appendChild(styleEl);
     }
 
     // Generate CSS overrides

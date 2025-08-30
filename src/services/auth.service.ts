@@ -392,7 +392,7 @@ class AuthService {
     if (!this.currentUser) throw new Error('No user logged in');
 
     const docRef = doc(db, 'users', this.currentUser.uid);
-    await updateDoc(_docRef, {
+    await updateDoc(docRef, {
       ...updates,
       'stats.lastActive': serverTimestamp()
     });
@@ -420,11 +420,11 @@ class AuthService {
     };
 
     // Check if document exists first
-    const userRef = doc(_db, 'users', _uid);
-    const userSnap = await getDoc(_userRef);
+    const userRef = doc(db, 'users', uid);
+    const userSnap = await getDoc(userRef);
     
     if (userSnap.exists()) {
-      await updateDoc(_userRef, {
+      await updateDoc(userRef, {
         'tier.level': newTier,
         'tier.name': tierNames[newTier],
         'tier.unlockedAt': Date.now(),
@@ -445,7 +445,7 @@ class AuthService {
           totalBlocked: 0,
           joinedAt: Date.now(),
           lastActive: Date.now(),
-          referralCode: this.generateReferralCode(_uid),
+          referralCode: this.generateReferralCode(uid),
           referralCount: 0,
           weeklyEngagement: [0]
         },
@@ -456,7 +456,7 @@ class AuthService {
           language: navigator.language || 'en'
         }
       };
-      await setDoc(_userRef, userProfile);
+      await setDoc(userRef, userProfile);
     }
 
     // Send message to extension to update rules
@@ -470,8 +470,8 @@ class AuthService {
 
   // Check and update weekly engagement for Tier 5
   async updateWeeklyEngagement(uid: string): Promise<void> {
-    const userRef = doc(_db, 'users', _uid);
-    const userDoc = await getDoc(_userRef);
+    const userRef = doc(db, 'users', uid);
+    const userDoc = await getDoc(userRef);
     
     if (!userDoc.exists()) {
       console.log('User document does not exist, skipping weekly engagement update');
@@ -488,11 +488,11 @@ class AuthService {
     }
 
     // Mark today as engaged
-    if (!weeklyEngagement.includes(_today)) {
-      weeklyEngagement.push(_today);
+    if (!weeklyEngagement.includes(today)) {
+      weeklyEngagement.push(today);
     }
 
-    await updateDoc(_userRef, {
+    await updateDoc(userRef, {
       'stats.weeklyEngagement': weeklyEngagement,
       'stats.lastActive': serverTimestamp()
     });
@@ -500,10 +500,10 @@ class AuthService {
     // Check if user maintains Tier 5 (7 days of engagement)
     if (userData.tier.level === 5 && weeklyEngagement.length < 7) {
       // Downgrade to Tier 4 if not maintaining engagement
-      await this.upgradeTier(_uid, 4);
+      await this.upgradeTier(uid, 4);
     } else if (userData.tier.level === 4 && weeklyEngagement.length === 7) {
       // Upgrade to Tier 5 if maintaining full week engagement
-      await this.upgradeTier(_uid, 5);
+      await this.upgradeTier(uid, 5);
     }
   }
 
