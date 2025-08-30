@@ -22,6 +22,11 @@
   body.options {
     @apply min-h-screen bg-gray-50 dark:bg-gray-900;
   }
+  
+  /* Ensure theme transitions */
+  body {
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
 }
 
 /* Custom component styles */

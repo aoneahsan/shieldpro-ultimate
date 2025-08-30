@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Palette, Check, Lock, Sparkles } from 'lucide-react';
 import { StorageManager } from '../../shared/utils/storage';
+import { themeService } from '../../services/theme.service';
 
 interface Theme {
   id: string;
@@ -199,41 +200,8 @@ export const ThemeManager: React.FC<ThemeManagerProps> = ({ currentTier }) => {
 
     setSelectedTheme(themeId);
     
-    // Save theme to storage
-    const storage = StorageManager.getInstance();
-    await storage.updateSettings({
-      theme: {
-        id: themeId,
-        colors: theme.colors,
-        fontSize,
-        fontFamily
-      }
-    });
-
-    // Apply theme immediately
-    if (themeId === 'dark') {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', themeId);
-    }
-
-    // Apply color scheme
-    applyThemeColors(theme.colors);
-
-    // Notify other parts of the extension
-    try {
-      chrome.runtime.sendMessage({
-        action: 'applyTheme',
-        theme: {
-          id: themeId,
-          colors: theme.colors
-        }
-      });
-    } catch (error) {
-      console.log('Could not send theme message:', error);
-    }
+    // Use the theme service for consistent application
+    await themeService.setTheme(themeId);
   };
 
   const applyThemeColors = (colors: any) => {
@@ -280,51 +248,12 @@ export const ThemeManager: React.FC<ThemeManagerProps> = ({ currentTier }) => {
 
   const handleFontSizeChange = async (size: string) => {
     setFontSize(size);
-    
-    // Apply font size immediately
-    const sizeMap = {
-      'small': '14px',
-      'medium': '16px', 
-      'large': '18px'
-    };
-    
-    document.documentElement.style.fontSize = sizeMap[size as keyof typeof sizeMap];
-    document.body.style.fontSize = sizeMap[size as keyof typeof sizeMap];
-    
-    const storage = StorageManager.getInstance();
-    await storage.updateSettings({
-      theme: {
-        id: selectedTheme,
-        fontSize: size,
-        fontFamily,
-        colors: themes.find(t => t.id === selectedTheme)?.colors
-      }
-    });
+    await themeService.setFontSize(size);
   };
 
   const handleFontFamilyChange = async (family: string) => {
     setFontFamily(family);
-    const fontMap: Record<string, string> = {
-      'system': '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-      'serif': 'Georgia, "Times New Roman", serif',
-      'mono': '"Courier New", monospace',
-      'comic': '"Comic Sans MS", cursive',
-      'dyslexic': 'OpenDyslexic, sans-serif'
-    };
-    
-    // Apply font family immediately
-    document.documentElement.style.fontFamily = fontMap[family];
-    document.body.style.fontFamily = fontMap[family];
-    
-    const storage = StorageManager.getInstance();
-    await storage.updateSettings({
-      theme: {
-        id: selectedTheme,
-        fontSize,
-        fontFamily: family,
-        colors: themes.find(t => t.id === selectedTheme)?.colors
-      }
-    });
+    await themeService.setFontFamily(family);
   };
 
   return (
@@ -473,18 +402,9 @@ export const ThemeManager: React.FC<ThemeManagerProps> = ({ currentTier }) => {
             </div>
             
             <button
-              onClick={() => {
-                applyThemeColors(customColors);
-                // Save custom theme
-                const storage = StorageManager.getInstance();
-                storage.setSettings({
-                  theme: {
-                    id: 'custom',
-                    colors: customColors,
-                    fontSize,
-                    fontFamily
-                  }
-                });
+              onClick={async () => {
+                await themeService.setCustomTheme(customColors);
+                setSelectedTheme('custom');
               }}
               className="mt-4 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700"
             >
