@@ -62,7 +62,11 @@ interface FilterOptions {
   search: string;
 }
 
-export const NetworkLogger: React.FC = () => {
+interface NetworkLoggerProps {
+  currentTier?: number;
+}
+
+export const NetworkLogger: React.FC<NetworkLoggerProps> = ({ currentTier = 4 }) => {
   const [requests, setRequests] = useState<NetworkRequest[]>([]);
   const [stats, setStats] = useState<NetworkStats>({
     totalRequests: 0,
@@ -89,14 +93,35 @@ export const NetworkLogger: React.FC = () => {
   const requestsEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    initializeNetworkLogger();
+    const initialize = async () => {
+      try {
+        // Load existing logs
+        const stored = await chrome.storage.local.get(['networkRequests', 'networkStats']);
+        if (stored.networkRequests) {
+          setRequests(stored.networkRequests.slice(-1000)); // Keep last 1000 requests
+        }
+        if (stored.networkStats) {
+          setStats(stored.networkStats);
+        }
+
+        // Start listening for network events if recording
+        if (isRecording) {
+          startNetworkMonitoring();
+        }
+      } catch (error) {
+        console.error('Failed to initialize network logger:', error);
+      }
+    };
+    
+    initialize();
+    
     return () => {
       // Cleanup listeners when component unmounts
       if (chrome?.webRequest) {
         // Remove listeners
       }
     };
-  }, [initializeNetworkLogger]);
+  }, []); // Empty dependency array for mount only
 
   useEffect(() => {
     if (autoScroll && requestsEndRef.current) {
@@ -104,25 +129,6 @@ export const NetworkLogger: React.FC = () => {
     }
   }, [requests, autoScroll]);
 
-  const initializeNetworkLogger = async () => {
-    try {
-      // Load existing logs
-      const stored = await chrome.storage.local.get(['networkRequests', 'networkStats']);
-      if (stored.networkRequests) {
-        setRequests(stored.networkRequests.slice(-1000)); // Keep last 1000 requests
-      }
-      if (stored.networkStats) {
-        setStats(stored.networkStats);
-      }
-
-      // Start listening for network events if recording
-      if (isRecording) {
-        startNetworkMonitoring();
-      }
-    } catch (error) {
-      console.error('Failed to initialize network logger:', error);
-    }
-  };
 
   const startNetworkMonitoring = () => {
     // Listen for messages from background script about network events
@@ -421,7 +427,7 @@ export const NetworkLogger: React.FC = () => {
                 placeholder="Filter by domain"
                 value={filters.domain}
                 onChange={(e) => setFilters(prev => ({ ...prev, domain: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-600 dark:text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             
