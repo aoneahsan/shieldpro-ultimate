@@ -32,6 +32,7 @@ function Options() {
   const [userNumber, setUserNumber] = useState(0);
   const [layoutType, setLayoutType] = useState<LayoutType>('tabs');
   const [contentWidth, setContentWidth] = useState<string>('wide');
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   useEffect(() => {
     loadCurrentTier();
@@ -97,6 +98,8 @@ function Options() {
         setContentWidth('standard'); // 70% for larger screens
       }
     }
+    // After loading preference, disable initial load flag to enable transitions
+    setTimeout(() => setIsInitialLoad(false), 100);
   };
 
   const handleWidthChange = async (width: string) => {
@@ -226,7 +229,7 @@ function Options() {
       {isEarlyAdopter && userNumber > 0 && (
         <div className="bg-gradient-to-r from-purple-600 via-pink-500 to-orange-500 text-white">
           <div 
-            className="mx-auto px-6 py-4 transition-all duration-300"
+            className={`mx-auto px-6 py-4 ${!isInitialLoad ? 'transition-all duration-300' : ''}`}
             style={{ 
               maxWidth: getContentWidthStyle(),
               width: '100%'
@@ -260,7 +263,7 @@ function Options() {
       )}
       
       <div 
-        className="mx-auto p-6 transition-all duration-300"
+        className={`mx-auto p-6 ${!isInitialLoad ? 'transition-all duration-300' : ''}`}
         style={{ 
           maxWidth: getContentWidthStyle(),
           width: '100%'
