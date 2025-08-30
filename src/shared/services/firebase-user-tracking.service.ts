@@ -29,11 +29,12 @@ import {
 } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 
+import { EarlyAdopterStatus } from '../constants/marketing';
+import { initializeFirebase } from '../../background/firebase-init';
+
 interface IncrementUserCountResponse {
   userNumber: number;
 }
-import { app as firebaseApp } from '@/utils/firebase';
-import { EarlyAdopterStatus } from '../constants/marketing';
 
 interface FirebaseUserData {
   uid: string;
@@ -63,16 +64,41 @@ interface FirebaseUserData {
 
 class FirebaseUserTrackingService {
   private static instance: FirebaseUserTrackingService;
-  private auth = getAuth(firebaseApp);
-  private db = getFirestore(firebaseApp);
-  private functions = getFunctions(firebaseApp);
+  private auth: any;
+  private db: any;
+  private functions: any;
   private currentUser: User | null = null;
   private globalUserCount: number = 0;
   private cleanupInterval: NodeJS.Timeout | null = null;
+  private initialized: boolean = false;
 
   private constructor() {
-    this.initializeAuthListener();
-    this.startCleanupScheduler();
+    this.initialize();
+  }
+
+  private initialize() {
+    try {
+      const services = initializeFirebase();
+      this.auth = services.auth || getAuth();
+      this.db = services.firestore || getFirestore();
+      this.functions = services.functions || getFunctions();
+      this.initialized = true;
+      this.initializeAuthListener();
+      this.startCleanupScheduler();
+    } catch (error) {
+      console.error('Failed to initialize Firebase services:', error);
+      // Try fallback initialization
+      try {
+        this.auth = getAuth();
+        this.db = getFirestore();
+        this.functions = getFunctions();
+        this.initialized = true;
+        this.initializeAuthListener();
+        this.startCleanupScheduler();
+      } catch (fallbackError) {
+        console.error('Firebase initialization completely failed:', fallbackError);
+      }
+    }
   }
 
   static getInstance(): FirebaseUserTrackingService {
@@ -86,6 +112,9 @@ class FirebaseUserTrackingService {
    * Initialize or get anonymous user
    */
   async initializeAnonymousUser(): Promise<{ uid: string; userNumber: number }> {
+    if (!this.initialized || !this.auth) {
+      throw new Error('Firebase not initialized');
+    }
     try {
       // Sign in anonymously
       const userCredential = await signInAnonymously(this.auth);

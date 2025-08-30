@@ -1,5 +1,5 @@
 import { storage } from '../shared/utils/storage';
-import { TabState, _UserTier, BlockingStats } from '../shared/types';
+import { TabState, UserTier, BlockingStats } from '../shared/types';
 import { earlyAdopterService } from '../shared/services/early-adopter.service';
 import { firebaseUserTracking } from '../shared/services/firebase-user-tracking.service';
 
@@ -43,13 +43,13 @@ async function updateTierRules(tier: number): Promise<void> {
       enableRulesetIds: enabledRulesets,
       disableRulesetIds: disabledRulesets
     });
-    console.warn(`Updated rulesets for Tier ${tier}:`, _enabledRulesets);
-  } catch (__error) {
-    console.error('Failed to update rulesets:', _error);
+    console.warn(`Updated rulesets for Tier ${tier}:`, enabledRulesets);
+  } catch (error) {
+    console.error('Failed to update rulesets:', error);
   }
 }
 
-chrome.runtime.onInstalled.addListener(async (_details) => {
+chrome.runtime.onInstalled.addListener(async (details) => {
   // Create context menu items
   chrome.contextMenus.removeAll(() => {
     chrome.contextMenus.create({
@@ -82,13 +82,13 @@ chrome.runtime.onInstalled.addListener(async (_details) => {
     
     // Initialize early adopter status
     const earlyAdopterStatus = await earlyAdopterService.initializeUser();
-    console.warn('Early Adopter Status:', _earlyAdopterStatus);
+    console.warn('Early Adopter Status:', earlyAdopterStatus);
     
     const settings = await storage.getSettings();
     
     // Set tier based on early adopter status
     const initialTier = earlyAdopterStatus.isEarlyAdopter ? 5 : settings.tier.level || 1;
-    await updateTierRules(_initialTier);
+    await updateTierRules(initialTier);
     
     // Update settings with proper tier
     if (earlyAdopterStatus.isEarlyAdopter) {
@@ -117,66 +117,66 @@ chrome.runtime.onInstalled.addListener(async (_details) => {
   }
 });
 
-chrome.declarativeNetRequest.onRuleMatchedDebug?.addListener(async (_info) => {
+chrome.declarativeNetRequest.onRuleMatchedDebug?.addListener(async (info) => {
   const { request, rule } = info;
   
   try {
     const url = new URL(request.url);
     const domain = url.hostname;
     
-    const isWhitelisted = await storage.isWhitelisted(_domain);
-    if (_isWhitelisted) return;
+    const isWhitelisted = await storage.isWhitelisted(domain);
+    if (isWhitelisted) return;
     
     const settings = await storage.getSettings();
     if (!settings.enabled) return;
     
     const category = categorizeRequest(request.url);
-    await storage.incrementBlockedCount(_domain, category);
+    await storage.incrementBlockedCount(domain, category);
     
     if (request.tabId && request.tabId > 0) {
       const currentCount = blockedRequests.get(request.tabId) || 0;
       blockedRequests.set(request.tabId, currentCount + 1);
       updateBadge(request.tabId);
       
-      updateTabState(request.tabId, _domain);
+      updateTabState(request.tabId, domain);
     }
     
     console.warn(`Blocked: ${request.url} (Rule: ${rule.ruleId});`);
-  } catch (__error) {
-    console.error('Error processing blocked request:', _error);
+  } catch (error) {
+    console.error('Error processing blocked request:', error);
   }
 });
 
-chrome.tabs.onUpdated.addListener(async (_tabId, changeInfo, _tab) => {
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.status === 'loading' && tab.url) {
     try {
       const url = new URL(tab.url);
       const domain = url.hostname;
       
-      blockedRequests.set(_tabId, 0);
+      blockedRequests.set(tabId, 0);
       
-      tabStates.set(_tabId, {
+      tabStates.set(tabId, {
         tabId,
         domain,
         blocked: 0,
         enabled: true,
-        whitelisted: await storage.isWhitelisted(_domain)
+        whitelisted: await storage.isWhitelisted(domain)
       });
       
-      updateBadge(_tabId);
+      updateBadge(tabId);
     } catch {
       // Failed to update badge - non-critical
     }
   }
 });
 
-chrome.tabs.onRemoved.addListener((_tabId) => {
-  tabStates.delete(_tabId);
-  blockedRequests.delete(_tabId);
+chrome.tabs.onRemoved.addListener((tabId) => {
+  tabStates.delete(tabId);
+  blockedRequests.delete(tabId);
 });
 
 // Handle context menu clicks
-chrome.contextMenus.onClicked.addListener(async (_info, tab) => {
+chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   const settings = await storage.getSettings();
   
   switch (info.menuItemId) {
@@ -204,8 +204,8 @@ chrome.contextMenus.onClicked.addListener(async (_info, tab) => {
   }
 });
 
-chrome.runtime.onMessage.addListener((_request, sender, _sendResponse) => {
-  handleMessage(_request, sender, _sendResponse);
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  handleMessage(request, sender, sendResponse);
   return true;
 });
 
@@ -232,16 +232,16 @@ async function handleMessage(request: MessageRequest, sender: chrome.runtime.Mes
             enabled: true,
             whitelisted: false
           };
-          sendResponse(_state);
+          sendResponse(state);
         } else {
-          sendResponse(_null);
+          sendResponse(null);
         }
         break;
       }
         
       case 'toggleExtension': {
         const enabled = await storage.toggleExtension();
-        updateIcon(_enabled);
+        updateIcon(enabled);
         updateAllBadges();
         sendResponse({ enabled });
         break;
@@ -260,11 +260,11 @@ async function handleMessage(request: MessageRequest, sender: chrome.runtime.Mes
             ...status,
             globalUserCount: globalCount
           });
-        } catch (__error) {
-          console.error('Error getting early adopter status:', _error);
+        } catch (error) {
+          console.error('Error getting early adopter status:', error);
           // Fallback to local service
           const status = await earlyAdopterService.initializeUser();
-          sendResponse(_status);
+          sendResponse(status);
         }
         break;
       }
@@ -289,8 +289,8 @@ async function handleMessage(request: MessageRequest, sender: chrome.runtime.Mes
           }
           
           sendResponse({ success: true, status });
-        } catch (__error) {
-          console.error('Error linking account:', _error);
+        } catch (error) {
+          console.error('Error linking account:', error);
           sendResponse({ success: false, error: error.message });
         }
         break;
@@ -298,19 +298,19 @@ async function handleMessage(request: MessageRequest, sender: chrome.runtime.Mes
         
       case 'toggleWhitelist': {
         const domain = request.domain;
-        const isWhitelisted = await storage.isWhitelisted(_domain);
+        const isWhitelisted = await storage.isWhitelisted(domain);
         
-        if (_isWhitelisted) {
-          await storage.removeFromWhitelist(_domain);
+        if (isWhitelisted) {
+          await storage.removeFromWhitelist(domain);
         } else {
-          await storage.addToWhitelist(_domain);
+          await storage.addToWhitelist(domain);
         }
         
         const tabs = await chrome.tabs.query({});
         tabs.forEach(tab => {
-          if (tab.id && tab.url && tab.url.includes(_domain)) {
+          if (tab.id && tab.url && tab.url.includes(domain)) {
             const state = tabStates.get(tab.id);
-            if (_state) {
+            if (state) {
               state.whitelisted = !isWhitelisted;
             }
             updateBadge(tab.id);
@@ -323,13 +323,13 @@ async function handleMessage(request: MessageRequest, sender: chrome.runtime.Mes
         
       case 'getStats': {
         const stats = await storage.getStats();
-        sendResponse(_stats);
+        sendResponse(stats);
         break;
       }
         
       case 'getSettings': {
         const settings = await storage.getSettings();
-        sendResponse(_settings);
+        sendResponse(settings);
         break;
       }
         
@@ -363,7 +363,7 @@ async function handleMessage(request: MessageRequest, sender: chrome.runtime.Mes
               progress: newTier * 20
             }
           });
-          await updateTierRules(_newTier);
+          await updateTierRules(newTier);
           
           // Notify all tabs about tier upgrade
           const allTabs = await chrome.tabs.query({});
@@ -382,7 +382,7 @@ async function handleMessage(request: MessageRequest, sender: chrome.runtime.Mes
               type: 'basic',
               iconUrl: chrome.runtime.getURL('icons/icon-128.png'),
               title: `Tier ${newTier} Unlocked!`,
-              message: getTierMessage(_newTier)
+              message: getTierMessage(newTier)
             });
           }
           
@@ -442,7 +442,7 @@ async function handleMessage(request: MessageRequest, sender: chrome.runtime.Mes
           
           const category = request.category || 'other';
           const domain = request.domain || new URL(sender.tab.url || '').hostname;
-          await storage.incrementBlockedCount(_domain, category as keyof BlockingStats['categoryStats']);
+          await storage.incrementBlockedCount(domain, category as keyof BlockingStats['categoryStats']);
         }
         sendResponse({ success: true });
         break;
@@ -450,14 +450,14 @@ async function handleMessage(request: MessageRequest, sender: chrome.runtime.Mes
       default:
         sendResponse({ error: 'Unknown action' });
     }
-  } catch (__error) {
-    console.error('Error handling message:', _error);
+  } catch (error) {
+    console.error('Error handling message:', error);
     sendResponse({ error: error instanceof Error ? error.message : 'Unknown error' });
   }
 }
 
 function getTierMessage(tier: number): string {
-  switch (_tier) {
+  switch (tier) {
     case 2:
       return 'YouTube ad blocking and advanced tracker blocking are now active!';
     case 3:
@@ -508,11 +508,11 @@ function categorizeRequest(url: string): keyof import('../shared/types').Blockin
 }
 
 function updateTabState(tabId: number, domain: string) {
-  const state = tabStates.get(_tabId);
-  if (_state) {
+  const state = tabStates.get(tabId);
+  if (state) {
     state.blocked++;
   } else {
-    tabStates.set(_tabId, {
+    tabStates.set(tabId, {
       tabId,
       domain,
       blocked: 1,
@@ -544,9 +544,9 @@ function updateIcon(enabled: boolean) {
 }
 
 async function updateBadge(tabId: number) {
-  const state = tabStates.get(_tabId);
+  const state = tabStates.get(tabId);
   const settings = await storage.getSettings();
-  const blocked = blockedRequests.get(_tabId) || 0;
+  const blocked = blockedRequests.get(tabId) || 0;
   
   if (!settings.enabled) {
     chrome.action.setBadgeText({ text: 'OFF', tabId });
@@ -582,7 +582,7 @@ async function updateAllBadges() {
 
 // Keep service worker alive
 setInterval(() => {
-  chrome.storage.local.get(_null, () => {});
+  chrome.storage.local.get(null, () => {});
 }, 20000);
 
 export {};

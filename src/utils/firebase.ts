@@ -59,13 +59,13 @@ let storage: Storage;
 
 // Check if Firebase is already initialized
 try {
-  app = initializeApp(_firebaseConfig);
-  auth = getAuth(_app);
-  firestore = getFirestore(_app);
-  functions = getFunctions(_app);
-  storage = getStorage(_app);
-} catch (__error) {
-  console.error('Firebase initialization error:', _error);
+  app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  firestore = getFirestore(app);
+  functions = getFunctions(app);
+  storage = getStorage(app);
+} catch (error) {
+  console.error('Firebase initialization error:', error);
   // If already initialized, get the existing instances
   auth = getAuth();
   firestore = getFirestore();
@@ -76,21 +76,21 @@ try {
 // Connect to emulators if in development and enabled
 if (import.meta.env.DEV && import.meta.env.VITE_USE_FIREBASE_EMULATOR === 'true') {
   try {
-    connectFirestoreEmulator(_firestore, 'localhost', 8080);
-    connectFunctionsEmulator(_functions, 'localhost', 5001);
-    connectStorageEmulator(_storage, 'localhost', 9199);
+    connectFirestoreEmulator(firestore, 'localhost', 8080);
+    connectFunctionsEmulator(functions, 'localhost', 5001);
+    connectStorageEmulator(storage, 'localhost', 9199);
     console.log('Connected to Firebase emulators');
-  } catch (__error) {
+  } catch (error) {
     // Already connected to emulators
     console.log('Firebase emulators already connected');
   }
 }
 
 // Export Firebase instances
-export { app, _auth, firestore, _functions, storage };
+export { app, auth, firestore, functions, storage };
 
 // Export Firebase types
-export type { User, _FirebaseApp, Auth, _Firestore, Functions, Storage };
+export type { User, FirebaseApp, Auth, Firestore, Functions, Storage };
 
 // Export commonly used Firebase functions
 export {
@@ -194,32 +194,32 @@ export const handleFirebaseError = (error: any): string => {
  */
 export const cloudFunctions = {
   // User tracking functions
-  incrementUserCount: httpsCallable(_functions, 'incrementUserCount'),
-  deleteAnonymousUser: httpsCallable(_functions, 'deleteAnonymousUser'),
-  trackAnalytics: httpsCallable(_functions, 'trackAnalytics'),
-  getGlobalStats: httpsCallable(_functions, 'getGlobalStats'),
+  incrementUserCount: httpsCallable(functions, 'incrementUserCount'),
+  deleteAnonymousUser: httpsCallable(functions, 'deleteAnonymousUser'),
+  trackAnalytics: httpsCallable(functions, 'trackAnalytics'),
+  getGlobalStats: httpsCallable(functions, 'getGlobalStats'),
   
   // Tier management functions  
-  checkTierUpgrade: httpsCallable(_functions, 'checkTierUpgrade'),
-  trackDailyEngagement: httpsCallable(_functions, 'trackDailyEngagement'),
-  getTierProgress: httpsCallable(_functions, 'getTierProgress'),
+  checkTierUpgrade: httpsCallable(functions, 'checkTierUpgrade'),
+  trackDailyEngagement: httpsCallable(functions, 'trackDailyEngagement'),
+  getTierProgress: httpsCallable(functions, 'getTierProgress'),
   
   // Referral functions
-  processReferral: httpsCallable(_functions, 'processReferral'),
+  processReferral: httpsCallable(functions, 'processReferral'),
   
   // Stats functions
-  updateBlockingStats: httpsCallable(_functions, 'updateBlockingStats'),
-  getUserStatistics: httpsCallable(_functions, 'getUserStatistics'),
+  updateBlockingStats: httpsCallable(functions, 'updateBlockingStats'),
+  getUserStatistics: httpsCallable(functions, 'getUserStatistics'),
   
   // Data export functions
-  exportUserData: httpsCallable(_functions, 'exportUserData')
+  exportUserData: httpsCallable(functions, 'exportUserData')
 };
 
 /**
  * Initialize Firebase Auth state listener
  */
 export const initAuthListener = (callback: (user: User | null) => void) => {
-  return auth.onAuthStateChanged(_callback);
+  return auth.onAuthStateChanged(callback);
 };
 
 /**
@@ -228,8 +228,8 @@ export const initAuthListener = (callback: (user: User | null) => void) => {
 export const signOut = async (): Promise<void> => {
   try {
     await auth.signOut();
-  } catch (__error) {
-    console.error('Sign out error:', _error);
+  } catch (error) {
+    console.error('Sign out error:', error);
     throw error;
   }
 };
