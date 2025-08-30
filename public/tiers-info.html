@@ -650,34 +650,6 @@
     </div>
   </div>
 
-  <script>
-    // Show the main content after a brief loading period
-    setTimeout(() => {
-      document.getElementById('loading').style.display = 'none';
-      document.getElementById('main-content').style.display = 'block';
-    }, 1000);
-
-    function openExtension() {
-      // Try to open the extension popup
-      if (typeof chrome !== 'undefined' && chrome.runtime) {
-        chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-          chrome.action.openPopup();
-        });
-      } else {
-        // Fallback message
-        alert('Please click on the ShieldPro extension icon in your browser toolbar to get started!');
-      }
-    }
-
-    // Track page view for analytics
-    if (typeof chrome !== 'undefined' && chrome.runtime) {
-      chrome.runtime.sendMessage({
-        action: 'tierPageVisited',
-        timestamp: Date.now()
-      }).catch(() => {
-        // Ignore if extension context not available
-      });
-    }
-  </script>
+  <script src="tiers-info.js"></script>
 </body>
 </html>
