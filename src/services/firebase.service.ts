@@ -12,6 +12,7 @@ import {
   query, 
   where, 
   getDocs,
+  deleteDoc,
   Timestamp,
   serverTimestamp,
   increment,
@@ -413,6 +414,44 @@ class FirebaseService {
    */
   isAuthenticated(): boolean {
     return !!this.currentUser;
+  }
+
+  /**
+   * Delete all user data
+   */
+  async deleteUserData(uid: string): Promise<void> {
+    try {
+      // Delete user profile
+      const userRef = doc(db, 'users', uid);
+      await deleteDoc(userRef);
+
+      // Delete referral data
+      const referralQuery = query(
+        collection(db, 'referrals'),
+        where('userId', '==', uid)
+      );
+      const referralSnapshot = await getDocs(referralQuery);
+      const deletePromises = referralSnapshot.docs.map(doc => deleteDoc(doc.ref));
+      
+      // Delete sync data
+      const syncRef = doc(db, 'sync', uid);
+      deletePromises.push(deleteDoc(syncRef));
+
+      // Delete device registrations
+      const devicesQuery = query(
+        collection(db, 'devices'),
+        where('userId', '==', uid)
+      );
+      const devicesSnapshot = await getDocs(devicesQuery);
+      devicesSnapshot.docs.forEach(doc => {
+        deletePromises.push(deleteDoc(doc.ref));
+      });
+
+      await Promise.all(deletePromises);
+    } catch (error) {
+      console.error('Failed to delete user data:', error);
+      throw error;
+    }
   }
 }
 

@@ -4,6 +4,7 @@ import {
   signOut as firebaseSignOut,
   sendPasswordResetEmail,
   updateProfile,
+  deleteUser,
   User,
   onAuthStateChanged,
   sendEmailVerification,
@@ -530,6 +531,28 @@ class AuthService {
   // Get user tier
   getUserTier(): number {
     return this.userProfile?.tier.level || 1;
+  }
+
+  // Delete user account
+  async deleteAccount(): Promise<void> {
+    if (!this.currentUser) {
+      throw new Error('No user logged in');
+    }
+
+    try {
+      // Delete the user account
+      await deleteUser(this.currentUser);
+      
+      // Clear local data
+      this.currentUser = null;
+      this.userProfile = null;
+      
+      // Clear chrome storage
+      await chrome.storage.local.clear();
+    } catch (error) {
+      console.error('Failed to delete account:', error);
+      throw error;
+    }
   }
 }
 

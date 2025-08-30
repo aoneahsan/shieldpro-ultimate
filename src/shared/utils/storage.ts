@@ -135,6 +135,78 @@ export class StorageManager {
       console.error('Failed to clear stats:', error);
     }
   }
+
+  async getFilters(): Promise<any> {
+    try {
+      const result = await chrome.storage.local.get('filters');
+      return result.filters || {};
+    } catch (error) {
+      console.error('Failed to get filters:', error);
+      return {};
+    }
+  }
+
+  async setFilters(filters: any): Promise<void> {
+    try {
+      await chrome.storage.local.set({ filters });
+    } catch (error) {
+      console.error('Failed to set filters:', error);
+    }
+  }
+
+  async getWhitelist(): Promise<string[]> {
+    try {
+      const settings = await this.getSettings();
+      return settings.whitelist || [];
+    } catch (error) {
+      console.error('Failed to get whitelist:', error);
+      return [];
+    }
+  }
+
+  async setWhitelist(whitelist: string[]): Promise<void> {
+    try {
+      await this.setSettings({ whitelist });
+    } catch (error) {
+      console.error('Failed to set whitelist:', error);
+    }
+  }
+
+  async getBlacklist(): Promise<string[]> {
+    try {
+      const result = await chrome.storage.local.get('blacklist');
+      return result.blacklist || [];
+    } catch (error) {
+      console.error('Failed to get blacklist:', error);
+      return [];
+    }
+  }
+
+  async setBlacklist(blacklist: string[]): Promise<void> {
+    try {
+      await chrome.storage.local.set({ blacklist });
+    } catch (error) {
+      console.error('Failed to set blacklist:', error);
+    }
+  }
+
+  async getCustomRules(): Promise<any[]> {
+    try {
+      const result = await chrome.storage.local.get('customRules');
+      return result.customRules || [];
+    } catch (error) {
+      console.error('Failed to get custom rules:', error);
+      return [];
+    }
+  }
+
+  async setCustomRules(customRules: any[]): Promise<void> {
+    try {
+      await chrome.storage.local.set({ customRules });
+    } catch (error) {
+      console.error('Failed to set custom rules:', error);
+    }
+  }
 }
 
 export const storage = StorageManager.getInstance();
