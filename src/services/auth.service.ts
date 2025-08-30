@@ -69,7 +69,7 @@ class AuthService {
 
   constructor() {
     // Create a promise that resolves when auth state is first loaded
-    this.authStatePromise = new Promise((_resolve) => {
+    this.authStatePromise = new Promise((resolve) => {
       this.authStateResolve = resolve;
     });
 
@@ -82,7 +82,7 @@ class AuthService {
     try {
       if (chrome?.storage?.local) {
         const { forceLoggedOut } = await chrome.storage.local.get('forceLoggedOut');
-        if (_forceLoggedOut) {
+        if (forceLoggedOut) {
           // Clear the flag and don't set up auth listener
           await chrome.storage.local.remove('forceLoggedOut');
           this.currentUser = null;
@@ -94,11 +94,11 @@ class AuthService {
           return;
         }
       }
-    } catch (__error) {
-      console.error('Error checking logout flag:', _error);
+    } catch (error) {
+      console.error('Error checking logout flag:', error);
     }
 
-    onAuthStateChanged(_auth, async (_user) => {
+    onAuthStateChanged(auth, async (user) => {
       console.log('Auth state changed:', user?.email || 'null', 'isSigningOut:', this.isSigningOut);
       
       // If we're signing out, ignore any auth state changes
@@ -108,10 +108,10 @@ class AuthService {
       }
       
       this.currentUser = user;
-      if (_user) {
+      if (user) {
         await this.loadUserProfile(user.uid);
         // Cache the auth state
-        await this.cacheAuthState(_user, this.userProfile);
+        await this.cacheAuthState(user, this.userProfile);
       } else {
         this.userProfile = null;
         // Clear cached auth state
@@ -147,8 +147,8 @@ class AuthService {
           authProfile: profile
         });
       }
-    } catch (__error) {
-      console.error('Failed to cache auth state:', _error);
+    } catch (error) {
+      console.error('Failed to cache auth state:', error);
     }
   }
 
@@ -158,8 +158,8 @@ class AuthService {
       if (chrome?.storage?.local) {
         await chrome.storage.local.remove(['authUser', 'authProfile']);
       }
-    } catch (__error) {
-      console.error('Failed to clear auth cache:', _error);
+    } catch (error) {
+      console.error('Failed to clear auth cache:', error);
     }
   }
 
@@ -172,8 +172,8 @@ class AuthService {
 
   // Check if referral code exists
   private async isReferralCodeUnique(code: string): Promise<boolean> {
-    const q = query(collection(_db, 'users'), where('stats.referralCode', '==', _code));
-    const snapshot = await getDocs(_q);
+    const q = query(collection(db, 'users'), where('stats.referralCode', '==', code));
+    const snapshot = await getDocs(q);
     return snapshot.empty;
   }
 
@@ -182,7 +182,7 @@ class AuthService {
     let uniqueReferralCode = this.generateReferralCode(user.uid);
     
     // Ensure referral code is unique
-    while (!(await this.isReferralCodeUnique(_uniqueReferralCode))) {
+    while (!(await this.isReferralCodeUnique(uniqueReferralCode))) {
       uniqueReferralCode = this.generateReferralCode(user.uid);
     }
 
@@ -214,11 +214,11 @@ class AuthService {
       }
     };
 
-    await setDoc(doc(_db, 'users', user.uid), _userProfile);
+    await setDoc(doc(db, 'users', user.uid), userProfile);
 
     // If referred by someone, update referrer's count
-    if (_referralCode) {
-      await this.updateReferrerCount(_referralCode);
+    if (referralCode) {
+      await this.updateReferrerCount(referralCode);
     }
 
     this.userProfile = userProfile;
@@ -226,36 +226,36 @@ class AuthService {
 
   // Update referrer's count and check for tier upgrade
   private async updateReferrerCount(referralCode: string): Promise<void> {
-    const q = query(collection(_db, 'users'), where('stats.referralCode', '==', _referralCode));
-    const snapshot = await getDocs(_q);
+    const q = query(collection(db, 'users'), where('stats.referralCode', '==', referralCode));
+    const snapshot = await getDocs(q);
     
     if (!snapshot.empty && snapshot.docs[0]) {
       const referrerDoc = snapshot.docs[0];
       const referrerId = referrerDoc.id;
       const referrerData = referrerDoc.data() as UserProfile;
       
-      await updateDoc(doc(_db, 'users', _referrerId), {
+      await updateDoc(doc(db, 'users', referrerId), {
         'stats.referralCount': increment(1),
         'stats.lastActive': serverTimestamp()
       });
 
       // Check if referrer qualifies for Tier 4 (30 referrals)
       if (referrerData.stats.referralCount + 1 >= 30 && referrerData.tier.level < 4) {
-        await this.upgradeTier(_referrerId, 4);
+        await this.upgradeTier(referrerId, 4);
       }
     }
   }
 
   // Load user profile from Firestore
   private async loadUserProfile(uid: string): Promise<void> {
-    const docRef = doc(_db, 'users', _uid);
-    const docSnap = await getDoc(_docRef);
+    const docRef = doc(db, 'users', uid);
+    const docSnap = await getDoc(docRef);
     
     if (docSnap.exists()) {
       this.userProfile = docSnap.data() as UserProfile;
       
       // Update last active
-      await updateDoc(_docRef, {
+      await updateDoc(docRef, {
         'stats.lastActive': serverTimestamp()
       });
     }
@@ -264,15 +264,15 @@ class AuthService {
   // Sign up with email and password
   async signUp(email: string, password: string, displayName?: string, referralCode?: string): Promise<User> {
     try {
-      const userCredential = await createUserWithEmailAndPassword(_auth, email, _password);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      if (_displayName) {
-        await updateProfile(_user, { displayName });
+      if (displayName) {
+        await updateProfile(user, { displayName });
       }
 
-      await this.createUserProfile(_user, referralCode);
-      await sendEmailVerification(_user);
+      await this.createUserProfile(user, referralCode);
+      await sendEmailVerification(user);
 
       // Automatically upgrade to Tier 2 upon account creation
       await this.upgradeTier(user.uid, 2);
@@ -286,7 +286,7 @@ class AuthService {
   // Sign in with email and password
   async signIn(email: string, password: string): Promise<User> {
     try {
-      const userCredential = await signInWithEmailAndPassword(_auth, email, _password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
       return userCredential.user;
     } catch (error: any) {
       throw new Error(error.message);
@@ -302,7 +302,7 @@ class AuthService {
   async signInWithSocial(provider: 'google' | 'facebook' | 'github'): Promise<User> {
     try {
       let authProvider;
-      switch (_provider) {
+      switch (provider) {
         case 'google':
           authProvider = new GoogleAuthProvider();
           break;
@@ -316,15 +316,15 @@ class AuthService {
           throw new Error('Invalid provider');
       }
 
-      const userCredential = await signInWithPopup(_auth, authProvider);
+      const userCredential = await signInWithPopup(auth, authProvider);
       const user = userCredential.user;
 
       // Check if user profile exists
-      const docRef = doc(_db, 'users', user.uid);
-      const docSnap = await getDoc(_docRef);
+      const docRef = doc(db, 'users', user.uid);
+      const docSnap = await getDoc(docRef);
       
       if (!docSnap.exists()) {
-        await this.createUserProfile(_user);
+        await this.createUserProfile(user);
         // Automatically upgrade to Tier 2 for social sign-ups
         await this.upgradeTier(user.uid, 2);
       }
@@ -357,14 +357,14 @@ class AuthService {
         setTimeout(async () => {
           try {
             await chrome.storage.local.remove('forceLoggedOut');
-          } catch (__error) {
-            console.error('Error removing logout flag:', _error);
+          } catch (error) {
+            console.error('Error removing logout flag:', error);
           }
         }, 5000);
       }
       
       // Using the imported signOut function from Firebase
-      await firebaseSignOut(_auth);
+      await firebaseSignOut(auth);
       console.log('AuthService: Firebase sign out complete');
       
       // Keep the flag set for longer to ensure state doesn't reload
@@ -372,7 +372,7 @@ class AuthService {
         this.isSigningOut = false;
       }, 2000);
     } catch (error: any) {
-      console.error('Sign out error:', _error);
+      console.error('Sign out error:', error);
       this.isSigningOut = false;
       throw new Error(error.message);
     }
@@ -381,7 +381,7 @@ class AuthService {
   // Reset password
   async resetPassword(email: string): Promise<void> {
     try {
-      await sendPasswordResetEmail(_auth, email);
+      await sendPasswordResetEmail(auth, email);
     } catch (error: any) {
       throw new Error(error.message);
     }
@@ -391,7 +391,7 @@ class AuthService {
   async updateUserProfile(updates: Partial<UserProfile>): Promise<void> {
     if (!this.currentUser) throw new Error('No user logged in');
 
-    const docRef = doc(_db, 'users', this.currentUser.uid);
+    const docRef = doc(db, 'users', this.currentUser.uid);
     await updateDoc(_docRef, {
       ...updates,
       'stats.lastActive': serverTimestamp()

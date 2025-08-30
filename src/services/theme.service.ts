@@ -167,26 +167,26 @@ class ThemeService {
     await storage.updateSettings({ theme });
 
     // Apply to current page
-    this.applyTheme(_theme);
+    this.applyTheme(theme);
 
     // Broadcast to all extension pages
-    this.broadcastTheme(_theme);
+    this.broadcastTheme(theme);
   }
 
   applyTheme(theme: ThemeConfig): void {
-    const { colors, _fontSize, fontFamily } = theme;
+    const { colors, fontSize, fontFamily } = theme;
 
     // Apply dark mode class
-    const isDark = this.isDarkTheme(_colors);
-    if (_isDark) {
+    const isDark = this.isDarkTheme(colors);
+    if (isDark) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
 
     // Apply CSS custom properties
-    Object.entries(_colors).forEach(([key, value]) => {
-      document.documentElement.style.setProperty(`--theme-${key}`, _value);
+    Object.entries(colors).forEach(([key, value]) => {
+      document.documentElement.style.setProperty(`--theme-${key}`, value);
     });
 
     // Apply background and text colors
@@ -194,10 +194,10 @@ class ThemeService {
     document.body.style.color = colors.text;
 
     // Fix cards and components
-    this.fixComponentStyles(_colors, isDark);
+    this.fixComponentStyles(colors, isDark);
 
     // Apply font settings
-    if (_fontSize) {
+    if (fontSize) {
       const sizeMap: Record<string, string> = {
         small: '14px',
         medium: '16px',
