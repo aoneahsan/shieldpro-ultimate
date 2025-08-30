@@ -13,6 +13,7 @@ import { ImageSwap } from './components/ImageSwap';
 import { BackupSync } from './components/BackupSync';
 import { StorageManager } from '../shared/utils/storage';
 import { TabsLayout, SidebarLayout, HeaderLayout, HeaderSidebarLayout } from './layouts';
+import { themeService } from '../services/theme.service';
 import './styles/width-control.css';
 import { LayoutSwitcher } from './components/LayoutSwitcher';
 import { WidthControl } from './components/WidthControl';
@@ -35,6 +36,8 @@ function Options() {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   useEffect(() => {
+    // Load theme first to prevent flash of wrong theme
+    loadAndApplyTheme();
     loadCurrentTier();
     checkEarlyAdopterStatus();
     loadLayoutPreference();
@@ -105,6 +108,47 @@ function Options() {
   const handleWidthChange = async (width: string) => {
     setContentWidth(width);
     await chrome.storage.local.set({ optionsContentWidth: width });
+  };
+
+  const loadAndApplyTheme = async () => {
+    try {
+      // Load theme settings from storage
+      const result = await chrome.storage.local.get(['themeSettings']);
+      if (result.themeSettings) {
+        const { theme, customColors, fontSize, fontFamily } = result.themeSettings;
+        
+        // Apply theme immediately
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+        
+        // Apply other theme settings using themeService
+        if (theme && theme !== 'default') {
+          themeService.setTheme(theme);
+        }
+        
+        if (customColors) {
+          themeService.setCustomColors(customColors);
+        }
+        
+        if (fontSize) {
+          themeService.setFontSize(fontSize);
+        }
+        
+        if (fontFamily) {
+          themeService.setFontFamily(fontFamily);
+        }
+      } else {
+        // If no theme saved, check system preference for dark mode
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add('dark');
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load theme:', error);
+    }
   };
 
   // Calculate actual width percentage

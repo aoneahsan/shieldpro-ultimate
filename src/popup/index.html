@@ -30,6 +30,29 @@
   </style>
 </head>
 <body class="popup">
+  <!-- Load theme immediately to prevent flash -->
+  <script>
+    (function() {
+      // Load theme from Chrome storage synchronously if possible
+      if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+        chrome.storage.local.get(['themeSettings'], function(result) {
+          if (result.themeSettings) {
+            const { theme } = result.themeSettings;
+            if (theme === 'dark') {
+              document.documentElement.classList.add('dark');
+              document.body.classList.add('dark');
+            }
+          } else {
+            // Check system preference as fallback
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+              document.documentElement.classList.add('dark');
+              document.body.classList.add('dark');
+            }
+          }
+        });
+      }
+    })();
+  </script>
   <div id="root"></div>
   <script type="module" src="./index.tsx"></script>
 </body>

@@ -181,15 +181,34 @@ export const ThemeManager: React.FC<ThemeManagerProps> = ({ currentTier }) => {
   }, [selectedTheme, currentTier]);
 
   const loadThemeSettings = async () => {
-    const storage = StorageManager.getInstance();
-    const settings = await storage.getSettings();
-    
-    if (settings.theme) {
-      setSelectedTheme(settings.theme.id || 'default');
-      setFontSize(settings.theme.fontSize || 'medium');
-      setFontFamily(settings.theme.fontFamily || 'system');
-      if (settings.theme.customColors) {
-        setCustomColors(settings.theme.customColors);
+    // Load from chrome.storage.local first for consistency
+    const result = await chrome.storage.local.get(['themeSettings']);
+    if (result.themeSettings) {
+      const { theme, customColors: colors, fontSize: size, fontFamily: family } = result.themeSettings;
+      if (theme) {
+        setSelectedTheme(theme);
+      }
+      if (colors) {
+        setCustomColors(colors);
+      }
+      if (size) {
+        setFontSize(size);
+      }
+      if (family) {
+        setFontFamily(family);
+      }
+    } else {
+      // Fallback to StorageManager
+      const storage = StorageManager.getInstance();
+      const settings = await storage.getSettings();
+      
+      if (settings.theme) {
+        setSelectedTheme(settings.theme.id || 'default');
+        setFontSize(settings.theme.fontSize || 'medium');
+        setFontFamily(settings.theme.fontFamily || 'system');
+        if (settings.theme.customColors) {
+          setCustomColors(settings.theme.customColors);
+        }
       }
     }
   };
@@ -199,6 +218,15 @@ export const ThemeManager: React.FC<ThemeManagerProps> = ({ currentTier }) => {
     if (!theme || currentTier < theme.requiredTier) return;
 
     setSelectedTheme(themeId);
+    
+    // Save to chrome.storage.local for immediate access on page load
+    const themeSettings = {
+      theme: themeId,
+      customColors: theme.colors,
+      fontSize: fontSize,
+      fontFamily: fontFamily
+    };
+    await chrome.storage.local.set({ themeSettings });
     
     // Use the theme service for consistent application
     await themeService.setTheme(themeId);
@@ -248,11 +276,25 @@ export const ThemeManager: React.FC<ThemeManagerProps> = ({ currentTier }) => {
 
   const handleFontSizeChange = async (size: string) => {
     setFontSize(size);
+    
+    // Update chrome.storage.local
+    const result = await chrome.storage.local.get(['themeSettings']);
+    const themeSettings = result.themeSettings || {};
+    themeSettings.fontSize = size;
+    await chrome.storage.local.set({ themeSettings });
+    
     await themeService.setFontSize(size);
   };
 
   const handleFontFamilyChange = async (family: string) => {
     setFontFamily(family);
+    
+    // Update chrome.storage.local
+    const result = await chrome.storage.local.get(['themeSettings']);
+    const themeSettings = result.themeSettings || {};
+    themeSettings.fontFamily = family;
+    await chrome.storage.local.set({ themeSettings });
+    
     await themeService.setFontFamily(family);
   };
 
