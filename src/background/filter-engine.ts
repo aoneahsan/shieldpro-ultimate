@@ -42,8 +42,8 @@ export class FilterEngine {
     this.tierLevel = settings.tierLevel || 1;
 
     // Setup request listener for stats tracking
-    chrome.declarativeNetRequest.onRuleMatchedDebug?.addListener((_info) => {
-      this.handleBlockedRequest(_info);
+    chrome.declarativeNetRequest.onRuleMatchedDebug?.addListener((info) => {
+      this.handleBlockedRequest(info);
     });
 
     // Load initial rules based on tier
@@ -51,7 +51,7 @@ export class FilterEngine {
     await this.loadRulesForTier(this.tierLevel);
 
     // Listen for tier changes
-    chrome.storage.onChanged.addListener((_changes) => {
+    chrome.storage.onChanged.addListener((changes) => {
       if (changes.tierLevel) {
         this.updateTier(changes.tierLevel.newValue);
       }
@@ -73,8 +73,8 @@ export class FilterEngine {
       await chrome.declarativeNetRequest.updateDynamicRules({
         addRules: baseRules
       });
-    } catch (__error) {
-      console.error('Failed to load filter rules:', _error);
+    } catch (error) {
+      console.error('Failed to load filter rules:', error);
     }
   }
 
@@ -90,7 +90,7 @@ export class FilterEngine {
       'fullstory.com', 'mouseflow.com', 'clarity.ms', 'crazyegg.com'
     ];
 
-    return trackerDomains.map((_domain, index) => ({
+    return trackerDomains.map((domain, index) => ({
       id: 10000 + index,
       priority: 1,
       action: { type: 'block' as const },
@@ -125,11 +125,11 @@ export class FilterEngine {
 
     for (const file of ruleFiles) {
       try {
-        const response = await fetch(chrome.runtime.getURL(_file));
-        const rules = await response.json();
-        await this.addRules(_rules);
-      } catch (__error) {
-        console.warn(`Failed to load rules from ${file}:`, _error);
+        const response = await fetch(chrome.runtime.getURL(file));
+        const rulesData = await response.json();
+        await this.addRules(rulesData);
+      } catch (error) {
+        console.warn(`Failed to load rules from ${file}:`, error);
       }
     }
 
@@ -151,7 +151,7 @@ export class FilterEngine {
       });
 
       // Store locally for management
-      newRules.forEach(rule => this.rules.set(rule.id, _rule));
+      newRules.forEach(rule => this.rules.set(rule.id, rule));
     }
   }
 
@@ -196,8 +196,8 @@ export class FilterEngine {
     const domain = url.hostname;
     
     // Update blocked count
-    const count = this.blockedRequests.get(_domain) || 0;
-    this.blockedRequests.set(_domain, count + 1);
+    const count = this.blockedRequests.get(domain) || 0;
+    this.blockedRequests.set(domain, count + 1);
 
     // Send message to popup/content scripts
     chrome.runtime.sendMessage({
@@ -214,7 +214,7 @@ export class FilterEngine {
     });
 
     // Update stats
-    this.updateStats(_domain, info.rule.ruleId);
+    this.updateStats(domain, info.rule.ruleId);
   }
 
   private async updateStats(domain: string, ruleId: number) {
@@ -257,7 +257,7 @@ export class FilterEngine {
 
   public async updateTier(newTier: number) {
     if (newTier !== this.tierLevel) {
-      await this.loadRulesForTier(_newTier);
+      await this.loadRulesForTier(newTier);
     }
   }
 
@@ -277,14 +277,14 @@ export class FilterEngine {
     await chrome.declarativeNetRequest.updateDynamicRules({
       removeRuleIds: [ruleId]
     });
-    this.rules.delete(_ruleId);
+    this.rules.delete(ruleId);
   }
 
   public getBlockedCount(domain?: string): number {
-    if (_domain) {
-      return this.blockedRequests.get(_domain) || 0;
+    if (domain) {
+      return this.blockedRequests.get(domain) || 0;
     }
-    return Array.from(this.blockedRequests.values()).reduce((_a, b) => a + b, 0);
+    return Array.from(this.blockedRequests.values()).reduce((a, b) => a + b, 0);
   }
 
   public async exportRules(): Promise<FilterRule[]> {
@@ -292,7 +292,7 @@ export class FilterEngine {
   }
 
   public async importRules(rules: FilterRule[]): Promise<void> {
-    await this.addRules(_rules);
+    await this.addRules(rules);
   }
 
   public isEnabled(): boolean {

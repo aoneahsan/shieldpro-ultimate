@@ -159,15 +159,15 @@ export class YouTubeAdBlockerV2 {
         this.blockedElements.add(_element);
         
         // Remove the ad element safely
-        this.safeRemoveElement(element as HTMLElement, _category);
+        this.safeRemoveElement(element as HTMLElement, category);
       });
       
       if (elements.length > 0) {
         console.warn(`🚫 Blocked ${elements.length} ${category} ad(_s)`);
       }
-    } catch (__error) {
+    } catch (_error) {
       // Fail silently to avoid breaking the page
-      console.debug(`Error removing ${selector}:`, _error);
+      console.debug(`Error removing ${selector}:`, error);
     }
   }
 
@@ -211,8 +211,8 @@ export class YouTubeAdBlockerV2 {
         element.style.display = 'none';
         element.remove();
       }
-    } catch (__error) {
-      console.debug('Safe removal failed:', _error);
+    } catch (_error) {
+      console.debug('Safe removal failed:', error);
     }
   }
 

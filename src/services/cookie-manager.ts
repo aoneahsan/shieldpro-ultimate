@@ -71,7 +71,7 @@ export class CookieManager {
     
     if (data.cookieRules) {
       data.cookieRules.forEach((rule: CookieRule) => {
-        this.rules.set(rule.id, _rule);
+        this.rules.set(rule.id, rule);
       });
     }
 
@@ -152,13 +152,13 @@ export class CookieManager {
     const name = cookie.name;
 
     // Find matching rule (most specific first)
-    const specificRule = this.findRule(_domain, name);
+    const specificRule = this.findRule(domain, name);
     if (specificRule && specificRule.enabled) {
       return specificRule.action;
     }
 
     // Domain-wide rule
-    const domainRule = this.findRule(_domain);
+    const domainRule = this.findRule(domain);
     if (domainRule && domainRule.enabled) {
       return domainRule.action;
     }
@@ -173,7 +173,7 @@ export class CookieManager {
     }
 
     // Default action based on category
-    return this.getDefaultAction(_category);
+    return this.getDefaultAction(category);
   }
 
   private findRule(domain: string, name?: string): CookieRule | undefined {
@@ -224,7 +224,7 @@ export class CookieManager {
   }
 
   private getDefaultAction(category: string): string {
-    switch (_category) {
+    switch (category) {
       case 'essential':
         return 'allow';
       case 'functional':
@@ -246,8 +246,8 @@ export class CookieManager {
         url: `http${cookie.secure ? 's' : ''}://${cookie.domain}${cookie.path}`,
         name: cookie.name
       });
-    } catch (__error) {
-      console.error('Failed to block cookie:', _error);
+    } catch (_error) {
+      console.error('Failed to block cookie:', error);
     }
   }
 
@@ -265,8 +265,8 @@ export class CookieManager {
           sameSite: cookie.sameSite as any,
           // Remove expiration to make it session-only
         });
-      } catch (__error) {
-        console.error('Failed to make cookie session-only:', _error);
+      } catch (_error) {
+        console.error('Failed to make cookie session-only:', error);
       }
     }
   }
@@ -285,8 +285,8 @@ export class CookieManager {
           sameSite: cookie.sameSite as any,
           expirationDate: cookie.expirationDate,
         });
-      } catch (__error) {
-        console.error('Failed to make cookie secure-only:', _error);
+      } catch (_error) {
+        console.error('Failed to make cookie secure-only:', error);
       }
     }
   }
@@ -347,7 +347,7 @@ export class CookieManager {
         id: this.generateRuleId(),
         createdAt: Date.now()
       };
-      this.rules.set(rule.id, _rule);
+      this.rules.set(rule.id, rule);
     }
 
     await this.saveRulesAndStats();
@@ -362,7 +362,7 @@ export class CookieManager {
       createdAt: Date.now()
     };
 
-    this.rules.set(rule.id, _rule);
+    this.rules.set(rule.id, rule);
     await this.saveRulesAndStats();
     return rule.id;
   }
@@ -393,7 +393,7 @@ export class CookieManager {
   }
 
   public async clearAllCookies(domain?: string): Promise<void> {
-    if (_domain) {
+    if (domain) {
       const cookies = await chrome.cookies.getAll({ domain });
       for (const cookie of cookies) {
         await this.blockCookie(_cookie);
@@ -414,7 +414,7 @@ export class CookieManager {
 
   public async importRules(rules: CookieRule[]): Promise<void> {
     for (const rule of rules) {
-      this.rules.set(rule.id, _rule);
+      this.rules.set(rule.id, rule);
     }
     await this.saveRulesAndStats();
   }

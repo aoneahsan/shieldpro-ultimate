@@ -193,7 +193,7 @@ export class DNSOverHTTPSService {
     const startTime = Date.now();
 
     try {
-      const response = await this.performDoHQuery(provider.url, _domain, recordType);
+      const response = await this.performDoHQuery(provider.url, domain, recordType);
       
       query.response = response;
       query.duration = Date.now() - startTime;
@@ -216,7 +216,7 @@ export class DNSOverHTTPSService {
       }
 
       return response;
-    } catch (__error) {
+    } catch (_error) {
       query.error = error instanceof Error ? error.message : 'Unknown error';
       query.duration = Date.now() - startTime;
 
@@ -229,7 +229,7 @@ export class DNSOverHTTPSService {
         const fallbackProvider = this.getProvider(this.settings.fallbackProvider);
         if (_fallbackProvider) {
           try {
-            return await this.performDoHQuery(fallbackProvider.url, _domain, recordType);
+            return await this.performDoHQuery(fallbackProvider.url, domain, recordType);
           } catch (_fallbackError) {
             console.error('Fallback DNS query failed:', _fallbackError);
           }
@@ -368,7 +368,7 @@ export class DNSOverHTTPSService {
         success: response.Status === 0 && response.Answer && response.Answer.length > 0,
         latency
       };
-    } catch (__error) {
+    } catch (_error) {
       return {
         success: false,
         latency: Date.now() - startTime,

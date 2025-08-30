@@ -63,12 +63,12 @@ export class SecurityService {
    */
   public async checkUrl(url: string, tabId?: number): Promise<SecurityThreat | null> {
     try {
-      const urlObj = new URL(_url);
+      const urlObj = new URL(url);
       const domain = urlObj.hostname;
       const fullUrl = url.toLowerCase();
 
       // Check against known malware domains
-      if (this.malwareDomains.has(_domain)) {
+      if (this.malwareDomains.has(domain)) {
         const threat: SecurityThreat = {
           url,
           type: 'malware',
@@ -83,7 +83,7 @@ export class SecurityService {
       }
 
       // Check against phishing domains
-      if (this.phishingDomains.has(_domain)) {
+      if (this.phishingDomains.has(domain)) {
         const threat: SecurityThreat = {
           url,
           type: 'phishing',
@@ -98,7 +98,7 @@ export class SecurityService {
       }
 
       // Check for cryptomining
-      if (this.cryptominingDomains.has(_domain) || this.isCryptominingUrl(_fullUrl)) {
+      if (this.cryptominingDomains.has(domain) || this.isCryptominingUrl(_fullUrl)) {
         const threat: SecurityThreat = {
           url,
           type: 'cryptomining',
@@ -113,7 +113,7 @@ export class SecurityService {
       }
 
       // Heuristic checks for suspicious patterns
-      const suspiciousScore = this.calculateSuspiciousScore(_url, domain);
+      const suspiciousScore = this.calculateSuspiciousScore(url, domain);
       if (suspiciousScore > 7) {
         const threat: SecurityThreat = {
           url,
@@ -131,8 +131,8 @@ export class SecurityService {
       }
 
       return null;
-    } catch (__error) {
-      console.error('Error checking URL:', _error);
+    } catch (_error) {
+      console.error('Error checking URL:', error);
       return null;
     }
   }
@@ -153,8 +153,8 @@ export class SecurityService {
         await chrome.tabs.update(_tabId, {
           url: chrome.runtime.getURL(`/blocked.html?reason=${threat.type}&url=${encodeURIComponent(threat.url)}`)
         });
-      } catch (__error) {
-        console.error('Failed to redirect blocked page:', _error);
+      } catch (_error) {
+        console.error('Failed to redirect blocked page:', error);
       }
     }
 
@@ -211,7 +211,7 @@ export class SecurityService {
     ];
 
     suspiciousPatterns.forEach(({ pattern, score: points }) => {
-      if (pattern.test(_url)) {
+      if (pattern.test(url)) {
         score += points;
       }
     });
@@ -229,10 +229,10 @@ export class SecurityService {
    * Enhanced phishing protection
    */
   public async checkPhishingProtection(url: string): Promise<boolean> {
-    const domain = new URL(_url).hostname;
+    const domain = new URL(url).hostname;
     
     // Check against known phishing domains
-    if (this.phishingDomains.has(_domain)) {
+    if (this.phishingDomains.has(domain)) {
       return true;
     }
     
@@ -248,7 +248,7 @@ export class SecurityService {
       /(?:google|g00gle|googIe).*(?:account|verify|suspended)/i
     ];
     
-    return phishingPatterns.some(pattern => pattern.test(_url));
+    return phishingPatterns.some(pattern => pattern.test(url));
   }
 
   /**
@@ -291,8 +291,8 @@ export class SecurityService {
       });
 
       console.log('Security database updated successfully');
-    } catch (__error) {
-      console.error('Failed to update security database:', _error);
+    } catch (_error) {
+      console.error('Failed to update security database:', error);
     }
   }
 
@@ -304,9 +304,9 @@ export class SecurityService {
     this.phishingDomains.clear();
     this.cryptominingDomains.clear();
 
-    data.malwareDomains?.forEach((domain: string) => this.malwareDomains.add(_domain));
-    data.phishingDomains?.forEach((domain: string) => this.phishingDomains.add(_domain));
-    data.cryptominingDomains?.forEach((domain: string) => this.cryptominingDomains.add(_domain));
+    data.malwareDomains?.forEach((domain: string) => this.malwareDomains.add(domain));
+    data.phishingDomains?.forEach((domain: string) => this.phishingDomains.add(domain));
+    data.cryptominingDomains?.forEach((domain: string) => this.cryptominingDomains.add(domain));
   }
 
   /**
@@ -351,7 +351,7 @@ export class SecurityService {
   public getRecentThreats(limit: number = 10): SecurityThreat[] {
     return Array.from(this.threatCache.values())
       .sort((_a, b) => b.timestamp - a.timestamp)
-      .slice(0, _limit);
+      .slice(0, limit);
   }
 
   /**
@@ -365,15 +365,15 @@ export class SecurityService {
    * Add custom domain to blocklist
    */
   public async addCustomThreatDomain(domain: string, category: 'malware' | 'phishing' | 'cryptomining'): Promise<void> {
-    switch (_category) {
+    switch (category) {
       case 'malware':
-        this.malwareDomains.add(_domain);
+        this.malwareDomains.add(domain);
         break;
       case 'phishing':
-        this.phishingDomains.add(_domain);
+        this.phishingDomains.add(domain);
         break;
       case 'cryptomining':
-        this.cryptominingDomains.add(_domain);
+        this.cryptominingDomains.add(domain);
         break;
     }
 
@@ -381,8 +381,8 @@ export class SecurityService {
     const data = await chrome.storage.local.get('securityData');
     const current = data.securityData || { malwareDomains: [], phishingDomains: [], cryptominingDomains: [] };
     
-    if (!current[`${category}Domains`].includes(_domain)) {
-      current[`${category}Domains`].push(_domain);
+    if (!current[`${category}Domains`].includes(domain)) {
+      current[`${category}Domains`].push(domain);
       await chrome.storage.local.set({ securityData: current });
     }
   }
@@ -391,15 +391,15 @@ export class SecurityService {
    * Remove domain from custom blocklist
    */
   public async removeCustomThreatDomain(domain: string, category: 'malware' | 'phishing' | 'cryptomining'): Promise<void> {
-    switch (_category) {
+    switch (category) {
       case 'malware':
-        this.malwareDomains.delete(_domain);
+        this.malwareDomains.delete(domain);
         break;
       case 'phishing':
-        this.phishingDomains.delete(_domain);
+        this.phishingDomains.delete(domain);
         break;
       case 'cryptomining':
-        this.cryptominingDomains.delete(_domain);
+        this.cryptominingDomains.delete(domain);
         break;
     }
 

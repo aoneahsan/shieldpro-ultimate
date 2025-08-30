@@ -58,27 +58,27 @@ export class PerformanceMonitor {
     try {
       // Get memory usage if available
       if (chrome.system && chrome.system.memory) {
-        chrome.system.memory.getInfo((_info) => {
+        chrome.system.memory.getInfo((info) => {
           const usedMemory = info.capacity - info.availableCapacity;
           const usagePercent = (usedMemory / info.capacity) * 100;
           
           this.metrics.overall.memoryUsage = usagePercent;
         });
       }
-    } catch (__error) {
-      console.error('Failed to get memory usage:', _error);
+    } catch (_error) {
+      console.error('Failed to get memory usage:', error);
     }
   }
 
   private setupBlockingMonitor(): void {
     // Monitor declarativeNetRequest performance
     if (chrome.declarativeNetRequest && chrome.declarativeNetRequest.onRuleMatchedDebug) {
-      chrome.declarativeNetRequest.onRuleMatchedDebug.addListener(async (_info) => {
+      chrome.declarativeNetRequest.onRuleMatchedDebug.addListener(async (info) => {
         const startTime = performance.now();
         
         // Track which tier's rule was matched
         const ruleId = info.rule.ruleId;
-        const tier = this.getRuleTier(_ruleId);
+        const tier = this.getRuleTier(ruleId);
         
         // Calculate blocking time
         const blockingTime = performance.now() - startTime;
@@ -106,7 +106,7 @@ export class PerformanceMonitor {
         }
         
         // Track timing
-        this.requestTimings.set(info.request.url, _blockingTime);
+        this.requestTimings.set(info.request.url, blockingTime);
       });
     }
   }
@@ -239,8 +239,8 @@ Efficiency:
       };
       
       await chrome.storage.local.set({ performanceMetrics: data });
-    } catch (__error) {
-      console.error('Failed to save performance metrics:', _error);
+    } catch (error) {
+      console.error('Failed to save performance metrics:', error);
     }
   }
 
@@ -250,8 +250,8 @@ Efficiency:
       if (result.performanceMetrics) {
         this.metrics = result.performanceMetrics.metrics;
       }
-    } catch (__error) {
-      console.error('Failed to load performance metrics:', _error);
+    } catch (error) {
+      console.error('Failed to load performance metrics:', error);
     }
   }
 

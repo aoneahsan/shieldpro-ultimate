@@ -142,7 +142,7 @@ class FirebaseService {
 
       return newProfile;
     } catch (error: any) {
-      console.error('Error creating user profile:', _error);
+      console.error('Error creating user profile:', error);
       // Return a minimal profile on error
       return {
         uid: user.uid,
@@ -297,8 +297,8 @@ class FirebaseService {
       }
 
       return true;
-    } catch (__error) {
-      console.error('Failed to apply referral code:', _error);
+    } catch (_error) {
+      console.error('Failed to apply referral code:', error);
       return false;
     }
   }

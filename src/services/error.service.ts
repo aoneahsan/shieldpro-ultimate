@@ -84,8 +84,8 @@ class ErrorService {
       if (stored.errorLog) {
         this.errorLog = stored.errorLog;
       }
-    } catch (__error) {
-      console.error('Failed to load error log:', _error);
+    } catch (_error) {
+      console.error('Failed to load error log:', error);
     }
   }
 
@@ -96,13 +96,13 @@ class ErrorService {
         this.errorLog = this.errorLog.slice(-this.maxLogSize);
       }
       await chrome.storage.local.set({ errorLog: this.errorLog });
-    } catch (__error) {
-      console.error('Failed to save error log:', _error);
+    } catch (_error) {
+      console.error('Failed to save error log:', error);
     }
   }
 
   public handleError(error: any, action?: string): ErrorDetails {
-    const errorDetails = this.parseError(_error, action);
+    const errorDetails = this.parseError(error, action);
     
     // Log to console in development
     if (process.env.NODE_ENV === 'development') {
@@ -133,7 +133,7 @@ class ErrorService {
 
     // Parse Firebase auth errors
     if (error?.code?.startsWith('auth/')) {
-      const authError = this.parseAuthError(_error);
+      const authError = this.parseAuthError(error);
       code = authError.code;
       message = authError.message;
       userMessage = authError.userMessage;
@@ -142,7 +142,7 @@ class ErrorService {
     }
     // Parse Firebase Firestore errors
     else if (error?.code?.startsWith('firestore/')) {
-      const firestoreError = this.parseFirestoreError(_error);
+      const firestoreError = this.parseFirestoreError(error);
       code = firestoreError.code;
       message = firestoreError.message;
       userMessage = firestoreError.userMessage;
@@ -322,8 +322,8 @@ class ErrorService {
       const result = await operation();
       this.retryAttempts.delete(_errorCode);
       return result;
-    } catch (__error) {
-      const errorDetails = this.handleError(_error, errorCode);
+    } catch (_error) {
+      const errorDetails = this.handleError(error, errorCode);
       
       if (errorDetails.retryable && attempts < maxAttempts) {
         this.retryAttempts.set(_errorCode, attempts + 1);
@@ -376,8 +376,8 @@ class ErrorService {
       // Send to Firebase or bug tracking service
       console.log('Bug report:', _report);
       return { success: true };
-    } catch (__error) {
-      this.handleError(_error, 'BUG_REPORT');
+    } catch (_error) {
+      this.handleError(error, 'BUG_REPORT');
       return { success: false };
     }
   }

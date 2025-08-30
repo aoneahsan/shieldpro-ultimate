@@ -322,8 +322,8 @@ class ElementPicker {
           elements.forEach(el => {
             (el as HTMLElement).style.display = 'none';
           });
-        } catch (__error) {
-          console.error('Error applying filter:', filter.selector, _error);
+        } catch (_error) {
+          console.error('Error applying filter:', filter.selector, error);
         }
       }
     });

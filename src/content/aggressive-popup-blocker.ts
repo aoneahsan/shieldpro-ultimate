@@ -11,7 +11,7 @@ export class AggressivePopupBlocker {
   private suspiciousClickHandlers = new WeakSet<Function>();
 
   constructor() {
-    this.originalOpen = window.open.bind(_window);
+    this.originalOpen = window.open.bind(window);
     this.init();
   }
 
@@ -67,7 +67,7 @@ export class AggressivePopupBlocker {
         let interactionTimeout;
         
         // Override window.open
-        window.open = function(_url, target, _features) {
+        window.open = function(url, target, _features) {
           const urlStr = url ? url.toString() : '';
           
           // Block all window.open calls within 3 seconds of page interaction
@@ -134,7 +134,7 @@ export class AggressivePopupBlocker {
           
           // Allow same-origin navigation in same tab
           if (target === '_self' && urlStr.startsWith(window.location.origin)) {
-            return _open.call(_window, url, _target, features);
+            return _open.call(window, url, _target, features);
           }
           
           // Block everything else by default
@@ -174,7 +174,7 @@ export class AggressivePopupBlocker {
         
         // Block createElement for suspicious elements
         document.createElement = function(_tagName) {
-          const element = _createElement.call(_document, tagName);
+          const element = _createElement.call(document, tagName);
           
           if (tagName.toLowerCase() === 'a') {
             // Override link click behavior
@@ -226,7 +226,7 @@ export class AggressivePopupBlocker {
             console.warn('[ShieldPro] Blocked excessive alert');
             return;
           }
-          return _alert.call(_window, msg);
+          return _alert.call(window, msg);
         };
         
         window.confirm = function(_msg) {
@@ -234,7 +234,7 @@ export class AggressivePopupBlocker {
             console.warn('[ShieldPro] Blocked excessive confirm');
             return false;
           }
-          return _confirm.call(_window, msg);
+          return _confirm.call(window, msg);
         };
         
         window.prompt = function(_msg, defaultText) {
@@ -242,7 +242,7 @@ export class AggressivePopupBlocker {
             console.warn('[ShieldPro] Blocked excessive prompt');
             return null;
           }
-          return _prompt.call(_window, msg, _defaultText);
+          return _prompt.call(window, msg, _defaultText);
         };
         
         // Report blocked popups
@@ -262,27 +262,27 @@ export class AggressivePopupBlocker {
     
     // Inject the script as early as possible
     if (document.documentElement) {
-      document.documentElement.insertBefore(_script, document.documentElement.firstChild);
+      document.documentElement.insertBefore(script, document.documentElement.firstChild);
       script.remove();
     } else {
       // If documentElement doesn't exist yet, wait for it
       const observer = new MutationObserver(() => {
         if (document.documentElement) {
-          document.documentElement.insertBefore(_script, document.documentElement.firstChild);
+          document.documentElement.insertBefore(script, document.documentElement.firstChild);
           script.remove();
           observer.disconnect();
         }
       });
-      observer.observe(_document, { childList: true, subtree: true });
+      observer.observe(document, { childList: true, subtree: true });
     }
   }
 
   private overrideWindowOpen() {
     // Additional window.open override in content script context
     window.open = new Proxy(this.originalOpen, {
-      apply: (_target, thisArg, _args) => {
-        const [url, _name, features] = args;
-        console.warn('[ShieldPro] window.open intercepted:', _url);
+      apply: (_target, _thisArg, args) => {
+        const [url] = args;
+        console.warn('[ShieldPro] window.open intercepted:', url);
         
         // Always block in content script context
         this.blockedCount++;
@@ -294,7 +294,7 @@ export class AggressivePopupBlocker {
 
   private blockClickPopups() {
     // Capture all clicks at the earliest phase
-    document.addEventListener('click', (_e) => {
+    document.addEventListener('click', (e) => {
       const target = e.target as HTMLElement;
       const now = Date.now();
       
@@ -531,7 +531,7 @@ export class AggressivePopupBlocker {
 
   private isSafeUrl(url: string): boolean {
     try {
-      const urlObj = new URL(_url, window.location.href);
+      const urlObj = new URL(url, window.location.href);
       
       // Block known ad domains
       const adDomains = [
@@ -540,7 +540,7 @@ export class AggressivePopupBlocker {
         'outbrain.com', 'taboola.com', 'mgid.com'
       ];
       
-      return !adDomains.some(domain => urlObj.hostname.includes(_domain));
+      return !adDomains.some(domain => urlObj.hostname.includes(domain));
     } catch {
       return false;
     }

@@ -124,7 +124,7 @@ export class CookieConsentHandler {
   }
 
   private async saveRejectedDomain(domain: string) {
-    this.rejectedDomains.add(_domain);
+    this.rejectedDomains.add(domain);
     await chrome.storage.local.set({
       rejectedCookieDomains: Array.from(this.rejectedDomains)
     });
@@ -202,8 +202,8 @@ export class CookieConsentHandler {
       this.stopObserver();
       
       console.warn(`ShieldPro: Auto-rejected cookies via ${platform}`);
-    } catch (__error) {
-      console.error('Failed to reject cookies:', _error);
+    } catch (_error) {
+      console.error('Failed to reject cookies:', error);
     }
   }
 

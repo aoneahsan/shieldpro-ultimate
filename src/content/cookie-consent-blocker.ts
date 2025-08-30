@@ -299,7 +299,7 @@ export class CookieConsentBlocker {
     `;
 
     if (document.documentElement) {
-      document.documentElement.appendChild(_script);
+      document.documentElement.appendChild(script);
       script.remove();
     }
   }

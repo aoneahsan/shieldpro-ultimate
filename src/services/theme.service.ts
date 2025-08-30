@@ -378,8 +378,8 @@ class ThemeService {
         action: 'broadcastTheme',
         theme
       });
-    } catch (__error) {
-      console.log('Could not broadcast theme:', _error);
+    } catch (_error) {
+      console.log('Could not broadcast theme:', error);
     }
 
     // Also broadcast via storage event for other open tabs

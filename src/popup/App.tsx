@@ -1,24 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { ExtensionSettings, BlockingStats, TabState } from '../shared/types';
 import { AccountManager } from './components/AccountManager';
 import { EarlyAdopterStatus } from '../shared/constants/marketing';
 import { 
   Shield, 
   Power, 
-  ListX, 
   TrendingUp, 
   Globe, 
   Settings,
   RefreshCw,
-  CheckCircle,
-  XCircle,
   Activity,
   BarChart3,
   Youtube,
-  Eye,
   Share2,
   Crown,
-  AlertCircle,
   Gift
 } from 'lucide-react';
 
@@ -29,7 +24,7 @@ const App: React.FC = () => {
   const [earlyAdopterStatus, setEarlyAdopterStatus] = useState<EarlyAdopterStatus | null>(null);
   const [hasNewData, setHasNewData] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [authChecked, setAuthChecked] = useState(false);
+  const [_authChecked, setAuthChecked] = useState(false);
 
   // Load cached data immediately on mount for instant display
   useEffect(() => {
@@ -45,7 +40,7 @@ const App: React.FC = () => {
     }, 5000);
     
     return () => clearInterval(interval);
-  }, []);
+  }, [loadDataInBackground]);
 
   const loadCachedData = async () => {
     try {
@@ -53,7 +48,7 @@ const App: React.FC = () => {
       const cached = await chrome.storage.local.get(['cachedSettings', 'cachedStats', 'cachedTabState', 'cachedEarlyAdopter', 'authUser', 'authProfile']);
       
       if (cached.cachedSettings) {
-        let settingsData = cached.cachedSettings;
+        const settingsData = cached.cachedSettings;
         // If early adopter, override tier to 5
         if (cached.cachedEarlyAdopter?.isEarlyAdopter) {
           settingsData.tier = {
@@ -93,7 +88,7 @@ const App: React.FC = () => {
     }
   };
 
-  const loadDataInBackground = async () => {
+  const loadDataInBackground = useCallback(async () => {
     try {
       const [settingsRes, statsRes, tabStateRes, earlyAdopterRes] = await Promise.all([
         chrome.runtime.sendMessage({ action: 'getSettings' }),
@@ -136,7 +131,7 @@ const App: React.FC = () => {
     } catch (error) {
       console.error('Failed to load fresh data:', error);
     }
-  };
+  }, []);
 
   const refreshData = async () => {
     setIsRefreshing(true);
@@ -168,8 +163,12 @@ const App: React.FC = () => {
     }
   };
 
+  const loadData = async () => {
+    await loadDataInBackground();
+  };
+
   const clearStats = async () => {
-    if (confirm('Clear all statistics?')) {
+    if (window.confirm('Clear all statistics?')) {
       try {
         await chrome.runtime.sendMessage({ action: 'clearStats' });
         await loadData();
@@ -194,7 +193,7 @@ const App: React.FC = () => {
       ...prev,
       tier: {
         ...prev.tier,
-        level: newTier as any,
+        level: newTier,
         name: getTierName(newTier),
         unlockedAt: Date.now(),
         progress: newTier * 20
@@ -202,12 +201,12 @@ const App: React.FC = () => {
     } : null);
   };
 
-  const getTierName = (tier: number): any => {
+  const getTierName = (tier: number): string => {
     const names = ['Basic', 'Enhanced', 'Professional', 'Premium', 'Ultimate'];
     return names[tier - 1] || 'Basic';
   };
 
-  const getTierColor = (tier: number): string => {
+  const _getTierColor = (tier: number): string => {
     const colors = ['bg-gray-500', 'bg-green-500', 'bg-blue-500', 'bg-purple-500', 'bg-gradient-to-r from-yellow-400 to-orange-500'];
     return colors[tier - 1] || 'bg-gray-500';
   };

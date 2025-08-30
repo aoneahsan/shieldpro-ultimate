@@ -348,7 +348,7 @@ function Options() {
   );
 }
 
-function GeneralSettings() {
+function GeneralSettingsLegacy() {
   const [settings, setSettings] = useState({
     enabled: true,
     showBadge: true,

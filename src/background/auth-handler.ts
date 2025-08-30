@@ -58,9 +58,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 async function handleGoogleSignIn() {
-  try {
     // Use Chrome Identity API for OAuth
-    const manifest = chrome.runtime.getManifest();
     
     // For Manifest V3, we need to use chrome.identity.launchWebAuthFlow
     // This opens a popup window for Google OAuth
@@ -117,19 +115,15 @@ async function handleGoogleSignIn() {
                 photoURL: userCredential.user.photoURL
               }
             });
-          } catch (error: any) {
-            reject(error);
+          } catch (error) {
+            reject(error as Error);
           }
         }
       );
     });
-  } catch (error: any) {
-    throw error;
-  }
 }
 
 async function handleEmailSignIn(email: string, password: string) {
-  try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     await authService.ensureUserProfile(userCredential.user);
     
@@ -142,13 +136,9 @@ async function handleEmailSignIn(email: string, password: string) {
         photoURL: userCredential.user.photoURL
       }
     };
-  } catch (error: any) {
-    throw error;
-  }
 }
 
 async function handleEmailSignUp(email: string, password: string, displayName?: string, referralCode?: string) {
-  try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     
     if (displayName) {
@@ -166,33 +156,21 @@ async function handleEmailSignUp(email: string, password: string, displayName?: 
         photoURL: userCredential.user.photoURL
       }
     };
-  } catch (error: any) {
-    throw error;
-  }
 }
 
 async function handlePasswordReset(email: string) {
-  try {
     await sendPasswordResetEmail(auth, email);
     return { success: true };
-  } catch (error: any) {
-    throw error;
-  }
 }
 
 async function handleSignOut() {
-  try {
     await signOut(auth);
     // Clear any cached data
     await chrome.storage.local.remove(['user', 'userProfile']);
     return { success: true };
-  } catch (error: any) {
-    throw error;
-  }
 }
 
 async function handleGetCurrentUser() {
-  try {
     const user = auth.currentUser;
     if (user) {
       const profile = await authService.getUserProfile();
@@ -208,9 +186,6 @@ async function handleGetCurrentUser() {
       };
     }
     return { success: false, user: null };
-  } catch (error: any) {
-    throw error;
-  }
 }
 
 export {};

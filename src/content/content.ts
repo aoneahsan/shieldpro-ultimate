@@ -270,7 +270,7 @@ class ContentScriptManager {
           observer.disconnect();
         }
       });
-      observer.observe(_document, { childList: true, subtree: true });
+      observer.observe(document, { childList: true, subtree: true });
     }
   }
 
@@ -303,7 +303,7 @@ class ContentScriptManager {
         } else if (pattern.category === 'url') {
           this.applyUrlRegex(_regex, pattern.action);
         }
-      } catch (__error) {
+      } catch (_error) {
         console.error('Invalid regex pattern:', pattern.pattern);
       }
     });
@@ -330,7 +330,7 @@ class ContentScriptManager {
     // Check all links and iframes
     document.querySelectorAll('a[href], iframe[src]').forEach(element => {
       const url = element.getAttribute('href') || element.getAttribute('src');
-      if (url && regex.test(_url)) {
+      if (url && regex.test(url)) {
         if (action === 'block') {
           element.remove();
         }

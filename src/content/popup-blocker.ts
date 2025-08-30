@@ -51,11 +51,11 @@ export class PopupBlocker {
       const features = args[2] || '';
       
       // Check if it's a popup
-      const isPopup = self.isLikelyPopup(_url, target, _features);
+      const isPopup = self.isLikelyPopup(url, target, _features);
       
       if (_isPopup) {
         self.blockedPopups++;
-        console.warn('ShieldPro: Blocked popup:', _url);
+        console.warn('ShieldPro: Blocked popup:', url);
         
         // Send message to background
         chrome.runtime.sendMessage({
@@ -68,7 +68,7 @@ export class PopupBlocker {
       }
       
       // Allow legitimate window.open calls
-      return self.originalOpen.apply(_window, args);
+      return self.originalOpen.apply(window, args);
     };
   }
 
@@ -116,7 +116,7 @@ export class PopupBlocker {
       'revcontent.com'
     ];
     
-    if (popupDomains.some(domain => url.includes(_domain))) {
+    if (popupDomains.some(domain => url.includes(domain))) {
       return true;
     }
     
@@ -136,7 +136,7 @@ export class PopupBlocker {
       /\/advertisement\//
     ];
     
-    if (suspiciousPatterns.some(pattern => pattern.test(_url))) {
+    if (suspiciousPatterns.some(pattern => pattern.test(url))) {
       return true;
     }
     
@@ -170,7 +170,7 @@ export class PopupBlocker {
 
   private blockPopupTriggers(): void {
     // Block onclick popups
-    document.addEventListener('click', (_e) => {
+    document.addEventListener('click', (e) => {
       const target = e.target as HTMLElement;
       
       // Check for onclick attributes that might open popups
@@ -222,7 +222,7 @@ export class PopupBlocker {
       'adf.ly', 'adfoc.us', 'shrink.me', 'shorte.st'
     ];
     
-    return suspiciousDomains.some(domain => href.includes(_domain));
+    return suspiciousDomains.some(domain => href.includes(domain));
   }
 
   private preventNewWindows(): void {
@@ -307,11 +307,11 @@ export class PopupBlocker {
           
           // Block suspicious URLs
           if (!url || url === 'about:blank' || url.includes('popup') || url.includes('ad')) {
-            console.warn('ShieldPro: Blocked suspicious popup:', _url);
+            console.warn('ShieldPro: Blocked suspicious popup:', url);
             return null;
           }
           
-          return originalOpen.apply(_window, args);
+          return originalOpen.apply(window, args);
         };
         
         // For Tier 2+: Block annoying dialogs
@@ -325,7 +325,7 @@ export class PopupBlocker {
               console.warn('ShieldPro: Blocked excessive alert');
               return;
             }
-            return originalAlert.call(_window, msg);
+            return originalAlert.call(window, msg);
           };
           
           window.confirm = function(_msg) {
@@ -334,7 +334,7 @@ export class PopupBlocker {
               console.warn('ShieldPro: Blocked excessive confirm');
               return false;
             }
-            return originalConfirm.call(_window, msg);
+            return originalConfirm.call(window, msg);
           };
           
           window.prompt = function(_msg, defaultText) {
@@ -343,7 +343,7 @@ export class PopupBlocker {
               console.warn('ShieldPro: Blocked excessive prompt');
               return null;
             }
-            return originalPrompt.call(_window, msg, _defaultText);
+            return originalPrompt.call(window, msg, _defaultText);
           };
           
           // Reset dialog count periodically
@@ -371,7 +371,7 @@ export class PopupBlocker {
     
     // Inject as early as possible
     if (document.documentElement) {
-      document.documentElement.appendChild(_script);
+      document.documentElement.appendChild(script);
       script.remove();
     }
   }

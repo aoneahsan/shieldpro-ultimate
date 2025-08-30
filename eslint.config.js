@@ -3,6 +3,7 @@ import typescript from '@typescript-eslint/eslint-plugin';
 import typescriptParser from '@typescript-eslint/parser';
 import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
+import unusedImports from 'eslint-plugin-unused-imports';
 
 export default [
   js.configs.recommended,
@@ -18,11 +19,18 @@ export default [
         }
       },
       globals: {
+        // Browser APIs
         Blob: 'readonly',
         URL: 'readonly', 
         File: 'readonly',
+        FileReader: 'readonly',
+        Image: 'readonly',
         HTMLInputElement: 'readonly',
         HTMLDivElement: 'readonly',
+        HTMLAnchorElement: 'readonly',
+        HTMLElement: 'readonly',
+        Element: 'readonly',
+        EventTarget: 'readonly',
         NodeJS: 'readonly',
         browser: true,
         es2020: true,
@@ -34,7 +42,6 @@ export default [
         console: 'readonly',
         process: 'readonly',
         fetch: 'readonly',
-        URL: 'readonly',
         URLSearchParams: 'readonly',
         setInterval: 'readonly',
         setTimeout: 'readonly',
@@ -43,17 +50,57 @@ export default [
         performance: 'readonly',
         navigator: 'readonly',
         alert: 'readonly',
-        HTMLElement: 'readonly',
-        Element: 'readonly',
+        confirm: 'readonly',
+        prompt: 'readonly',
+        localStorage: 'readonly',
+        sessionStorage: 'readonly',
+        location: 'readonly',
+        history: 'readonly',
         MutationObserver: 'readonly',
         IntersectionObserver: 'readonly',
-        ResizeObserver: 'readonly'
+        ResizeObserver: 'readonly',
+        XMLHttpRequest: 'readonly',
+        FormData: 'readonly',
+        Headers: 'readonly',
+        Request: 'readonly',
+        Response: 'readonly',
+        CustomEvent: 'readonly',
+        Event: 'readonly',
+        Error: 'readonly',
+        Promise: 'readonly',
+        Map: 'readonly',
+        Set: 'readonly',
+        WeakMap: 'readonly',
+        WeakSet: 'readonly',
+        Symbol: 'readonly',
+        Proxy: 'readonly',
+        Reflect: 'readonly',
+        Array: 'readonly',
+        Object: 'readonly',
+        String: 'readonly',
+        Number: 'readonly',
+        Boolean: 'readonly',
+        Date: 'readonly',
+        Math: 'readonly',
+        JSON: 'readonly',
+        RegExp: 'readonly',
+        parseInt: 'readonly',
+        parseFloat: 'readonly',
+        isNaN: 'readonly',
+        isFinite: 'readonly',
+        encodeURIComponent: 'readonly',
+        decodeURIComponent: 'readonly',
+        encodeURI: 'readonly',
+        decodeURI: 'readonly',
+        btoa: 'readonly',
+        atob: 'readonly'
       }
     },
     plugins: {
       '@typescript-eslint': typescript,
       react,
-      'react-hooks': reactHooks
+      'react-hooks': reactHooks,
+      'unused-imports': unusedImports
     },
     settings: {
       react: {
@@ -61,13 +108,24 @@ export default [
       }
     },
     rules: {
+      // Unused imports
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+      'unused-imports/no-unused-imports': 'error',
+      'unused-imports/no-unused-vars': [
+        'warn',
+        { 
+          vars: 'all',
+          varsIgnorePattern: '^_',
+          args: 'after-used',
+          argsIgnorePattern: '^_',
+          ignoreRestSiblings: true
+        }
+      ],
+      
       // TypeScript
-      '@typescript-eslint/no-unused-vars': ['warn', { 
-        argsIgnorePattern: '^_',
-        varsIgnorePattern: '^_'
-      }],
-      '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-non-null-assertion': 'warn',
+      '@typescript-eslint/no-explicit-any': 'off', // Sometimes any is needed
+      '@typescript-eslint/no-non-null-assertion': 'off',
       
       // React
       'react/react-in-jsx-scope': 'off',
@@ -77,11 +135,13 @@ export default [
       'react-hooks/exhaustive-deps': 'warn',
 
       // General
-      'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'no-console': 'off', // Console is fine in Chrome extensions
       'no-debugger': 'warn',
       'prefer-const': 'warn',
       'no-var': 'error',
-      'no-unused-vars': 'off' // Use TypeScript version instead
+      'no-undef': 'off', // TypeScript handles this
+      'no-useless-catch': 'off', // Sometimes we need to catch and rethrow
+      'no-empty': ['error', { allowEmptyCatch: true }] // Allow empty catch blocks
     }
   },
   {

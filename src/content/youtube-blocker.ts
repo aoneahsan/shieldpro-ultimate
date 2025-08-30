@@ -208,7 +208,7 @@ class YouTubeAdBlocker {
         'googleads.g.doubleclick.net',
         '/pagead/ads',
         '/ptracking',
-        '/get_midroll_info'
+        '/get_midrollinfo'
       ];
 
       // More specific blocking - only if it's actually an ad request
@@ -226,7 +226,7 @@ class YouTubeAdBlocker {
         return; // Block the request
       }
 
-      return originalOpen.apply(_this, [method, _url, ...args] as any);
+      return originalOpen.apply(_this, [method, url, ...args] as any);
     };
 
     // Intercept fetch requests  
@@ -242,7 +242,7 @@ class YouTubeAdBlocker {
         'googleads.g.doubleclick.net',
         '/pagead/ads',
         '/ptracking',
-        '/get_midroll_info'
+        '/get_midrollinfo'
       ];
 
       // More specific blocking - only if it's actually an ad request
@@ -348,7 +348,7 @@ class YouTubeAdBlocker {
         }
 
         // Override ad-related properties
-        Object.defineProperty(_window, 'ytInitialPlayerResponse', {
+        Object.defineProperty(window, 'ytInitialPlayerResponse', {
           get: function() {
             return this._ytInitialPlayerResponse;
           },
@@ -397,7 +397,7 @@ class YouTubeAdBlocker {
         };
       })();
     `;
-    document.documentElement.appendChild(_script);
+    document.documentElement.appendChild(script);
     script.remove();
   }
 }

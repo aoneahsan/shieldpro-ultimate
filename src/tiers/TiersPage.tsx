@@ -7,19 +7,8 @@ import {
   Zap, 
   Crown,
   CheckCircle,
-  XCircle,
   Users,
-  Calendar,
-  FileText,
-  Download,
-  Upload,
-  Settings,
-  Eye,
-  Clock,
-  Filter,
   Globe,
-  Youtube,
-  Share2,
   TrendingUp,
   Award,
   Sparkles
@@ -41,7 +30,7 @@ interface TierInfo {
 
 const TiersPage: React.FC = () => {
   const [currentTier, setCurrentTier] = useState(1);
-  const [userProfile, setUserProfile] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<{displayName?: string; email?: string} | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [referralCount, setReferralCount] = useState(0);
   const [weeklyEngagement, setWeeklyEngagement] = useState(0);

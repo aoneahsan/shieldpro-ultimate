@@ -48,8 +48,8 @@
           loadYouTubeBlocker();
         }
       }
-    } catch (__error) {
-      console.error('ShieldPro: Failed to check settings', _error);
+    } catch (_error) {
+      console.error('ShieldPro: Failed to check settings', error);
     }
   }
 
@@ -84,7 +84,7 @@
       const url = args[0]?.toString() || '';
       if (url && (url.includes('doubleclick') || url.includes('googleads') || 
           url === 'about:blank' || url.includes('popup'))) {
-        console.warn('ShieldPro: Blocked popup', _url);
+        console.warn('ShieldPro: Blocked popup', url);
         return null;
       }
       return originalOpen.apply(_this, args);
@@ -193,7 +193,7 @@
     `;
     
     if (document.documentElement) {
-      document.documentElement.appendChild(_script);
+      document.documentElement.appendChild(script);
       script.remove();
     }
   }

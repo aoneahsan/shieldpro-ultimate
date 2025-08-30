@@ -43,8 +43,8 @@ export class SafeInjection {
       target.appendChild(_style);
       
       return true;
-    } catch (__error) {
-      console.error('CSS injection failed:', _error);
+    } catch (_error) {
+      console.error('CSS injection failed:', error);
       return false;
     }
   }
@@ -85,8 +85,8 @@ export class SafeInjection {
       element.remove();
       console.debug(`🗑️ Safely removed ${context} element:`, element.tagName);
       return true;
-    } catch (__error) {
-      console.debug('Safe removal failed:', _error);
+    } catch (_error) {
+      console.debug('Safe removal failed:', error);
       return false;
     }
   }
@@ -165,7 +165,7 @@ export class SafeInjection {
       
       // Consider unsafe if has interactive/media/form elements
       return !(hasInteractiveElements || hasMediaElements || hasFormElements);
-    } catch (__error) {
+    } catch (_error) {
       return false;
     }
   }
@@ -202,8 +202,8 @@ export class SafeInjection {
         url: window.location.href,
         timestamp: Date.now()
       });
-    } catch (__error) {
-      console.debug('Failed to report health issue:', _error);
+    } catch (_error) {
+      console.debug('Failed to report health issue:', error);
     }
   }
 

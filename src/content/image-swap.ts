@@ -174,7 +174,7 @@ class ImageSwapper {
             this.replaceWithImage(_element);
           }
         });
-      } catch (__error) {
+      } catch (_error) {
         console.error('Error with selector:', _selector, error);
       }
     });

@@ -262,7 +262,7 @@ export const RegexPatternManager: React.FC<RegexPatternManagerProps> = ({ curren
     setTestResults(results);
   };
 
-  const useTemplate = (template: any) => {
+  const applyTemplate = (template: any) => {
     setNewPattern({
       ...newPattern,
       name: template.name,
@@ -510,7 +510,7 @@ export const RegexPatternManager: React.FC<RegexPatternManagerProps> = ({ curren
               {REGEX_TEMPLATES.map((template, idx) => (
                 <button
                   key={idx}
-                  onClick={() => useTemplate(template)}
+                  onClick={() => applyTemplate(template)}
                   className="px-3 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-sm"
                 >
                   {template.name}

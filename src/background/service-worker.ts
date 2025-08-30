@@ -11,32 +11,32 @@ const blockedRequests = new Map<number, number>();
 
 // Update active rulesets based on user tier
 async function updateTierRules(tier: number): Promise<void> {
-  const enabledRulesets: string[] = ['tier1_rules'];
+  const enabledRulesets: string[] = ['tier1rules'];
   const disabledRulesets: string[] = [];
   
   // Enable rules based on tier level
   if (tier >= 2) {
-    enabledRulesets.push('tier2_rules');
+    enabledRulesets.push('tier2rules');
   } else {
-    disabledRulesets.push('tier2_rules');
+    disabledRulesets.push('tier2rules');
   }
   
   if (tier >= 3) {
-    enabledRulesets.push('tier3_rules');
+    enabledRulesets.push('tier3rules');
   } else {
-    disabledRulesets.push('tier3_rules');
+    disabledRulesets.push('tier3rules');
   }
   
   if (tier >= 4) {
-    enabledRulesets.push('tier4_rules', 'tier4_security_rules');
+    enabledRulesets.push('tier4rules', 'tier4_securityrules');
   } else {
-    disabledRulesets.push('tier4_rules', 'tier4_security_rules');
+    disabledRulesets.push('tier4rules', 'tier4_securityrules');
   }
   
   if (tier >= 5) {
-    enabledRulesets.push('tier5_rules');
+    enabledRulesets.push('tier5rules');
   } else {
-    disabledRulesets.push('tier5_rules');
+    disabledRulesets.push('tier5rules');
   }
   
   try {
