@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Shield, Users, Settings, Filter, Globe, Lock, Check, Download, Upload, Network, Code, Zap, ShieldX, Database, List, Sparkles, Gift, Star, X, Palette, Image, Cloud, Info } from 'lucide-react';
+import { Shield, Users, Settings, Filter, Globe, Lock, Check, Download, Upload, Network, Code, Zap, ShieldX, Database, List, Sparkles, Gift, Star, X, Palette, Image, Cloud, Info, UserCircle } from 'lucide-react';
 import { CustomFilters } from './components/CustomFilters';
 import { AdvancedWhitelist } from './components/AdvancedWhitelist';
 import { FilterListManager } from './components/FilterListManager';
@@ -11,6 +11,7 @@ import { GeneralSettings } from './components/GeneralSettings';
 import { ThemeManager } from './components/ThemeManager';
 import { ImageSwap } from './components/ImageSwap';
 import { BackupSync } from './components/BackupSync';
+import { ProfileManagement } from './components/ProfileManagement';
 import { StorageManager } from '../shared/utils/storage';
 import { TabsLayout, SidebarLayout, HeaderLayout, HeaderSidebarLayout } from './layouts';
 import { themeService } from '../services/theme.service';
@@ -215,6 +216,7 @@ function Options() {
   
   const tabs: TabItem[] = [
     { id: 'general', label: 'General', icon: Settings },
+    { id: 'profile', label: 'Profile', icon: UserCircle },
     { id: 'filters', label: 'Filters', icon: Filter },
     { id: 'privacy', label: 'Privacy', icon: Lock },
     { id: 'whitelist', label: 'Whitelist', icon: Globe },
@@ -252,6 +254,7 @@ function Options() {
             </div>
           </div>
         )}
+        {activeTab === 'profile' && <ProfileManagement />}
         {activeTab === 'filters' && <FilterSettings />}
         {activeTab === 'privacy' && <PrivacySettings />}
         {activeTab === 'whitelist' && <WhitelistSettings />}
