@@ -66,13 +66,13 @@ class ErrorService {
 
   private setupGlobalErrorHandlers() {
     // Handle unhandled promise rejections
-    window.addEventListener('unhandledrejection', (event) => {
+    window.addEventListener('unhandledrejection', (_event) => {
       this.handleError(new Error(event.reason), 'UNHANDLED_PROMISE');
       event.preventDefault();
     });
 
     // Handle global errors
-    window.addEventListener('error', (event) => {
+    window.addEventListener('error', (_event) => {
       this.handleError(event.error, 'GLOBAL_ERROR');
       event.preventDefault();
     });
@@ -84,8 +84,8 @@ class ErrorService {
       if (stored.errorLog) {
         this.errorLog = stored.errorLog;
       }
-    } catch (error) {
-      console.error('Failed to load error log:', error);
+    } catch (__error) {
+      console.error('Failed to load error log:', _error);
     }
   }
 
@@ -96,29 +96,29 @@ class ErrorService {
         this.errorLog = this.errorLog.slice(-this.maxLogSize);
       }
       await chrome.storage.local.set({ errorLog: this.errorLog });
-    } catch (error) {
-      console.error('Failed to save error log:', error);
+    } catch (__error) {
+      console.error('Failed to save error log:', _error);
     }
   }
 
   public handleError(error: any, action?: string): ErrorDetails {
-    const errorDetails = this.parseError(error, action);
+    const errorDetails = this.parseError(_error, action);
     
     // Log to console in development
     if (process.env.NODE_ENV === 'development') {
-      console.error('Error:', errorDetails);
+      console.error('Error:', _errorDetails);
     }
 
     // Add to error log
-    this.errorLog.push(errorDetails);
+    this.errorLog.push(_errorDetails);
     this.saveErrorLog();
 
     // Send to analytics if available
-    this.reportToAnalytics(errorDetails);
+    this.reportToAnalytics(_errorDetails);
 
     // Show user notification if critical
-    if (this.isCriticalError(errorDetails)) {
-      this.showUserNotification(errorDetails);
+    if (this.isCriticalError(_errorDetails)) {
+      this.showUserNotification(_errorDetails);
     }
 
     return errorDetails;
@@ -133,7 +133,7 @@ class ErrorService {
 
     // Parse Firebase auth errors
     if (error?.code?.startsWith('auth/')) {
-      const authError = this.parseAuthError(error);
+      const authError = this.parseAuthError(_error);
       code = authError.code;
       message = authError.message;
       userMessage = authError.userMessage;
@@ -142,7 +142,7 @@ class ErrorService {
     }
     // Parse Firebase Firestore errors
     else if (error?.code?.startsWith('firestore/')) {
-      const firestoreError = this.parseFirestoreError(error);
+      const firestoreError = this.parseFirestoreError(_error);
       code = firestoreError.code;
       message = firestoreError.message;
       userMessage = firestoreError.userMessage;
@@ -316,26 +316,26 @@ class ErrorService {
     errorCode: string,
     maxAttempts = this.maxRetries
   ): Promise<T> {
-    const attempts = this.retryAttempts.get(errorCode) || 0;
+    const attempts = this.retryAttempts.get(_errorCode) || 0;
     
     try {
       const result = await operation();
-      this.retryAttempts.delete(errorCode);
+      this.retryAttempts.delete(_errorCode);
       return result;
-    } catch (error) {
-      const errorDetails = this.handleError(error, errorCode);
+    } catch (__error) {
+      const errorDetails = this.handleError(_error, errorCode);
       
       if (errorDetails.retryable && attempts < maxAttempts) {
-        this.retryAttempts.set(errorCode, attempts + 1);
+        this.retryAttempts.set(_errorCode, attempts + 1);
         
         // Exponential backoff
-        const delay = Math.min(1000 * Math.pow(2, attempts), 10000);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        const delay = Math.min(1000 * Math.pow(2, _attempts), 10000);
+        await new Promise(resolve => setTimeout(_resolve, delay));
         
-        return this.retry(operation, errorCode, maxAttempts);
+        return this.retry(_operation, errorCode, _maxAttempts);
       }
       
-      this.retryAttempts.delete(errorCode);
+      this.retryAttempts.delete(_errorCode);
       throw error;
     }
   }
@@ -374,10 +374,10 @@ class ErrorService {
 
     try {
       // Send to Firebase or bug tracking service
-      console.log('Bug report:', report);
+      console.log('Bug report:', _report);
       return { success: true };
-    } catch (error) {
-      this.handleError(error, 'BUG_REPORT');
+    } catch (__error) {
+      this.handleError(_error, 'BUG_REPORT');
       return { success: false };
     }
   }

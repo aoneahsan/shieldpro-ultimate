@@ -1,4 +1,4 @@
-console.log('ShieldPro Ultimate - Content Script Loaded');
+console.warn('ShieldPro Ultimate - Content Script Loaded');
 
 // Import blockers
 import './popup-blocker';
@@ -75,12 +75,12 @@ function applyBlockingRules(rules: BlockingRule[]) {
   }
 }
 
-chrome.storage.local.get(['enabled', 'tier'], (data) => {
+chrome.storage.local.get(['enabled', 'tier'], (_data) => {
   if (data.enabled) {
-    applyBlockingRules(basicBlockingRules);
+    applyBlockingRules(_basicBlockingRules);
     
     const observer = new MutationObserver(() => {
-      applyBlockingRules(basicBlockingRules);
+      applyBlockingRules(_basicBlockingRules);
     });
     
     observer.observe(document.body, {
@@ -91,10 +91,10 @@ chrome.storage.local.get(['enabled', 'tier'], (data) => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('DOM Content Loaded - Applying blocking rules');
-  chrome.storage.local.get(['enabled'], (data) => {
+  console.warn('DOM Content Loaded - Applying blocking rules');
+  chrome.storage.local.get(['enabled'], (_data) => {
     if (data.enabled) {
-      applyBlockingRules(basicBlockingRules);
+      applyBlockingRules(_basicBlockingRules);
     }
   });
 });

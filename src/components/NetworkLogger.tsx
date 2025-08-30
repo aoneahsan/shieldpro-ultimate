@@ -66,7 +66,7 @@ interface NetworkLoggerProps {
   currentTier?: number;
 }
 
-export const NetworkLogger: React.FC<NetworkLoggerProps> = ({ currentTier = 4 }) => {
+export const NetworkLogger: React.FC<NetworkLoggerProps> = () => {
   const [requests, setRequests] = useState<NetworkRequest[]>([]);
   const [stats, setStats] = useState<NetworkStats>({
     totalRequests: 0,
@@ -122,6 +122,12 @@ export const NetworkLogger: React.FC<NetworkLoggerProps> = ({ currentTier = 4 })
       }
     };
   }, []); // Empty dependency array for mount only
+
+  useEffect(() => {
+    if (isRecording) {
+      startNetworkMonitoring();
+    }
+  }, [isRecording]); // Re-run when isRecording changes
 
   useEffect(() => {
     if (autoScroll && requestsEndRef.current) {
@@ -215,9 +221,7 @@ export const NetworkLogger: React.FC<NetworkLoggerProps> = ({ currentTier = 4 })
 
   const exportLogs = () => {
     const dataStr = JSON.stringify(requests, null, 2);
-    // eslint-disable-next-line no-undef
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    // eslint-disable-next-line no-undef
     const url = URL.createObjectURL(dataBlob);
     const link = document.createElement('a');
     link.href = url;
@@ -225,7 +229,6 @@ export const NetworkLogger: React.FC<NetworkLoggerProps> = ({ currentTier = 4 })
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    // eslint-disable-next-line no-undef
     URL.revokeObjectURL(url);
   };
 

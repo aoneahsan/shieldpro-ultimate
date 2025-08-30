@@ -20,7 +20,7 @@ class ElementPicker {
   }
 
   private setupMessageListener() {
-    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    chrome.runtime.onMessage.addListener((_request, sender, _sendResponse) => {
       if (request.action === 'activateElementPicker') {
         this.activate();
         sendResponse({ success: true });
@@ -107,9 +107,9 @@ class ElementPicker {
         to { transform: translateX(-50%) translateY(0); opacity: 1; }
       }
     `;
-    document.head.appendChild(style);
+    document.head.appendChild(_style);
     
-    document.body.appendChild(instructions);
+    document.body.appendChild(_instructions);
     
     // Auto-remove after 3 seconds
     setTimeout(() => {
@@ -119,24 +119,24 @@ class ElementPicker {
   }
 
   private attachEventListeners() {
-    this.mouseoverHandler = (e: MouseEvent) => this.handleMouseOver(e);
-    this.clickHandler = (e: MouseEvent) => this.handleClick(e);
-    this.keydownHandler = (e: KeyboardEvent) => this.handleKeyDown(e);
+    this.mouseoverHandler = (e: MouseEvent) => this.handleMouseOver(_e);
+    this.clickHandler = (e: MouseEvent) => this.handleClick(_e);
+    this.keydownHandler = (e: KeyboardEvent) => this.handleKeyDown(_e);
     
-    document.addEventListener('mouseover', this.mouseoverHandler, true);
-    document.addEventListener('click', this.clickHandler, true);
-    document.addEventListener('keydown', this.keydownHandler, true);
+    document.addEventListener('mouseover', this.mouseoverHandler, _true);
+    document.addEventListener('click', this.clickHandler, _true);
+    document.addEventListener('keydown', this.keydownHandler, _true);
   }
 
   private removeEventListeners() {
     if (this.mouseoverHandler) {
-      document.removeEventListener('mouseover', this.mouseoverHandler, true);
+      document.removeEventListener('mouseover', this.mouseoverHandler, _true);
     }
     if (this.clickHandler) {
-      document.removeEventListener('click', this.clickHandler, true);
+      document.removeEventListener('click', this.clickHandler, _true);
     }
     if (this.keydownHandler) {
-      document.removeEventListener('keydown', this.keydownHandler, true);
+      document.removeEventListener('keydown', this.keydownHandler, _true);
     }
   }
 
@@ -144,10 +144,10 @@ class ElementPicker {
     if (!this.isActive) return;
     
     const target = e.target as HTMLElement;
-    if (this.shouldIgnoreElement(target)) return;
+    if (this.shouldIgnoreElement(_target)) return;
     
     this.removeHighlight();
-    this.highlightElement(target);
+    this.highlightElement(_target);
     this.selectedElement = target;
   }
 
@@ -158,9 +158,9 @@ class ElementPicker {
     e.stopPropagation();
     
     const target = e.target as HTMLElement;
-    if (this.shouldIgnoreElement(target)) return;
+    if (this.shouldIgnoreElement(_target)) return;
     
-    this.blockElement(target);
+    this.blockElement(_target);
     this.deactivate();
     
     return false;
@@ -196,26 +196,26 @@ class ElementPicker {
     `;
     
     if (this.overlay) {
-      this.overlay.appendChild(highlight);
+      this.overlay.appendChild(_highlight);
     }
   }
 
   private removeHighlight() {
     const highlight = document.getElementById('shieldpro-highlight-box');
-    if (highlight) {
+    if (_highlight) {
       highlight.remove();
     }
   }
 
   private async blockElement(element: HTMLElement) {
     // Generate CSS selector for the element
-    const selector = this.generateSelector(element);
+    const selector = this.generateSelector(_element);
     
     // Hide element immediately
     element.style.display = 'none';
     
     // Save the custom filter
-    await this.saveCustomFilter(selector);
+    await this.saveCustomFilter(_selector);
     
     // Show success notification
     this.showNotification(`Element blocked! Filter added: ${selector}`);
@@ -237,7 +237,7 @@ class ElementPicker {
       const classes = element.className.split(' ')
         .filter(c => c && !c.startsWith('shieldpro'))
         .join('.');
-      if (classes) {
+      if (_classes) {
         return `.${classes}`;
       }
     }
@@ -251,16 +251,16 @@ class ElementPicker {
       
       if (current.id) {
         selector = `#${current.id}`;
-        path.unshift(selector);
+        path.unshift(_selector);
         break;
       } else if (current.className && typeof current.className === 'string') {
         const classes = current.className.split(' ').filter(c => c).join('.');
-        if (classes) {
+        if (_classes) {
           selector += `.${classes}`;
         }
       }
       
-      path.unshift(selector);
+      path.unshift(_selector);
       current = current.parentElement;
     }
     
@@ -301,7 +301,7 @@ class ElementPicker {
     `;
     
     notification.textContent = message;
-    document.body.appendChild(notification);
+    document.body.appendChild(_notification);
     
     setTimeout(() => {
       notification.style.animation = 'fadeOut 0.3s ease-out';
@@ -322,8 +322,8 @@ class ElementPicker {
           elements.forEach(el => {
             (el as HTMLElement).style.display = 'none';
           });
-        } catch (error) {
-          console.error('Error applying filter:', filter.selector, error);
+        } catch (__error) {
+          console.error('Error applying filter:', filter.selector, _error);
         }
       }
     });

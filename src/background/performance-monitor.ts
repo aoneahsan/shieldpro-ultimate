@@ -58,27 +58,27 @@ export class PerformanceMonitor {
     try {
       // Get memory usage if available
       if (chrome.system && chrome.system.memory) {
-        chrome.system.memory.getInfo((info) => {
+        chrome.system.memory.getInfo((_info) => {
           const usedMemory = info.capacity - info.availableCapacity;
           const usagePercent = (usedMemory / info.capacity) * 100;
           
           this.metrics.overall.memoryUsage = usagePercent;
         });
       }
-    } catch (error) {
-      console.error('Failed to get memory usage:', error);
+    } catch (__error) {
+      console.error('Failed to get memory usage:', _error);
     }
   }
 
   private setupBlockingMonitor(): void {
     // Monitor declarativeNetRequest performance
     if (chrome.declarativeNetRequest && chrome.declarativeNetRequest.onRuleMatchedDebug) {
-      chrome.declarativeNetRequest.onRuleMatchedDebug.addListener(async (info) => {
+      chrome.declarativeNetRequest.onRuleMatchedDebug.addListener(async (_info) => {
         const startTime = performance.now();
         
         // Track which tier's rule was matched
         const ruleId = info.rule.ruleId;
-        const tier = this.getRuleTier(ruleId);
+        const tier = this.getRuleTier(_ruleId);
         
         // Calculate blocking time
         const blockingTime = performance.now() - startTime;
@@ -106,7 +106,7 @@ export class PerformanceMonitor {
         }
         
         // Track timing
-        this.requestTimings.set(info.request.url, blockingTime);
+        this.requestTimings.set(info.request.url, _blockingTime);
       });
     }
   }
@@ -204,7 +204,7 @@ Efficiency:
 
   private countYouTubeBlocks(): string {
     let count = 0;
-    this.requestTimings.forEach((time, url) => {
+    this.requestTimings.forEach((_time, url) => {
       if (url.includes('youtube.com')) count++;
     });
     return count.toLocaleString();
@@ -212,7 +212,7 @@ Efficiency:
 
   private countTrackerBlocks(): string {
     let count = 0;
-    this.requestTimings.forEach((time, url) => {
+    this.requestTimings.forEach((_time, url) => {
       if (url.includes('analytics') || url.includes('tracking') || 
           url.includes('facebook') || url.includes('twitter')) {
         count++;
@@ -239,8 +239,8 @@ Efficiency:
       };
       
       await chrome.storage.local.set({ performanceMetrics: data });
-    } catch (error) {
-      console.error('Failed to save performance metrics:', error);
+    } catch (__error) {
+      console.error('Failed to save performance metrics:', _error);
     }
   }
 
@@ -250,8 +250,8 @@ Efficiency:
       if (result.performanceMetrics) {
         this.metrics = result.performanceMetrics.metrics;
       }
-    } catch (error) {
-      console.error('Failed to load performance metrics:', error);
+    } catch (__error) {
+      console.error('Failed to load performance metrics:', _error);
     }
   }
 

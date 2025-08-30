@@ -36,18 +36,13 @@ export const ReferralSystem: React.FC<ReferralSystemProps> = ({
   const referralUrl = `https://shieldpro.app/ref/${referralCode}`;
   const shareMessage = `🛡️ Block ads like a pro with ShieldPro Ultimate!\n\n✨ Use my referral code: ${referralCode}\n\n🎁 We both get rewards when you sign up!\n\n👉 ${referralUrl}`;
 
-  useEffect(() => {
-    generateQRCode();
-    loadReferralStats();
-  }, [referralCode]);
-
-  const generateQRCode = async () => {
+  const generateQRCode = React.useCallback(async () => {
     // Using qr-server.com API for QR code generation
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(referralUrl)}`;
     setQrCodeUrl(qrUrl);
-  };
+  }, [referralUrl]);
 
-  const loadReferralStats = async () => {
+  const loadReferralStats = React.useCallback(async () => {
     try {
       const getUserStatistics = httpsCallable(functions, 'getUserStatistics');
       const result = await getUserStatistics();
@@ -61,7 +56,12 @@ export const ReferralSystem: React.FC<ReferralSystemProps> = ({
     } catch (error) {
       console.error('Failed to load referral stats:', error);
     }
-  };
+  }, [referralCount]);
+
+  useEffect(() => {
+    generateQRCode();
+    loadReferralStats();
+  }, [generateQRCode, loadReferralStats]);
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(referralCode);

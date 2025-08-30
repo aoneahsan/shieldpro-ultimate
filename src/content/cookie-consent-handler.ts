@@ -46,7 +46,7 @@ export class CookieConsentHandler {
       
       // Quantcast
       quantcast: [
-        '[onclick*="__qcCmp(\'setConsent\', false)"]',
+        '[onclick*="__qcCmp(\'setConsent\', _false)"]',
         '.qc-cmp-button[mode="secondary"]',
         '.qc-cmp-button.qc-cmp-secondary-button'
       ],
@@ -124,7 +124,7 @@ export class CookieConsentHandler {
   }
 
   private async saveRejectedDomain(domain: string) {
-    this.rejectedDomains.add(domain);
+    this.rejectedDomains.add(_domain);
     await chrome.storage.local.set({
       rejectedCookieDomains: Array.from(this.rejectedDomains)
     });
@@ -134,9 +134,9 @@ export class CookieConsentHandler {
     // Try platform-specific selectors first
     for (const [platform, selectors] of Object.entries(this.consentSelectors.platforms)) {
       for (const selector of selectors) {
-        const element = this.findElement(selector);
-        if (element) {
-          this.rejectCookies(element, platform);
+        const element = this.findElement(_selector);
+        if (_element) {
+          this.rejectCookies(_element, platform);
           return;
         }
       }
@@ -144,9 +144,9 @@ export class CookieConsentHandler {
 
     // Try generic selectors
     for (const selector of this.consentSelectors.generic) {
-      const element = this.findElement(selector);
-      if (element) {
-        this.rejectCookies(element, 'generic');
+      const element = this.findElement(_selector);
+      if (_element) {
+        this.rejectCookies(_element, 'generic');
         return;
       }
     }
@@ -158,7 +158,7 @@ export class CookieConsentHandler {
       if (selector.includes(':contains')) {
         const [baseSelector, text] = selector.split(':contains');
         const cleanText = text.replace(/[()'"]/g, '');
-        const elements = document.querySelectorAll(baseSelector);
+        const elements = document.querySelectorAll(_baseSelector);
         
         for (const element of elements) {
           if (element.textContent?.toLowerCase().includes(cleanText.toLowerCase())) {
@@ -169,7 +169,7 @@ export class CookieConsentHandler {
       }
       
       // Regular selector
-      return document.querySelector(selector) as HTMLElement;
+      return document.querySelector(_selector) as HTMLElement;
     } catch {
       return null;
     }
@@ -186,7 +186,7 @@ export class CookieConsentHandler {
         bubbles: true,
         cancelable: true
       });
-      element.dispatchEvent(clickEvent);
+      element.dispatchEvent(_clickEvent);
       
       // Save that we've rejected cookies for this domain
       this.saveRejectedDomain(window.location.hostname);
@@ -201,9 +201,9 @@ export class CookieConsentHandler {
       // Stop observing once rejected
       this.stopObserver();
       
-      console.log(`ShieldPro: Auto-rejected cookies via ${platform}`);
-    } catch (error) {
-      console.error('Failed to reject cookies:', error);
+      console.warn(`ShieldPro: Auto-rejected cookies via ${platform}`);
+    } catch (__error) {
+      console.error('Failed to reject cookies:', _error);
     }
   }
 

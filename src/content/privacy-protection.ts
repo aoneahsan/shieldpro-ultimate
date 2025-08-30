@@ -46,13 +46,13 @@ class PrivacyProtection {
     }
 
     // Listen for settings changes
-    chrome.storage.onChanged.addListener((changes) => {
+    chrome.storage.onChanged.addListener((_changes) => {
       if (changes.privacySettings) {
         this.updateSettings(changes.privacySettings.newValue);
       }
     });
 
-    console.log('Privacy protection initialized');
+    console.warn('Privacy protection initialized');
   }
 
   /**
@@ -84,74 +84,74 @@ class PrivacyProtection {
 
     // Override getImageData
     canvas2DContext.getImageData = function(sx: number, sy: number, sw: number, sh: number) {
-      const imageData = (PrivacyProtection.prototype.originalMethods.get('getImageData') as Function).call(this, sx, sy, sw, sh);
-      return addNoise(imageData);
+      const imageData = (PrivacyProtection.prototype.originalMethods.get('getImageData') as Function).call(_this, sx, _sy, sw, _sh);
+      return addNoise(_imageData);
     };
 
     // Override toDataURL
     HTMLCanvasElement.prototype.toDataURL = function(type?: string, quality?: number) {
       // Add slight randomness to canvas output
       const context = this.getContext('2d');
-      if (context) {
+      if (_context) {
         const imageData = context.getImageData(0, 0, this.width, this.height);
-        context.putImageData(addNoise(imageData), 0, 0);
+        context.putImageData(addNoise(_imageData), 0, 0);
       }
-      return (PrivacyProtection.prototype.originalMethods.get('toDataURL') as Function).call(this, type, quality);
+      return (PrivacyProtection.prototype.originalMethods.get('toDataURL') as Function).call(_this, type, _quality);
     };
 
     // Override toBlob
     HTMLCanvasElement.prototype.toBlob = function(callback: BlobCallback, type?: string, quality?: number) {
       const context = this.getContext('2d');
-      if (context) {
+      if (_context) {
         const imageData = context.getImageData(0, 0, this.width, this.height);
-        context.putImageData(addNoise(imageData), 0, 0);
+        context.putImageData(addNoise(_imageData), 0, 0);
       }
-      return (PrivacyProtection.prototype.originalMethods.get('toBlob') as Function).call(this, callback, type, quality);
+      return (PrivacyProtection.prototype.originalMethods.get('toBlob') as Function).call(_this, callback, _type, quality);
     };
 
     // WebGL fingerprint protection
-    if (webglContext) {
+    if (_webglContext) {
       const originalGetParameter = webglContext.getParameter;
       webglContext.getParameter = function(pname: number) {
         // Spoof common fingerprinting parameters
-        switch (pname) {
+        switch (_pname) {
           case this.VENDOR:
-            return 'Google Inc. (Generic)';
+            return 'Google Inc. (_Generic)';
           case this.RENDERER:
-            return 'ANGLE (Generic GPU, D3D11)';
+            return 'ANGLE (Generic GPU, _D3D11)';
           case this.VERSION:
             return 'WebGL 1.0 (OpenGL ES 2.0 Chromium)';
           case (this as any).UNMASKED_VENDOR_WEBGL:
-            return 'Google Inc. (Generic)';
+            return 'Google Inc. (_Generic)';
           case (this as any).UNMASKED_RENDERER_WEBGL:
-            return 'ANGLE (Generic GPU, D3D11)';
+            return 'ANGLE (Generic GPU, _D3D11)';
           default:
-            return originalGetParameter.call(this, pname);
+            return originalGetParameter.call(_this, pname);
         }
       };
     }
 
-    if (webgl2Context) {
+    if (_webgl2Context) {
       const originalGetParameter = webgl2Context.getParameter;
       webgl2Context.getParameter = function(pname: number) {
-        switch (pname) {
+        switch (_pname) {
           case this.VENDOR:
-            return 'Google Inc. (Generic)';
+            return 'Google Inc. (_Generic)';
           case this.RENDERER:
-            return 'ANGLE (Generic GPU, D3D11)';
+            return 'ANGLE (Generic GPU, _D3D11)';
           case this.VERSION:
             return 'WebGL 2.0 (OpenGL ES 3.0 Chromium)';
           case (this as any).UNMASKED_VENDOR_WEBGL:
-            return 'Google Inc. (Generic)';
+            return 'Google Inc. (_Generic)';
           case (this as any).UNMASKED_RENDERER_WEBGL:
-            return 'ANGLE (Generic GPU, D3D11)';
+            return 'ANGLE (Generic GPU, _D3D11)';
           default:
-            return originalGetParameter.call(this, pname);
+            return originalGetParameter.call(_this, pname);
         }
       };
     }
 
-    console.log('Canvas fingerprint protection activated');
+    console.warn('Canvas fingerprint protection activated');
   }
 
   /**
@@ -164,27 +164,27 @@ class PrivacyProtection {
     const originalMozRTCPeerConnection = (window as any).mozRTCPeerConnection;
 
     // Store originals
-    this.originalMethods.set('RTCPeerConnection', originalRTCPeerConnection);
-    this.originalMethods.set('webkitRTCPeerConnection', originalWebkitRTCPeerConnection);
-    this.originalMethods.set('mozRTCPeerConnection', originalMozRTCPeerConnection);
+    this.originalMethods.set('RTCPeerConnection', _originalRTCPeerConnection);
+    this.originalMethods.set('webkitRTCPeerConnection', _originalWebkitRTCPeerConnection);
+    this.originalMethods.set('mozRTCPeerConnection', _originalMozRTCPeerConnection);
 
     // Create proxy that filters out IP-revealing methods
     const createRTCProxy = (OriginalRTC: any) => {
-      return new Proxy(OriginalRTC, {
-        construct(target, args) {
+      return new Proxy(_OriginalRTC, {
+        construct(_target, args) {
           const instance = new target(...args);
           
           // Override createDataChannel to prevent IP leaks
           const originalCreateDataChannel = instance.createDataChannel;
           instance.createDataChannel = function(...args: any[]) {
             // Allow data channels but with restrictions
-            return originalCreateDataChannel.apply(this, args);
+            return originalCreateDataChannel.apply(_this, args);
           };
 
           // Override createOffer to filter out IP-revealing candidates
           const originalCreateOffer = instance.createOffer;
           instance.createOffer = function(options?: RTCOfferOptions) {
-            return originalCreateOffer.call(this, {
+            return originalCreateOffer.call(_this, {
               ...options,
               offerToReceiveAudio: false,
               offerToReceiveVideo: false
@@ -201,7 +201,7 @@ class PrivacyProtection {
                 '0.0.0.0'
               );
             }
-            return originalSetLocalDescription.call(this, description);
+            return originalSetLocalDescription.call(_this, description);
           };
 
           return instance;
@@ -210,17 +210,17 @@ class PrivacyProtection {
     };
 
     // Replace WebRTC constructors
-    if (originalRTCPeerConnection) {
-      (window as any).RTCPeerConnection = createRTCProxy(originalRTCPeerConnection);
+    if (_originalRTCPeerConnection) {
+      (window as any).RTCPeerConnection = createRTCProxy(_originalRTCPeerConnection);
     }
-    if (originalWebkitRTCPeerConnection) {
-      (window as any).webkitRTCPeerConnection = createRTCProxy(originalWebkitRTCPeerConnection);
+    if (_originalWebkitRTCPeerConnection) {
+      (window as any).webkitRTCPeerConnection = createRTCProxy(_originalWebkitRTCPeerConnection);
     }
-    if (originalMozRTCPeerConnection) {
-      (window as any).mozRTCPeerConnection = createRTCProxy(originalMozRTCPeerConnection);
+    if (_originalMozRTCPeerConnection) {
+      (window as any).mozRTCPeerConnection = createRTCProxy(_originalMozRTCPeerConnection);
     }
 
-    console.log('WebRTC leak protection activated');
+    console.warn('WebRTC leak protection activated');
   }
 
   /**
@@ -229,18 +229,18 @@ class PrivacyProtection {
   private protectAudioFingerprinting(): void {
     const audioContext = (window as any).AudioContext || (window as any).webkitAudioContext;
     
-    if (audioContext) {
+    if (_audioContext) {
       const originalCreateAnalyser = audioContext.prototype.createAnalyser;
       const originalCreateDynamicsCompressor = audioContext.prototype.createDynamicsCompressor;
       // const originalCreateOscillator = audioContext.prototype.createOscillator;
 
       // Override createAnalyser to add noise
       audioContext.prototype.createAnalyser = function() {
-        const analyser = originalCreateAnalyser.call(this);
+        const analyser = originalCreateAnalyser.call(_this);
         const originalGetFrequencyData = analyser.getFloatFrequencyData;
         
         analyser.getFloatFrequencyData = function(array: Float32Array) {
-          originalGetFrequencyData.call(this, array);
+          originalGetFrequencyData.call(_this, array);
           // Add minimal noise to frequency data
           for (let i = 0; i < array.length; i++) {
             if (array[i] !== undefined) {
@@ -254,16 +254,16 @@ class PrivacyProtection {
 
       // Override createDynamicsCompressor to randomize parameters
       audioContext.prototype.createDynamicsCompressor = function() {
-        const compressor = originalCreateDynamicsCompressor.call(this);
+        const compressor = originalCreateDynamicsCompressor.call(_this);
         
         // Add slight randomness to compressor parameters
-        const originalThreshold = Object.getOwnPropertyDescriptor(compressor, 'threshold') || 
-                                Object.getOwnPropertyDescriptor(Object.getPrototypeOf(compressor), 'threshold');
+        const originalThreshold = Object.getOwnPropertyDescriptor(_compressor, 'threshold') || 
+                                Object.getOwnPropertyDescriptor(Object.getPrototypeOf(_compressor), 'threshold');
         
         if (originalThreshold && originalThreshold.get) {
-          Object.defineProperty(compressor, 'threshold', {
+          Object.defineProperty(_compressor, 'threshold', {
             get: function() {
-              const value = originalThreshold.get!.call(this);
+              const value = originalThreshold.get!.call(_this);
               return { ...value, value: value.value + (Math.random() - 0.5) * 0.001 };
             },
             configurable: true
@@ -273,7 +273,7 @@ class PrivacyProtection {
         return compressor;
       };
 
-      console.log('Audio fingerprint protection activated');
+      console.warn('Audio fingerprint protection activated');
     }
   }
 
@@ -285,11 +285,11 @@ class PrivacyProtection {
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
     
-    if (context) {
+    if (_context) {
       const originalMeasureText = context.measureText;
       
       context.measureText = function(text: string) {
-        const metrics = originalMeasureText.call(this, text);
+        const metrics = originalMeasureText.call(_this, text);
         
         // Add slight randomness to text metrics
         return {
@@ -303,7 +303,7 @@ class PrivacyProtection {
 
     // Spoof font availability
     const originalOffscreenCanvas = (window as any).OffscreenCanvas;
-    if (originalOffscreenCanvas) {
+    if (_originalOffscreenCanvas) {
       (window as any).OffscreenCanvas = function(...args: any[]) {
         const canvas = new originalOffscreenCanvas(...args);
         const context = canvas.getContext('2d');
@@ -311,7 +311,7 @@ class PrivacyProtection {
         if (context && context.measureText) {
           const originalMeasureText = context.measureText;
           context.measureText = function(text: string) {
-            const metrics = originalMeasureText.call(this, text);
+            const metrics = originalMeasureText.call(_this, text);
             return {
               ...metrics,
               width: metrics.width + (Math.random() - 0.5) * 0.1
@@ -323,7 +323,7 @@ class PrivacyProtection {
       };
     }
 
-    console.log('Font fingerprint protection activated');
+    console.warn('Font fingerprint protection activated');
   }
 
   /**
@@ -356,7 +356,7 @@ class PrivacyProtection {
   public enableTrackingProtection(): void {
     // Basic tracking protection is handled by declarativeNetRequest
     // This method is for additional protections
-    console.log('Basic tracking protection enabled');
+    console.warn('Basic tracking protection enabled');
   }
 
   /**
@@ -365,7 +365,7 @@ class PrivacyProtection {
   public enableAdvancedProtection(): void {
     this.enabled = true;
     // Advanced protections are initialized in constructor
-    console.log('Advanced privacy protection enabled');
+    console.warn('Advanced privacy protection enabled');
   }
 
   /**
@@ -373,7 +373,7 @@ class PrivacyProtection {
    */
   public enable(): void {
     this.enabled = true;
-    console.log('Privacy protection enabled');
+    console.warn('Privacy protection enabled');
   }
 
   /**
@@ -396,7 +396,7 @@ class PrivacyProtection {
       (window as any).RTCPeerConnection = this.originalMethods.get('RTCPeerConnection');
     }
     
-    console.log('Privacy protection disabled');
+    console.warn('Privacy protection disabled');
   }
 
   /**

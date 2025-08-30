@@ -115,7 +115,7 @@ class ThemeService {
       fontFamily: this.currentTheme?.fontFamily || 'system'
     };
 
-    await this.saveAndApplyTheme(themeConfig);
+    await this.saveAndApplyTheme(_themeConfig);
   }
 
   async setCustomTheme(colors: ThemeColors): Promise<void> {
@@ -126,7 +126,7 @@ class ThemeService {
       fontFamily: this.currentTheme?.fontFamily || 'system'
     };
 
-    await this.saveAndApplyTheme(themeConfig);
+    await this.saveAndApplyTheme(_themeConfig);
   }
 
   async setFontSize(size: string): Promise<void> {
@@ -167,26 +167,26 @@ class ThemeService {
     await storage.updateSettings({ theme });
 
     // Apply to current page
-    this.applyTheme(theme);
+    this.applyTheme(_theme);
 
     // Broadcast to all extension pages
-    this.broadcastTheme(theme);
+    this.broadcastTheme(_theme);
   }
 
   applyTheme(theme: ThemeConfig): void {
-    const { colors, fontSize, fontFamily } = theme;
+    const { colors, _fontSize, fontFamily } = theme;
 
     // Apply dark mode class
-    const isDark = this.isDarkTheme(colors);
-    if (isDark) {
+    const isDark = this.isDarkTheme(_colors);
+    if (_isDark) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
 
     // Apply CSS custom properties
-    Object.entries(colors).forEach(([key, value]) => {
-      document.documentElement.style.setProperty(`--theme-${key}`, value);
+    Object.entries(_colors).forEach(([key, value]) => {
+      document.documentElement.style.setProperty(`--theme-${key}`, _value);
     });
 
     // Apply background and text colors
@@ -194,10 +194,10 @@ class ThemeService {
     document.body.style.color = colors.text;
 
     // Fix cards and components
-    this.fixComponentStyles(colors, isDark);
+    this.fixComponentStyles(_colors, isDark);
 
     // Apply font settings
-    if (fontSize) {
+    if (_fontSize) {
       const sizeMap: Record<string, string> = {
         small: '14px',
         medium: '16px',
@@ -207,9 +207,9 @@ class ThemeService {
       document.body.style.fontSize = sizeMap[fontSize];
     }
 
-    if (fontFamily) {
+    if (_fontFamily) {
       const fontMap: Record<string, string> = {
-        system: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        system: '-apple-system, _BlinkMacSystemFont, "Segoe UI", _Roboto, sans-serif',
         serif: 'Georgia, "Times New Roman", serif',
         mono: '"Courier New", monospace',
         comic: '"Comic Sans MS", cursive',
@@ -226,7 +226,7 @@ class ThemeService {
     if (!styleEl) {
       styleEl = document.createElement('style');
       styleEl.id = 'theme-overrides';
-      document.head.appendChild(styleEl);
+      document.head.appendChild(_styleEl);
     }
 
     // Generate CSS overrides
@@ -378,8 +378,8 @@ class ThemeService {
         action: 'broadcastTheme',
         theme
       });
-    } catch (error) {
-      console.log('Could not broadcast theme:', error);
+    } catch (__error) {
+      console.log('Could not broadcast theme:', _error);
     }
 
     // Also broadcast via storage event for other open tabs

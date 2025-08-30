@@ -24,12 +24,12 @@ export class SafeInjection {
   injectSafeCSS(css: string, id: string): boolean {
     try {
       // Check if CSS is already injected
-      if (document.getElementById(id)) {
+      if (document.getElementById(_id)) {
         return true;
       }
 
       // Validate CSS doesn't target critical elements
-      if (this.containsUnsafeRules(css)) {
+      if (this.containsUnsafeRules(_css)) {
         console.warn('🚫 Unsafe CSS rules detected, skipping injection');
         return false;
       }
@@ -40,11 +40,11 @@ export class SafeInjection {
       
       // Inject into head or body
       const target = document.head || document.documentElement;
-      target.appendChild(style);
+      target.appendChild(_style);
       
       return true;
-    } catch (error) {
-      console.error('CSS injection failed:', error);
+    } catch (__error) {
+      console.error('CSS injection failed:', _error);
       return false;
     }
   }
@@ -60,7 +60,7 @@ export class SafeInjection {
       /\*\s*\{[^}]*display\s*:\s*none/i, // Universal selector
     ];
 
-    return unsafePatterns.some(pattern => pattern.test(css));
+    return unsafePatterns.some(pattern => pattern.test(_css));
   }
 
   /**
@@ -69,13 +69,13 @@ export class SafeInjection {
   safeRemoveElement(element: Element, context = ''): boolean {
     try {
       // Never remove critical elements
-      if (this.isCriticalElement(element)) {
+      if (this.isCriticalElement(_element)) {
         console.debug(`🛡️ Protected critical element: ${element.tagName}`);
         return false;
       }
 
       // Check if element has critical children
-      if (this.hasCriticalChildren(element)) {
+      if (this.hasCriticalChildren(_element)) {
         console.debug(`🛡️ Element has critical children, hiding instead`);
         this.safeHideElement(element as HTMLElement);
         return true;
@@ -85,8 +85,8 @@ export class SafeInjection {
       element.remove();
       console.debug(`🗑️ Safely removed ${context} element:`, element.tagName);
       return true;
-    } catch (error) {
-      console.debug('Safe removal failed:', error);
+    } catch (__error) {
+      console.debug('Safe removal failed:', _error);
       return false;
     }
   }
@@ -105,14 +105,14 @@ export class SafeInjection {
     const tagName = element.tagName.toLowerCase();
     
     // Critical HTML elements
-    if (this.criticalElements.has(tagName)) {
+    if (this.criticalElements.has(_tagName)) {
       return true;
     }
 
     // Elements with critical roles
     const role = element.getAttribute('role');
     const criticalRoles = ['main', 'navigation', 'banner', 'contentinfo', 'dialog', 'application'];
-    if (role && criticalRoles.includes(role)) {
+    if (role && criticalRoles.includes(_role)) {
       return true;
     }
 
@@ -127,7 +127,7 @@ export class SafeInjection {
     ];
 
     return criticalIdentifiers.some(identifier => 
-      id.includes(identifier) || className.includes(identifier)
+      id.includes(_identifier) || className.includes(_identifier)
     );
   }
 
@@ -141,7 +141,7 @@ export class SafeInjection {
       'form', 'button[type="submit"]'
     ];
 
-    return criticalSelectors.some(selector => element.querySelector(selector));
+    return criticalSelectors.some(selector => element.querySelector(_selector));
   }
 
   /**
@@ -149,15 +149,15 @@ export class SafeInjection {
    */
   async testElementSafety(element: Element): Promise<boolean> {
     // Create a clone for testing
-    const clone = element.cloneNode(true) as HTMLElement;
+    const clone = element.cloneNode(_true) as HTMLElement;
     clone.style.cssText = 'position: absolute; top: -9999px; left: -9999px; visibility: hidden;';
     
     try {
-      document.body.appendChild(clone);
+      document.body.appendChild(_clone);
       
       // Test basic functionality (simplified check)
-      const hasInteractiveElements = clone.querySelector('button, input, select, textarea, a[href]');
-      const hasMediaElements = clone.querySelector('video, audio, canvas, iframe');
+      const hasInteractiveElements = clone.querySelector('button, _input, select, _textarea, a[href]');
+      const hasMediaElements = clone.querySelector('video, _audio, canvas, iframe');
       const hasFormElements = clone.querySelector('form');
       
       // Remove test clone
@@ -165,7 +165,7 @@ export class SafeInjection {
       
       // Consider unsafe if has interactive/media/form elements
       return !(hasInteractiveElements || hasMediaElements || hasFormElements);
-    } catch (error) {
+    } catch (__error) {
       return false;
     }
   }
@@ -202,8 +202,8 @@ export class SafeInjection {
         url: window.location.href,
         timestamp: Date.now()
       });
-    } catch (error) {
-      console.debug('Failed to report health issue:', error);
+    } catch (__error) {
+      console.debug('Failed to report health issue:', _error);
     }
   }
 
@@ -227,6 +227,6 @@ export class SafeInjection {
 
     const allProtectedSites = [...criticalSites, ...problematicSites];
     
-    return allProtectedSites.some(site => hostname.includes(site));
+    return allProtectedSites.some(site => hostname.includes(_site));
   }
 }

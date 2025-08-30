@@ -86,7 +86,7 @@ class ImageSwapper {
   }
 
   private setupMessageListener() {
-    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    chrome.runtime.onMessage.addListener((_request, sender, _sendResponse) => {
       if (request.action === 'updateImageSwap') {
         this.settings = request.settings;
         if (this.settings.enabled) {
@@ -104,12 +104,12 @@ class ImageSwapper {
   private startObserving() {
     if (this.observer) return;
 
-    this.observer = new MutationObserver((mutations) => {
+    this.observer = new MutationObserver((_mutations) => {
       for (const mutation of mutations) {
         if (mutation.type === 'childList') {
           mutation.addedNodes.forEach(node => {
             if (node instanceof HTMLElement) {
-              this.checkAndReplaceElement(node);
+              this.checkAndReplaceElement(_node);
             }
           });
         }
@@ -168,14 +168,14 @@ class ImageSwapper {
 
     adSelectors.forEach(selector => {
       try {
-        const elements = document.querySelectorAll(selector);
+        const elements = document.querySelectorAll(_selector);
         elements.forEach(element => {
-          if (element instanceof HTMLElement && this.shouldReplaceElement(element)) {
-            this.replaceWithImage(element);
+          if (element instanceof HTMLElement && this.shouldReplaceElement(_element)) {
+            this.replaceWithImage(_element);
           }
         });
-      } catch (error) {
-        console.error('Error with selector:', selector, error);
+      } catch (__error) {
+        console.error('Error with selector:', _selector, error);
       }
     });
 
@@ -185,11 +185,11 @@ class ImageSwapper {
 
   private checkForBlockedElements() {
     // Look for elements that were likely hidden by ad blocking
-    const allElements = document.querySelectorAll('div, iframe, ins');
+    const allElements = document.querySelectorAll('div, _iframe, ins');
     
     allElements.forEach(element => {
       if (element instanceof HTMLElement) {
-        const computed = window.getComputedStyle(element);
+        const computed = window.getComputedStyle(_element);
         const rect = element.getBoundingClientRect();
         
         // Check if element is hidden or has ad-like dimensions
@@ -198,30 +198,30 @@ class ImageSwapper {
            computed.visibility === 'hidden' ||
            rect.width === 0 || 
            rect.height === 0) &&
-          this.isLikelyAdContainer(element)
+          this.isLikelyAdContainer(_element)
         ) {
-          this.replaceWithImage(element);
+          this.replaceWithImage(_element);
         }
       }
     });
   }
 
   private checkAndReplaceElement(element: HTMLElement) {
-    if (this.shouldReplaceElement(element)) {
-      this.replaceWithImage(element);
+    if (this.shouldReplaceElement(_element)) {
+      this.replaceWithImage(_element);
     }
 
     // Check child elements
     element.querySelectorAll('*').forEach(child => {
-      if (child instanceof HTMLElement && this.shouldReplaceElement(child)) {
-        this.replaceWithImage(child);
+      if (child instanceof HTMLElement && this.shouldReplaceElement(_child)) {
+        this.replaceWithImage(_child);
       }
     });
   }
 
   private shouldReplaceElement(element: HTMLElement): boolean {
     // Don't process the same element twice
-    if (this.processedElements.has(element)) {
+    if (this.processedElements.has(_element)) {
       return false;
     }
 
@@ -231,7 +231,7 @@ class ImageSwapper {
     }
 
     // Check if it's likely an ad container
-    return this.isLikelyAdContainer(element);
+    return this.isLikelyAdContainer(_element);
   }
 
   private isLikelyAdContainer(element: HTMLElement): boolean {
@@ -248,7 +248,7 @@ class ImageSwapper {
 
     // Check for ad keywords
     const hasAdKeyword = adKeywords.some(keyword => {
-      return (classNames.includes(keyword) || id.includes(keyword)) &&
+      return (classNames.includes(_keyword) || id.includes(_keyword)) &&
              !classNames.includes('add') &&
              !classNames.includes('load') &&
              !id.includes('add') &&
@@ -295,7 +295,7 @@ class ImageSwapper {
 
   private replaceWithImage(element: HTMLElement) {
     // Mark as processed
-    this.processedElements.add(element);
+    this.processedElements.add(_element);
 
     // Get random image URL
     const imageUrl = this.getRandomImageUrl();
@@ -308,16 +308,16 @@ class ImageSwapper {
 
     // Apply size settings
     if (this.settings.size === 'small') {
-      width = Math.min(width, 200);
-      height = Math.min(height, 150);
+      width = Math.min(_width, 200);
+      height = Math.min(_height, 150);
     } else if (this.settings.size === 'large') {
-      width = Math.min(width, 500);
-      height = Math.min(height, 400);
+      width = Math.min(_width, 500);
+      height = Math.min(_height, 400);
     }
 
     // Create replacement image
     const img = document.createElement('img');
-    img.src = `${imageUrl}?w=${Math.round(width)}&h=${Math.round(height)}`;
+    img.src = `${imageUrl}?w=${Math.round(_width)}&h=${Math.round(_height)}`;
     img.style.cssText = `
       width: ${width}px;
       height: ${height}px;
@@ -339,7 +339,7 @@ class ImageSwapper {
       margin: 0 auto;
     `;
     
-    container.appendChild(img);
+    container.appendChild(_img);
 
     // Add subtle watermark
     const watermark = document.createElement('div');
@@ -356,7 +356,7 @@ class ImageSwapper {
       pointer-events: none;
     `;
     watermark.textContent = '🛡️ ShieldPro';
-    container.appendChild(watermark);
+    container.appendChild(_watermark);
 
     // Replace or show the element
     if (element.parentNode) {
@@ -367,7 +367,7 @@ class ImageSwapper {
       
       // Clear content and add image
       element.innerHTML = '';
-      element.appendChild(container);
+      element.appendChild(_container);
     }
   }
 

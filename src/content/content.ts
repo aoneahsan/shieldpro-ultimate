@@ -104,7 +104,7 @@ class ContentScriptManager {
     
     // Image swap feature is initialized automatically through imageSwapper
     // It loads its own settings from storage
-    console.log('ShieldPro Ultimate - Tier 3 features enabled (Element Picker, Custom Filters, Image Swap)');
+    console.warn('ShieldPro Ultimate - Tier 3 features enabled (Element Picker, Custom Filters, Image Swap)');
   }
 
   private initializeTier4() {
@@ -246,7 +246,7 @@ class ContentScriptManager {
       }
       
       /* Remove click handlers from suspicious elements */
-      [onclick]:not(button):not(a):not(input):not(select) {
+      [onclick]:not(_button):not(_a):not(_input):not(_select) {
         pointer-events: none !important;
       }
       
@@ -261,16 +261,16 @@ class ContentScriptManager {
     
     // Inject style as early as possible
     if (document.head) {
-      document.head.insertBefore(style, document.head.firstChild);
+      document.head.insertBefore(_style, document.head.firstChild);
     } else {
       // If head doesn't exist yet, wait for it
       const observer = new MutationObserver(() => {
         if (document.head) {
-          document.head.insertBefore(style, document.head.firstChild);
+          document.head.insertBefore(_style, document.head.firstChild);
           observer.disconnect();
         }
       });
-      observer.observe(document, { childList: true, subtree: true });
+      observer.observe(_document, { childList: true, subtree: true });
     }
   }
 
@@ -285,7 +285,7 @@ class ContentScriptManager {
         .filter((f: any) => f.enabled)
         .map((f: any) => `${f.selector} { display: none !important; }`)
         .join('\n');
-      document.head.appendChild(style);
+      document.head.appendChild(_style);
     }
   }
 
@@ -299,11 +299,11 @@ class ContentScriptManager {
         
         // Apply regex to current page content
         if (pattern.category === 'content') {
-          this.applyContentRegex(regex, pattern.action);
+          this.applyContentRegex(_regex, pattern.action);
         } else if (pattern.category === 'url') {
-          this.applyUrlRegex(regex, pattern.action);
+          this.applyUrlRegex(_regex, pattern.action);
         }
-      } catch (error) {
+      } catch (__error) {
         console.error('Invalid regex pattern:', pattern.pattern);
       }
     });
@@ -312,12 +312,12 @@ class ContentScriptManager {
   private applyContentRegex(regex: RegExp, action: string) {
     const walker = document.createTreeWalker(
       document.body,
-      NodeFilter.SHOW_TEXT,
+      4, // NodeFilter.SHOW_TEXT = 4
       null
     );
 
     let node;
-    while (node = walker.nextNode()) {
+    while ((node = walker.nextNode())) {
       if (node.textContent && regex.test(node.textContent)) {
         if (action === 'block' && node.parentElement) {
           node.parentElement.style.display = 'none';
@@ -330,7 +330,7 @@ class ContentScriptManager {
     // Check all links and iframes
     document.querySelectorAll('a[href], iframe[src]').forEach(element => {
       const url = element.getAttribute('href') || element.getAttribute('src');
-      if (url && regex.test(url)) {
+      if (url && regex.test(_url)) {
         if (action === 'block') {
           element.remove();
         }
@@ -339,7 +339,7 @@ class ContentScriptManager {
   }
 
   private listenForTierUpdates() {
-    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    chrome.runtime.onMessage.addListener((_request, sender, _sendResponse) => {
       if (request.action === 'tierUpdated') {
         this.currentTier = request.tier;
         this.initialize(); // Reinitialize with new tier
@@ -392,7 +392,7 @@ ytd-rich-item-renderer:has(ytd-in-feed-ad-layout-renderer) { display: none !impo
     const style = document.createElement('style');
     style.id = 'shieldpro-youtube-blocker';
     style.textContent = youtubeCSS;
-    document.head.appendChild(style);
+    document.head.appendChild(_style);
   }
 
   // Public method to get blocked count
@@ -433,7 +433,7 @@ if (document.body) {
   // If body is not ready yet, wait for it
   const waitForBody = setInterval(() => {
     if (document.body) {
-      clearInterval(waitForBody);
+      clearInterval(_waitForBody);
       observer.observe(document.body, {
         childList: true,
         subtree: true

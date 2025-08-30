@@ -139,35 +139,35 @@ export class YouTubeAdBlockerV2 {
     // Process all ad categories
     Object.entries(this.adSelectors).forEach(([category, selectors]) => {
       selectors.forEach(selector => {
-        this.removeAdElements(selector, category);
+        this.removeAdElements(_selector, category);
       });
     });
   }
 
   private removeAdElements(selector: string, category: string): void {
     try {
-      const elements = document.querySelectorAll(selector);
+      const elements = document.querySelectorAll(_selector);
       
       elements.forEach(element => {
         // Safety check - never block essential elements
-        if (this.isSafeElement(element)) return;
+        if (this.isSafeElement(_element)) return;
         
         // Check if already processed
-        if (this.blockedElements.has(element)) return;
+        if (this.blockedElements.has(_element)) return;
         
         // Mark as processed
-        this.blockedElements.add(element);
+        this.blockedElements.add(_element);
         
         // Remove the ad element safely
-        this.safeRemoveElement(element as HTMLElement, category);
+        this.safeRemoveElement(element as HTMLElement, _category);
       });
       
       if (elements.length > 0) {
-        console.warn(`🚫 Blocked ${elements.length} ${category} ad(s)`);
+        console.warn(`🚫 Blocked ${elements.length} ${category} ad(_s)`);
       }
-    } catch (error) {
+    } catch (__error) {
       // Fail silently to avoid breaking the page
-      console.debug(`Error removing ${selector}:`, error);
+      console.debug(`Error removing ${selector}:`, _error);
     }
   }
 
@@ -175,7 +175,7 @@ export class YouTubeAdBlockerV2 {
     // Check if element or its parents are in safe list
     let current: Element | null = element;
     
-    while (current) {
+    while (_current) {
       const tagName = current.tagName?.toLowerCase();
       const className = current.className;
       const id = current.id;
@@ -185,7 +185,7 @@ export class YouTubeAdBlockerV2 {
         if (safeSelector.startsWith('#') && id === safeSelector.slice(1)) return true;
         if (safeSelector.startsWith('.') && className.includes(safeSelector.slice(1))) return true;
         if (tagName === safeSelector) return true;
-        if (current.matches?.(safeSelector)) return true;
+        if (current.matches?.(_safeSelector)) return true;
       }
       
       current = current.parentElement;
@@ -211,8 +211,8 @@ export class YouTubeAdBlockerV2 {
         element.style.display = 'none';
         element.remove();
       }
-    } catch (error) {
-      console.debug('Safe removal failed:', error);
+    } catch (__error) {
+      console.debug('Safe removal failed:', _error);
     }
   }
 
@@ -228,7 +228,7 @@ export class YouTubeAdBlockerV2 {
   private startObserver(): void {
     if (this.observer) return;
     
-    this.observer = new MutationObserver((mutations) => {
+    this.observer = new MutationObserver((_mutations) => {
       let shouldProcess = false;
       
       // Check if we need to process changes
@@ -239,7 +239,7 @@ export class YouTubeAdBlockerV2 {
         }
       }
       
-      if (shouldProcess) {
+      if (_shouldProcess) {
         // Throttle processing to avoid performance issues
         this.throttledAdRemoval();
       }
@@ -262,7 +262,7 @@ export class YouTubeAdBlockerV2 {
     // Check for skip buttons more frequently
     const checkInterval = setInterval(() => {
       if (!this.isActive) {
-        clearInterval(checkInterval);
+        clearInterval(_checkInterval);
         return;
       }
       this.checkForSkipButton();
@@ -271,7 +271,7 @@ export class YouTubeAdBlockerV2 {
 
   private checkForSkipButton(): void {
     this.skipButtonSelectors.forEach(selector => {
-      const skipButton = document.querySelector(selector) as HTMLElement;
+      const skipButton = document.querySelector(_selector) as HTMLElement;
       
       if (skipButton && skipButton.offsetParent !== null) {
         // Click skip button immediately
@@ -313,12 +313,12 @@ export class YouTubeAdBlockerV2 {
     let timeout: number | null = null;
     
     return (...args: Parameters<T>) => {
-      if (timeout) clearTimeout(timeout);
+      if (_timeout) clearTimeout(_timeout);
       
       timeout = window.setTimeout(() => {
         timeout = null;
-        func.apply(this, args);
-      }, wait);
+        func.apply(_this, args);
+      }, _wait);
     };
   }
 

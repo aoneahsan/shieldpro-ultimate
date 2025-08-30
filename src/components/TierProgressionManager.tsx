@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { User } from 'firebase/auth';
 import { functions } from '../utils/firebase';
 import { httpsCallable } from 'firebase/functions';
@@ -27,8 +27,8 @@ interface TierProgressionManagerProps {
 interface TierProgress {
   currentTier: number;
   nextTier: number;
-  requirements: any;
-  progress: any;
+  requirements: Record<string, unknown>;
+  progress: Record<string, unknown>;
   canUpgrade: boolean;
 }
 
@@ -57,7 +57,7 @@ export const TierProgressionManager: React.FC<TierProgressionManagerProps> = ({
       loadTierProgress();
       trackDailyEngagement();
     }
-  }, [currentUser, currentTier]);
+  }, [currentUser, currentTier, trackDailyEngagement]);
 
   const loadTierProgress = async () => {
     try {
@@ -69,7 +69,7 @@ export const TierProgressionManager: React.FC<TierProgressionManagerProps> = ({
     }
   };
 
-  const trackDailyEngagement = async () => {
+  const trackDailyEngagement = useCallback(async () => {
     if (currentTier >= 4) {
       try {
         const trackEngagement = httpsCallable(functions, 'trackDailyEngagement');
@@ -84,7 +84,7 @@ export const TierProgressionManager: React.FC<TierProgressionManagerProps> = ({
         console.error('Failed to track engagement:', error);
       }
     }
-  };
+  }, [currentTier, onTierUpdate]);
 
   const handleProfileUpdate = async () => {
     if (!currentUser) return;
@@ -127,8 +127,8 @@ export const TierProgressionManager: React.FC<TierProgressionManagerProps> = ({
       }
 
       await loadTierProgress();
-    } catch (err: any) {
-      setError(err.message || 'Failed to update profile');
+    } catch (err) {
+      setError((err as Error)?.message || 'Failed to update profile');
     } finally {
       setLoading(false);
     }
@@ -142,7 +142,7 @@ export const TierProgressionManager: React.FC<TierProgressionManagerProps> = ({
         return;
       }
       setPhotoFile(file);
-      const reader = new FileReader();
+      const reader = new window.FileReader();
       reader.onloadend = () => {
         setProfileData(prev => ({ ...prev, photoURL: reader.result as string }));
       };
@@ -166,8 +166,8 @@ export const TierProgressionManager: React.FC<TierProgressionManagerProps> = ({
       
       // The referrer will be notified and potentially upgraded
       await loadTierProgress();
-    } catch (err: any) {
-      setError(err.message || 'Invalid referral code');
+    } catch (err) {
+      setError((err as Error)?.message || 'Invalid referral code');
     } finally {
       setLoading(false);
     }

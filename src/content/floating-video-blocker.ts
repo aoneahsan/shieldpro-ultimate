@@ -23,7 +23,7 @@ export class FloatingVideoBlocker {
     }
 
     // Listen for tier updates
-    chrome.runtime.onMessage.addListener((message) => {
+    chrome.runtime.onMessage.addListener((_message) => {
       if (message.action === 'tierUpdated' && message.tier >= 1) {
         this.tier = message.tier;
         this.startBlocking();
@@ -117,14 +117,14 @@ export class FloatingVideoBlocker {
 
     selectors.forEach(selector => {
       try {
-        const elements = document.querySelectorAll(selector);
+        const elements = document.querySelectorAll(_selector);
         elements.forEach(element => {
-          if (!this.processedElements.has(element) && this.isFloatingVideo(element)) {
-            this.processedElements.add(element);
-            this.removeFloatingVideo(element);
+          if (!this.processedElements.has(_element) && this.isFloatingVideo(_element)) {
+            this.processedElements.add(_element);
+            this.removeFloatingVideo(_element);
           }
         });
-      } catch (e) {
+      } catch (__e) {
         // Ignore selector errors
       }
     });
@@ -134,7 +134,7 @@ export class FloatingVideoBlocker {
   }
 
   private isFloatingVideo(element: Element): boolean {
-    const styles = window.getComputedStyle(element);
+    const styles = window.getComputedStyle(_element);
     const position = styles.position;
     
     // Check if element is floating/sticky
@@ -144,7 +144,7 @@ export class FloatingVideoBlocker {
                       element.tagName === 'VIDEO' || 
                       element.tagName === 'IFRAME';
       
-      if (hasVideo) {
+      if (_hasVideo) {
         // Check position on screen (usually bottom-right)
         const rect = element.getBoundingClientRect();
         const isCorner = (rect.bottom > window.innerHeight * 0.5) &&
@@ -167,10 +167,10 @@ export class FloatingVideoBlocker {
     
     mediaElements.forEach(element => {
       const parent = element.parentElement;
-      if (parent && !this.processedElements.has(parent)) {
-        if (this.isFloatingVideo(parent)) {
-          this.processedElements.add(parent);
-          this.removeFloatingVideo(parent);
+      if (parent && !this.processedElements.has(_parent)) {
+        if (this.isFloatingVideo(_parent)) {
+          this.processedElements.add(_parent);
+          this.removeFloatingVideo(_parent);
         }
       }
     });
@@ -182,7 +182,7 @@ export class FloatingVideoBlocker {
     if (closeButton instanceof HTMLElement) {
       closeButton.click();
       this.blockedCount++;
-      console.log('ShieldPro: Closed floating video via button');
+      console.warn('ShieldPro: Closed floating video via button');
       return;
     }
 
@@ -192,7 +192,7 @@ export class FloatingVideoBlocker {
       element.style.visibility = 'hidden';
       element.remove();
       this.blockedCount++;
-      console.log('ShieldPro: Removed floating video');
+      console.warn('ShieldPro: Removed floating video');
     }
 
     // Report to extension
@@ -230,7 +230,7 @@ export class FloatingVideoBlocker {
         display: none !important;
       }
     `;
-    document.head.appendChild(style);
+    document.head.appendChild(_style);
   }
 
   public getBlockedCount(): number {

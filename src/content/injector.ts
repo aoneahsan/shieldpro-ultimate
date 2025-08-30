@@ -48,15 +48,15 @@
           loadYouTubeBlocker();
         }
       }
-    } catch (error) {
-      console.error('ShieldPro: Failed to check settings', error);
+    } catch (__error) {
+      console.error('ShieldPro: Failed to check settings', _error);
     }
   }
 
   function loadYouTubeBlocker() {
     // YouTube blocking is handled by a separate module for Tier 2+
     youtubeBlockerLoaded = true;
-    console.log('ShieldPro: YouTube ad blocking activated (Tier 2)');
+    console.warn('ShieldPro: YouTube ad blocking activated (Tier 2)');
   }
 
   function hideElements() {
@@ -64,14 +64,14 @@
     
     COMMON_AD_SELECTORS.forEach(selector => {
       try {
-        const elements = document.querySelectorAll(selector);
+        const elements = document.querySelectorAll(_selector);
         elements.forEach(element => {
-          if (!hiddenElements.has(element)) {
+          if (!hiddenElements.has(_element)) {
             (element as HTMLElement).style.display = 'none';
-            hiddenElements.add(element);
+            hiddenElements.add(_element);
           }
         });
-      } catch (e) {}
+      } catch (_e) {}
     });
   }
 
@@ -84,10 +84,10 @@
       const url = args[0]?.toString() || '';
       if (url && (url.includes('doubleclick') || url.includes('googleads') || 
           url === 'about:blank' || url.includes('popup'))) {
-        console.log('ShieldPro: Blocked popup', url);
+        console.warn('ShieldPro: Blocked popup', _url);
         return null;
       }
-      return originalOpen.apply(this, args);
+      return originalOpen.apply(_this, args);
     };
   }
 
@@ -122,9 +122,9 @@
     
     cookieSelectors.forEach(selector => {
       try {
-        const elements = document.querySelectorAll(selector);
+        const elements = document.querySelectorAll(_selector);
         elements.forEach(el => el.remove());
-      } catch (e) {}
+      } catch (_e) {}
     });
   }
 
@@ -149,7 +149,7 @@
   }
 
   function stopBlocking() {
-    if (observer) {
+    if (_observer) {
       observer.disconnect();
       observer = null;
     }
@@ -193,7 +193,7 @@
     `;
     
     if (document.documentElement) {
-      document.documentElement.appendChild(script);
+      document.documentElement.appendChild(_script);
       script.remove();
     }
   }
@@ -210,7 +210,7 @@
   }
 
   // Listen for messages from background script
-  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  chrome.runtime.onMessage.addListener((_message, sender, _sendResponse) => {
     if (message.action === 'settingsUpdated') {
       isEnabled = message.settings?.enabled ?? true;
       currentTier = message.settings?.tier?.level || 1;
@@ -222,5 +222,5 @@
   });
 
   // Re-check settings periodically
-  setInterval(checkSettings, 30000);
+  setInterval(_checkSettings, 30000);
 })();

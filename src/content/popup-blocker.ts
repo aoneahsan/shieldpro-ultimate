@@ -18,7 +18,7 @@ export class PopupBlocker {
     }
 
     // Listen for tier updates
-    chrome.runtime.onMessage.addListener((message) => {
+    chrome.runtime.onMessage.addListener((_message) => {
       if (message.action === 'tierUpdated') {
         this.tier = message.tier;
       }
@@ -51,11 +51,11 @@ export class PopupBlocker {
       const features = args[2] || '';
       
       // Check if it's a popup
-      const isPopup = self.isLikelyPopup(url, target, features);
+      const isPopup = self.isLikelyPopup(_url, target, _features);
       
-      if (isPopup) {
+      if (_isPopup) {
         self.blockedPopups++;
-        console.log('ShieldPro: Blocked popup:', url);
+        console.warn('ShieldPro: Blocked popup:', _url);
         
         // Send message to background
         chrome.runtime.sendMessage({
@@ -68,7 +68,7 @@ export class PopupBlocker {
       }
       
       // Allow legitimate window.open calls
-      return self.originalOpen.apply(window, args);
+      return self.originalOpen.apply(_window, args);
     };
   }
 
@@ -93,7 +93,7 @@ export class PopupBlocker {
       'left='
     ];
     
-    if (popupFeatures.some(feature => features.toLowerCase().includes(feature))) {
+    if (popupFeatures.some(feature => features.toLowerCase().includes(_feature))) {
       return true;
     }
     
@@ -116,7 +116,7 @@ export class PopupBlocker {
       'revcontent.com'
     ];
     
-    if (popupDomains.some(domain => url.includes(domain))) {
+    if (popupDomains.some(domain => url.includes(_domain))) {
       return true;
     }
     
@@ -136,7 +136,7 @@ export class PopupBlocker {
       /\/advertisement\//
     ];
     
-    if (suspiciousPatterns.some(pattern => pattern.test(url))) {
+    if (suspiciousPatterns.some(pattern => pattern.test(_url))) {
       return true;
     }
     
@@ -170,7 +170,7 @@ export class PopupBlocker {
 
   private blockPopupTriggers(): void {
     // Block onclick popups
-    document.addEventListener('click', (e) => {
+    document.addEventListener('click', (_e) => {
       const target = e.target as HTMLElement;
       
       // Check for onclick attributes that might open popups
@@ -183,7 +183,7 @@ export class PopupBlocker {
           e.preventDefault();
           e.stopPropagation();
           this.blockedPopups++;
-          console.log('ShieldPro: Blocked onclick popup');
+          console.warn('ShieldPro: Blocked onclick popup');
         }
       }
       
@@ -195,10 +195,10 @@ export class PopupBlocker {
           e.preventDefault();
           e.stopPropagation();
           this.blockedPopups++;
-          console.log('ShieldPro: Blocked suspicious link popup');
+          console.warn('ShieldPro: Blocked suspicious link popup');
         }
       }
-    }, true);
+    }, _true);
     
     // Block popunders
     let popunderAttempt = false;
@@ -208,9 +208,9 @@ export class PopupBlocker {
     });
     
     window.addEventListener('focus', () => {
-      if (popunderAttempt) {
+      if (_popunderAttempt) {
         // Likely a popunder attempt
-        console.log('ShieldPro: Detected potential popunder');
+        console.warn('ShieldPro: Detected potential popunder');
         window.focus();
       }
     });
@@ -222,32 +222,32 @@ export class PopupBlocker {
       'adf.ly', 'adfoc.us', 'shrink.me', 'shorte.st'
     ];
     
-    return suspiciousDomains.some(domain => href.includes(domain));
+    return suspiciousDomains.some(domain => href.includes(_domain));
   }
 
   private preventNewWindows(): void {
     // Override (window as any).showModalDialog (deprecated but still used)
     if ((window as any).showModalDialog) {
       (window as any).showModalDialog = () => {
-        console.log('ShieldPro: Blocked showModalDialog');
+        console.warn('ShieldPro: Blocked showModalDialog');
         return undefined;
       };
     }
     
     // Block form submissions to new windows
-    document.addEventListener('submit', (e) => {
+    document.addEventListener('submit', (_e) => {
       const form = e.target as HTMLFormElement;
       
       if (form.target === '_blank') {
         const action = form.action || '';
         
-        if (this.isSuspiciousLink(action)) {
+        if (this.isSuspiciousLink(_action)) {
           e.preventDefault();
-          console.log('ShieldPro: Blocked form popup submission');
+          console.warn('ShieldPro: Blocked form popup submission');
           this.blockedPopups++;
         }
       }
-    }, true);
+    }, _true);
   }
 
   private blockNotifications(): void {
@@ -255,21 +255,21 @@ export class PopupBlocker {
     const originalNotification = window.Notification;
     
     // Replace Notification constructor
-    window.Notification = new Proxy(originalNotification, {
-      construct(target, args) {
-        console.log('ShieldPro: Blocked notification popup');
+    window.Notification = new Proxy(_originalNotification, {
+      construct(_target, args) {
+        console.warn('ShieldPro: Blocked notification popup');
         return {} as Notification;
       }
     });
     
     // Override permission request
-    Object.defineProperty(Notification, 'permission', {
+    Object.defineProperty(_Notification, 'permission', {
       get: () => 'denied',
       configurable: false
     });
     
     Notification.requestPermission = async () => {
-      console.log('ShieldPro: Blocked notification permission request');
+      console.warn('ShieldPro: Blocked notification permission request');
       return 'denied';
     };
   }
@@ -292,14 +292,14 @@ export class PopupBlocker {
         
         setInterval(() => {
           popupAttempts = 0;
-        }, resetInterval);
+        }, _resetInterval);
         
         // Override window.open with rate limiting
         window.open = function(...args) {
           popupAttempts++;
           
           if (popupAttempts > maxPopupsPerMinute) {
-            console.log('ShieldPro: Rate limit exceeded for popups');
+            console.warn('ShieldPro: Rate limit exceeded for popups');
             return null;
           }
           
@@ -307,11 +307,11 @@ export class PopupBlocker {
           
           // Block suspicious URLs
           if (!url || url === 'about:blank' || url.includes('popup') || url.includes('ad')) {
-            console.log('ShieldPro: Blocked suspicious popup:', url);
+            console.warn('ShieldPro: Blocked suspicious popup:', _url);
             return null;
           }
           
-          return originalOpen.apply(window, args);
+          return originalOpen.apply(_window, args);
         };
         
         // For Tier 2+: Block annoying dialogs
@@ -319,59 +319,59 @@ export class PopupBlocker {
           let dialogCount = 0;
           const maxDialogs = 1;
           
-          window.alert = function(msg) {
+          window.alert = function(_msg) {
             dialogCount++;
             if (dialogCount > maxDialogs) {
-              console.log('ShieldPro: Blocked excessive alert');
+              console.warn('ShieldPro: Blocked excessive alert');
               return;
             }
-            return originalAlert.call(window, msg);
+            return originalAlert.call(_window, msg);
           };
           
-          window.confirm = function(msg) {
+          window.confirm = function(_msg) {
             dialogCount++;
             if (dialogCount > maxDialogs) {
-              console.log('ShieldPro: Blocked excessive confirm');
+              console.warn('ShieldPro: Blocked excessive confirm');
               return false;
             }
-            return originalConfirm.call(window, msg);
+            return originalConfirm.call(_window, msg);
           };
           
-          window.prompt = function(msg, defaultText) {
+          window.prompt = function(_msg, defaultText) {
             dialogCount++;
             if (dialogCount > maxDialogs) {
-              console.log('ShieldPro: Blocked excessive prompt');
+              console.warn('ShieldPro: Blocked excessive prompt');
               return null;
             }
-            return originalPrompt.call(window, msg, defaultText);
+            return originalPrompt.call(_window, msg, _defaultText);
           };
           
           // Reset dialog count periodically
           setInterval(() => {
             dialogCount = 0;
-          }, resetInterval);
+          }, _resetInterval);
         }
         
         // Prevent right-click popups
-        document.addEventListener('contextmenu', function(e) {
+        document.addEventListener('contextmenu', function(_e) {
           const target = e.target as HTMLElement;
           if (target.onclick || target.getAttribute('onclick')) {
             e.stopPropagation();
           }
-        }, true);
+        }, _true);
         
         // Block beforeunload popups for Tier 2+
         if (${this.tier} >= 2) {
-          window.addEventListener('beforeunload', function(e) {
+          window.addEventListener('beforeunload', function(_e) {
             delete e.returnValue;
-          }, true);
+          }, _true);
         }
       })();
     `;
     
     // Inject as early as possible
     if (document.documentElement) {
-      document.documentElement.appendChild(script);
+      document.documentElement.appendChild(_script);
       script.remove();
     }
   }

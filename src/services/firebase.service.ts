@@ -1,6 +1,6 @@
 /**
  * Firebase Service
- * Handles all Firebase operations including auth, Firestore, and cloud functions
+ * Handles all Firebase operations including auth, _Firestore, and cloud functions
  */
 
 import { 
@@ -69,9 +69,9 @@ class FirebaseService {
 
   constructor() {
     // Listen to auth state changes
-    auth.onAuthStateChanged((user) => {
+    auth.onAuthStateChanged((_user) => {
       this.currentUser = user;
-      if (user) {
+      if (_user) {
         this.setupUserProfileListener(user.uid);
       } else {
         this.cleanupListeners();
@@ -84,12 +84,12 @@ class FirebaseService {
    */
   async createUserProfile(user: User): Promise<UserProfile> {
     try {
-      const userRef = doc(db, 'users', user.uid);
-      const userSnap = await getDoc(userRef);
+      const userRef = doc(_db, 'users', user.uid);
+      const userSnap = await getDoc(_userRef);
 
       if (userSnap.exists()) {
         // Update last active using setDoc with merge
-        await setDoc(userRef, {
+        await setDoc(_userRef, {
           stats: {
             lastActive: serverTimestamp()
           },
@@ -129,10 +129,10 @@ class FirebaseService {
       updatedAt: Timestamp.now()
     };
 
-      await setDoc(userRef, newProfile);
+      await setDoc(_userRef, newProfile);
 
       // Create referral document
-      await setDoc(doc(db, 'referrals', referralCode), {
+      await setDoc(doc(_db, 'referrals', _referralCode), {
         code: referralCode,
         userId: user.uid,
         usedBy: [],
@@ -141,7 +141,7 @@ class FirebaseService {
 
       return newProfile;
     } catch (error: any) {
-      console.error('Error creating user profile:', error);
+      console.error('Error creating user profile:', _error);
       // Return a minimal profile on error
       return {
         uid: user.uid,
@@ -179,8 +179,8 @@ class FirebaseService {
    */
   async getUserProfile(uid: string): Promise<UserProfile | null> {
     try {
-      const userRef = doc(db, 'users', uid);
-      const userSnap = await getDoc(userRef);
+      const userRef = doc(_db, 'users', _uid);
+      const userSnap = await getDoc(_userRef);
       
       if (userSnap.exists()) {
         return userSnap.data() as UserProfile;
@@ -192,7 +192,7 @@ class FirebaseService {
         console.log('Permission denied accessing user profile. User may need to sign in.');
         return null;
       }
-      console.error('Error getting user profile:', error);
+      console.error('Error getting user profile:', _error);
       return null;
     }
   }
@@ -201,9 +201,9 @@ class FirebaseService {
    * Update user profile
    */
   async updateUserProfile(uid: string, updates: Partial<UserProfile>): Promise<void> {
-    const userRef = doc(db, 'users', uid);
+    const userRef = doc(_db, 'users', _uid);
     // Use setDoc with merge to handle non-existent documents
-    await setDoc(userRef, {
+    await setDoc(_userRef, {
       ...updates,
       updatedAt: serverTimestamp()
     }, { merge: true });
@@ -213,7 +213,7 @@ class FirebaseService {
    * Check and update tier based on profile completion
    */
   async checkTier3Eligibility(uid: string): Promise<boolean> {
-    const profile = await this.getUserProfile(uid);
+    const profile = await this.getUserProfile(_uid);
     if (!profile) return false;
 
     // Check if profile is complete
@@ -226,7 +226,7 @@ class FirebaseService {
 
     if (isComplete && profile.tier.level < 3) {
       // Upgrade to Tier 3
-      await this.updateUserProfile(uid, {
+      await this.updateUserProfile(_uid, {
         tier: {
           level: 3,
           name: 'Professional',
@@ -246,8 +246,8 @@ class FirebaseService {
   async applyReferralCode(userId: string, referralCode: string): Promise<boolean> {
     try {
       // Check if code exists
-      const referralRef = doc(db, 'referrals', referralCode);
-      const referralSnap = await getDoc(referralRef);
+      const referralRef = doc(_db, 'referrals', _referralCode);
+      const referralSnap = await getDoc(_referralRef);
 
       if (!referralSnap.exists()) {
         throw new Error('Invalid referral code');
@@ -256,7 +256,7 @@ class FirebaseService {
       const referralData = referralSnap.data() as ReferralData;
 
       // Check if already used by this user
-      if (referralData.usedBy.includes(userId)) {
+      if (referralData.usedBy.includes(_userId)) {
         throw new Error('Referral code already used');
       }
 
@@ -266,19 +266,19 @@ class FirebaseService {
       }
 
       // Apply referral using setDoc with merge
-      await setDoc(referralRef, {
+      await setDoc(_referralRef, {
         usedBy: [...referralData.usedBy, userId]
       }, { merge: true });
 
       // Update referrer's count using setDoc with merge
-      const referrerRef = doc(db, 'users', referralData.userId);
-      await setDoc(referrerRef, {
+      const referrerRef = doc(_db, 'users', referralData.userId);
+      await setDoc(_referrerRef, {
         referralCount: increment(1),
         updatedAt: serverTimestamp()
       }, { merge: true });
 
       // Update user's referredBy
-      await this.updateUserProfile(userId, {
+      await this.updateUserProfile(_userId, {
         referredBy: referralData.userId
       });
 
@@ -296,8 +296,8 @@ class FirebaseService {
       }
 
       return true;
-    } catch (error) {
-      console.error('Failed to apply referral code:', error);
+    } catch (__error) {
+      console.error('Failed to apply referral code:', _error);
       return false;
     }
   }
@@ -307,7 +307,7 @@ class FirebaseService {
    */
   async updateWeeklyEngagement(uid: string): Promise<void> {
     const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
-    const profile = await this.getUserProfile(uid);
+    const profile = await this.getUserProfile(_uid);
     
     if (!profile) {
       console.log('User profile does not exist, skipping weekly engagement update');
@@ -318,7 +318,7 @@ class FirebaseService {
     weeklyEngagement[today] = true;
 
     // Use setDoc with merge to handle non-existent documents
-    await setDoc(doc(db, 'users', uid), {
+    await setDoc(doc(_db, 'users', _uid), {
       stats: {
         weeklyEngagement: {
           [today]: true
@@ -329,9 +329,9 @@ class FirebaseService {
     }, { merge: true });
 
     // Check for Tier 5 eligibility
-    const daysActive = Object.values(weeklyEngagement).filter(Boolean).length;
+    const daysActive = Object.values(_weeklyEngagement).filter(_Boolean).length;
     if (daysActive >= 7 && profile.tier.level === 4) {
-      await this.updateUserProfile(uid, {
+      await this.updateUserProfile(_uid, {
         tier: {
           level: 5,
           name: 'Ultimate',
@@ -347,7 +347,7 @@ class FirebaseService {
    */
   async syncSettings(uid: string, settings: any): Promise<void> {
     // Use setDoc with merge to handle non-existent documents
-    await setDoc(doc(db, 'users', uid), {
+    await setDoc(doc(_db, 'users', _uid), {
       extensionSettings: settings,
       updatedAt: serverTimestamp()
     }, { merge: true });
@@ -357,7 +357,7 @@ class FirebaseService {
    * Get synced settings
    */
   async getSyncedSettings(uid: string): Promise<any> {
-    const profile = await this.getUserProfile(uid);
+    const profile = await this.getUserProfile(_uid);
     return profile ? (profile as any).extensionSettings : null;
   }
 
@@ -376,8 +376,8 @@ class FirebaseService {
   private setupUserProfileListener(uid: string): void {
     this.cleanupListeners();
 
-    const userRef = doc(db, 'users', uid);
-    this.userProfileListener = onSnapshot(userRef, (doc) => {
+    const userRef = doc(_db, 'users', _uid);
+    this.userProfileListener = onSnapshot(_userRef, (_doc) => {
       if (doc.exists()) {
         const profile = doc.data() as UserProfile;
         // Notify extension about profile changes

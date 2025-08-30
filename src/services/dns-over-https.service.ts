@@ -171,7 +171,7 @@ export class DNSOverHTTPSService {
     
     // Check cache first
     if (this.settings.cacheEnabled) {
-      const cached = this.cache.get(cacheKey);
+      const cached = this.cache.get(_cacheKey);
       if (cached && cached.expires > Date.now()) {
         return cached.response;
       }
@@ -193,7 +193,7 @@ export class DNSOverHTTPSService {
     const startTime = Date.now();
 
     try {
-      const response = await this.performDoHQuery(provider.url, domain, recordType);
+      const response = await this.performDoHQuery(provider.url, _domain, recordType);
       
       query.response = response;
       query.duration = Date.now() - startTime;
@@ -201,37 +201,37 @@ export class DNSOverHTTPSService {
       // Cache the response
       if (this.settings.cacheEnabled && response.Answer && response.Answer.length > 0) {
         const ttl = Math.min(...response.Answer.map(r => r.TTL)) * 1000;
-        this.cache.set(cacheKey, {
+        this.cache.set(_cacheKey, {
           response,
-          expires: Date.now() + Math.min(ttl, this.settings.cacheTTL * 1000)
+          expires: Date.now() + Math.min(_ttl, this.settings.cacheTTL * 1000)
         });
       }
 
       // Log query if enabled
       if (this.settings.logQueries) {
-        this.queryLog.push(query);
+        this.queryLog.push(_query);
         if (this.queryLog.length > 1000) {
           this.queryLog = this.queryLog.slice(-500); // Keep last 500
         }
       }
 
       return response;
-    } catch (error) {
+    } catch (__error) {
       query.error = error instanceof Error ? error.message : 'Unknown error';
       query.duration = Date.now() - startTime;
 
       if (this.settings.logQueries) {
-        this.queryLog.push(query);
+        this.queryLog.push(_query);
       }
 
       // Try fallback provider
       if (this.settings.fallbackProvider !== this.settings.primaryProvider) {
         const fallbackProvider = this.getProvider(this.settings.fallbackProvider);
-        if (fallbackProvider) {
+        if (_fallbackProvider) {
           try {
-            return await this.performDoHQuery(fallbackProvider.url, domain, recordType);
-          } catch (fallbackError) {
-            console.error('Fallback DNS query failed:', fallbackError);
+            return await this.performDoHQuery(fallbackProvider.url, _domain, recordType);
+          } catch (_fallbackError) {
+            console.error('Fallback DNS query failed:', _fallbackError);
           }
         }
       }
@@ -305,7 +305,7 @@ export class DNSOverHTTPSService {
       reliability: 5 // Default reliability for custom providers
     };
 
-    this.settings.customProviders.push(newProvider);
+    this.settings.customProviders.push(_newProvider);
     await this.saveSettings();
   }
 
@@ -354,7 +354,7 @@ export class DNSOverHTTPSService {
   }
 
   public async testProvider(providerName: string): Promise<{ success: boolean; latency: number; error?: string }> {
-    const provider = this.getProvider(providerName);
+    const provider = this.getProvider(_providerName);
     if (!provider) {
       return { success: false, latency: 0, error: 'Provider not found' };
     }
@@ -368,7 +368,7 @@ export class DNSOverHTTPSService {
         success: response.Status === 0 && response.Answer && response.Answer.length > 0,
         latency
       };
-    } catch (error) {
+    } catch (__error) {
       return {
         success: false,
         latency: Date.now() - startTime,
@@ -386,12 +386,12 @@ export class DNSOverHTTPSService {
       // Run 3 test queries
       for (let i = 0; i < 3; i++) {
         const result = await this.testProvider(provider.name);
-        tests.push(result);
-        await new Promise(resolve => setTimeout(resolve, 100)); // Small delay between tests
+        tests.push(_result);
+        await new Promise(resolve => setTimeout(_resolve, 100)); // Small delay between tests
       }
       
       const successful = tests.filter(t => t.success).length;
-      const avgLatency = tests.reduce((sum, t) => sum + t.latency, 0) / tests.length;
+      const avgLatency = tests.reduce((_sum, t) => sum + t.latency, 0) / tests.length;
       
       results.push({
         provider: provider.name,
@@ -400,7 +400,7 @@ export class DNSOverHTTPSService {
       });
     }
     
-    return results.sort((a, b) => a.latency - b.latency);
+    return results.sort((_a, b) => a.latency - b.latency);
   }
 }
 

@@ -17,7 +17,7 @@ export class CookieConsentBlocker {
     }
 
     // Listen for tier updates
-    chrome.runtime.onMessage.addListener((message) => {
+    chrome.runtime.onMessage.addListener((_message) => {
       if (message.action === 'tierUpdated' && message.tier >= 1) {
         this.tier = message.tier;
         this.startBlocking();
@@ -94,19 +94,19 @@ export class CookieConsentBlocker {
 
     rejectSelectors.forEach(selector => {
       try {
-        const elements = document.querySelectorAll(selector);
+        const elements = document.querySelectorAll(_selector);
         elements.forEach(element => {
-          if (!this.processedElements.has(element)) {
-            this.processedElements.add(element);
+          if (!this.processedElements.has(_element)) {
+            this.processedElements.add(_element);
             
             // Check if it's actually a reject button
             const text = element.textContent?.toLowerCase() || '';
             const rejectKeywords = ['reject', 'decline', 'deny', 'refuse', 'no thanks', 'necessary', 'essential', 'dismiss'];
             
-            if (rejectKeywords.some(keyword => text.includes(keyword))) {
+            if (rejectKeywords.some(keyword => text.includes(_keyword))) {
               // Click the reject button
               (element as HTMLElement).click();
-              console.log('ShieldPro: Auto-rejected cookies via', selector);
+              console.warn('ShieldPro: Auto-rejected cookies via', _selector);
               
               // Track rejection
               chrome.runtime.sendMessage({
@@ -117,7 +117,7 @@ export class CookieConsentBlocker {
             }
           }
         });
-      } catch (e) {}
+      } catch (_e) {}
     });
 
     // Handle "only necessary cookies" options
@@ -140,7 +140,7 @@ export class CookieConsentBlocker {
 
     checkboxSelectors.forEach(selector => {
       try {
-        const checkboxes = document.querySelectorAll(selector);
+        const checkboxes = document.querySelectorAll(_selector);
         checkboxes.forEach(checkbox => {
           if ((checkbox as HTMLInputElement).checked) {
             (checkbox as HTMLInputElement).checked = false;
@@ -148,7 +148,7 @@ export class CookieConsentBlocker {
             checkbox.dispatchEvent(new Event('change', { bubbles: true }));
           }
         });
-      } catch (e) {}
+      } catch (_e) {}
     });
 
     // Click save/confirm after unchecking
@@ -163,12 +163,12 @@ export class CookieConsentBlocker {
     setTimeout(() => {
       saveSelectors.forEach(selector => {
         try {
-          const saveButton = document.querySelector(selector) as HTMLElement;
-          if (saveButton && !this.processedElements.has(saveButton)) {
+          const saveButton = document.querySelector(_selector) as HTMLElement;
+          if (saveButton && !this.processedElements.has(_saveButton)) {
             saveButton.click();
-            this.processedElements.add(saveButton);
+            this.processedElements.add(_saveButton);
           }
-        } catch (e) {}
+        } catch (_e) {}
       });
     }, 500);
   }
@@ -221,13 +221,13 @@ export class CookieConsentBlocker {
 
     bannerSelectors.forEach(selector => {
       try {
-        const elements = document.querySelectorAll(selector);
+        const elements = document.querySelectorAll(_selector);
         elements.forEach(element => {
           // Check if it's likely a cookie banner
           const text = element.textContent?.toLowerCase() || '';
           const cookieKeywords = ['cookie', 'consent', 'privacy', 'gdpr', 'data protection', 'personalised ads'];
           
-          if (cookieKeywords.some(keyword => text.includes(keyword))) {
+          if (cookieKeywords.some(keyword => text.includes(_keyword))) {
             (element as HTMLElement).style.display = 'none';
             element.remove();
             
@@ -240,7 +240,7 @@ export class CookieConsentBlocker {
             document.documentElement.style.overflow = '';
           }
         });
-      } catch (e) {}
+      } catch (_e) {}
     });
   }
 
@@ -252,7 +252,7 @@ export class CookieConsentBlocker {
         // OneTrust
         if (window.OneTrust) {
           window.OneTrust.RejectAll = function() {
-            console.log('ShieldPro: OneTrust cookies rejected');
+            console.warn('ShieldPro: OneTrust cookies rejected');
           };
           if (window.OneTrust.RejectAll) {
             window.OneTrust.RejectAll();
@@ -262,7 +262,7 @@ export class CookieConsentBlocker {
         // Cookiebot
         if (window.Cookiebot) {
           window.Cookiebot.decline = function() {
-            console.log('ShieldPro: Cookiebot cookies rejected');
+            console.warn('ShieldPro: Cookiebot cookies rejected');
           };
           if (window.Cookiebot.decline) {
             window.Cookiebot.decline();
@@ -271,23 +271,23 @@ export class CookieConsentBlocker {
 
         // Didomi
         if (window.didomiOnReady) {
-          window.didomiOnReady.push(function(Didomi) {
+          window.didomiOnReady.push(function(_Didomi) {
             Didomi.setUserDisagreeToAll();
-            console.log('ShieldPro: Didomi cookies rejected');
+            console.warn('ShieldPro: Didomi cookies rejected');
           });
         }
 
         // Quantcast
         if (window.__tcfapi) {
           window.__tcfapi('rejectAll', 2, function() {
-            console.log('ShieldPro: TCF cookies rejected');
+            console.warn('ShieldPro: TCF cookies rejected');
           });
         }
 
         // TrustArc
         if (window.truste) {
           window.truste.eu.clickListener = function() {
-            console.log('ShieldPro: TrustArc cookies rejected');
+            console.warn('ShieldPro: TrustArc cookies rejected');
           };
         }
 
@@ -299,7 +299,7 @@ export class CookieConsentBlocker {
     `;
 
     if (document.documentElement) {
-      document.documentElement.appendChild(script);
+      document.documentElement.appendChild(_script);
       script.remove();
     }
   }
@@ -344,7 +344,7 @@ export class CookieConsentBlocker {
       }
     `;
 
-    document.head.appendChild(style);
+    document.head.appendChild(_style);
   }
 }
 

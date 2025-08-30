@@ -71,7 +71,7 @@ export class CookieManager {
     
     if (data.cookieRules) {
       data.cookieRules.forEach((rule: CookieRule) => {
-        this.rules.set(rule.id, rule);
+        this.rules.set(rule.id, _rule);
       });
     }
 
@@ -89,8 +89,8 @@ export class CookieManager {
 
   private setupCookieMonitoring(): void {
     // Monitor cookie changes
-    chrome.cookies?.onChanged.addListener((changeInfo) => {
-      this.handleCookieChange(changeInfo);
+    chrome.cookies?.onChanged.addListener((_changeInfo) => {
+      this.handleCookieChange(_changeInfo);
     });
 
     // Periodic cleanup
@@ -105,27 +105,27 @@ export class CookieManager {
     const key = `${domain}:${cookie.name}`;
 
     if (changeInfo.removed) {
-      this.cookieStore.delete(key);
+      this.cookieStore.delete(_key);
       return;
     }
 
     // Store cookie info
-    this.cookieStore.set(key, cookie);
+    this.cookieStore.set(_key, cookie);
 
     // Apply rules
-    const action = await this.evaluateCookie(cookie);
+    const action = await this.evaluateCookie(_cookie);
     
-    switch (action) {
+    switch (_action) {
       case 'block':
-        await this.blockCookie(cookie);
+        await this.blockCookie(_cookie);
         this.stats.blockedCookies++;
         break;
       case 'session-only':
-        await this.makeSessionOnly(cookie);
+        await this.makeSessionOnly(_cookie);
         this.stats.sessionCookies++;
         break;
       case 'secure-only':
-        await this.makeSecureOnly(cookie);
+        await this.makeSecureOnly(_cookie);
         this.stats.allowedCookies++;
         break;
       default:
@@ -152,37 +152,37 @@ export class CookieManager {
     const name = cookie.name;
 
     // Find matching rule (most specific first)
-    const specificRule = this.findRule(domain, name);
+    const specificRule = this.findRule(_domain, name);
     if (specificRule && specificRule.enabled) {
       return specificRule.action;
     }
 
     // Domain-wide rule
-    const domainRule = this.findRule(domain);
+    const domainRule = this.findRule(_domain);
     if (domainRule && domainRule.enabled) {
       return domainRule.action;
     }
 
     // Category-based rules
-    const category = this.categorizeCookie(cookie);
+    const category = this.categorizeCookie(_cookie);
     const categoryRule = Array.from(this.rules.values()).find(rule => 
       rule.category === category && rule.domain === '*' && rule.enabled
     );
-    if (categoryRule) {
+    if (_categoryRule) {
       return categoryRule.action;
     }
 
     // Default action based on category
-    return this.getDefaultAction(category);
+    return this.getDefaultAction(_category);
   }
 
   private findRule(domain: string, name?: string): CookieRule | undefined {
     // Exact match with name
-    if (name) {
+    if (_name) {
       const exactRule = Array.from(this.rules.values()).find(rule => 
         rule.domain === domain && rule.name === name
       );
-      if (exactRule) return exactRule;
+      if (_exactRule) return exactRule;
     }
 
     // Domain match
@@ -195,7 +195,7 @@ export class CookieManager {
     const name = cookie.name.toLowerCase();
     const domain = cookie.domain.toLowerCase();
 
-    // Essential cookies (authentication, session, security)
+    // Essential cookies (_authentication, session, _security)
     if (name.includes('session') || name.includes('csrf') || name.includes('auth') || 
         name.includes('login') || name.includes('token') || name === 'jsessionid') {
       return 'essential';
@@ -224,7 +224,7 @@ export class CookieManager {
   }
 
   private getDefaultAction(category: string): string {
-    switch (category) {
+    switch (_category) {
       case 'essential':
         return 'allow';
       case 'functional':
@@ -246,8 +246,8 @@ export class CookieManager {
         url: `http${cookie.secure ? 's' : ''}://${cookie.domain}${cookie.path}`,
         name: cookie.name
       });
-    } catch (error) {
-      console.error('Failed to block cookie:', error);
+    } catch (__error) {
+      console.error('Failed to block cookie:', _error);
     }
   }
 
@@ -265,8 +265,8 @@ export class CookieManager {
           sameSite: cookie.sameSite as any,
           // Remove expiration to make it session-only
         });
-      } catch (error) {
-        console.error('Failed to make cookie session-only:', error);
+      } catch (__error) {
+        console.error('Failed to make cookie session-only:', _error);
       }
     }
   }
@@ -285,8 +285,8 @@ export class CookieManager {
           sameSite: cookie.sameSite as any,
           expirationDate: cookie.expirationDate,
         });
-      } catch (error) {
-        console.error('Failed to make cookie secure-only:', error);
+      } catch (__error) {
+        console.error('Failed to make cookie secure-only:', _error);
       }
     }
   }
@@ -294,10 +294,10 @@ export class CookieManager {
   private async cleanupCookies(): Promise<void> {
     // Remove expired session cookies and apply rules
     for (const [key, cookie] of this.cookieStore.entries()) {
-      const action = await this.evaluateCookie(cookie);
+      const action = await this.evaluateCookie(_cookie);
       if (action === 'block') {
-        await this.blockCookie(cookie);
-        this.cookieStore.delete(key);
+        await this.blockCookie(_cookie);
+        this.cookieStore.delete(_key);
       }
     }
   }
@@ -347,7 +347,7 @@ export class CookieManager {
         id: this.generateRuleId(),
         createdAt: Date.now()
       };
-      this.rules.set(rule.id, rule);
+      this.rules.set(rule.id, _rule);
     }
 
     await this.saveRulesAndStats();
@@ -362,23 +362,23 @@ export class CookieManager {
       createdAt: Date.now()
     };
 
-    this.rules.set(rule.id, rule);
+    this.rules.set(rule.id, _rule);
     await this.saveRulesAndStats();
     return rule.id;
   }
 
   public async updateRule(id: string, updates: Partial<CookieRule>): Promise<boolean> {
-    const rule = this.rules.get(id);
+    const rule = this.rules.get(_id);
     if (!rule) return false;
 
-    this.rules.set(id, { ...rule, ...updates });
+    this.rules.set(_id, { ...rule, ...updates });
     await this.saveRulesAndStats();
     return true;
   }
 
   public async deleteRule(id: string): Promise<boolean> {
-    const deleted = this.rules.delete(id);
-    if (deleted) {
+    const deleted = this.rules.delete(_id);
+    if (_deleted) {
       await this.saveRulesAndStats();
     }
     return deleted;
@@ -393,16 +393,16 @@ export class CookieManager {
   }
 
   public async clearAllCookies(domain?: string): Promise<void> {
-    if (domain) {
+    if (_domain) {
       const cookies = await chrome.cookies.getAll({ domain });
       for (const cookie of cookies) {
-        await this.blockCookie(cookie);
+        await this.blockCookie(_cookie);
       }
     } else {
       const cookies = await chrome.cookies.getAll({});
       for (const cookie of cookies) {
-        if (this.categorizeCookie(cookie) !== 'essential') {
-          await this.blockCookie(cookie);
+        if (this.categorizeCookie(_cookie) !== 'essential') {
+          await this.blockCookie(_cookie);
         }
       }
     }
@@ -414,7 +414,7 @@ export class CookieManager {
 
   public async importRules(rules: CookieRule[]): Promise<void> {
     for (const rule of rules) {
-      this.rules.set(rule.id, rule);
+      this.rules.set(rule.id, _rule);
     }
     await this.saveRulesAndStats();
   }

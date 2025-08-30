@@ -3,14 +3,13 @@
  * Provides granular JavaScript control for websites
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Shield, 
   ShieldCheck, 
   ShieldX, 
   Code, 
   Zap, 
-  Settings, 
   Globe, 
   AlertTriangle,
   CheckCircle,
@@ -70,12 +69,7 @@ export const ScriptControlPanel: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [currentDomain, setCurrentDomain] = useState<string>('');
 
-  useEffect(() => {
-    initializeScriptControl();
-    getCurrentDomain();
-  }, []);
-
-  const initializeScriptControl = async () => {
+  const initializeScriptControl = useCallback(async () => {
     setIsLoading(true);
     try {
       // Load existing rules
@@ -93,7 +87,13 @@ export const ScriptControlPanel: React.FC = () => {
       console.error('Failed to initialize script control:', error);
     }
     setIsLoading(false);
-  };
+  }, []);
+
+  useEffect(() => {
+    initializeScriptControl();
+    getCurrentDomain();
+  }, [initializeScriptControl]);
+
 
   const getCurrentDomain = async () => {
     try {
@@ -140,9 +140,9 @@ export const ScriptControlPanel: React.FC = () => {
 
     const rule: ScriptRule = {
       id: `rule_${Date.now()}`,
-      domain: newRuleForm.domain!,
-      scriptType: newRuleForm.scriptType!,
-      action: newRuleForm.action!,
+      domain: newRuleForm.domain || '',
+      scriptType: newRuleForm.scriptType || 'all',
+      action: newRuleForm.action || 'block',
       pattern: newRuleForm.pattern,
       enabled: true,
       createdAt: Date.now(),

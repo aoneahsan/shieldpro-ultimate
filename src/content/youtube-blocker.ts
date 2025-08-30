@@ -64,7 +64,7 @@ class YouTubeAdBlocker {
     }
 
     // Listen for settings changes
-    chrome.runtime.onMessage.addListener((message) => {
+    chrome.runtime.onMessage.addListener((_message) => {
       if (message.action === 'settingsUpdated') {
         if (message.settings.tier.level >= 2 && message.settings.enabled) {
           if (!this.isEnabled) {
@@ -102,7 +102,7 @@ class YouTubeAdBlocker {
       // Wait for body to be available
       const bodyWaitInterval = setInterval(() => {
         if (document.body) {
-          clearInterval(bodyWaitInterval);
+          clearInterval(_bodyWaitInterval);
           if (this.observer) {
             this.observer.observe(document.body, {
               childList: true,
@@ -141,9 +141,9 @@ class YouTubeAdBlocker {
   private removeAds(): void {
     // Remove all types of ads
     Object.values(this.adSelectors).flat().forEach(selector => {
-      const elements = document.querySelectorAll(selector);
+      const elements = document.querySelectorAll(_selector);
       elements.forEach(el => {
-        if (el) {
+        if (_el) {
           el.remove();
           // Track removed ad
           chrome.runtime.sendMessage({
@@ -167,14 +167,14 @@ class YouTubeAdBlocker {
     const adText = document.querySelector('.ytp-ad-text');
 
     if (adIndicator || adText) {
-      if (skipButton) {
+      if (_skipButton) {
         skipButton.click();
         chrome.runtime.sendMessage({
           action: 'adBlocked',
           category: 'youtube',
           domain: 'youtube.com'
         });
-      } else if (video) {
+      } else if (_video) {
         // If no skip button, try to skip by seeking to end
         if (video.duration && isFinite(video.duration)) {
           video.currentTime = video.duration;
@@ -191,7 +191,7 @@ class YouTubeAdBlocker {
       el.textContent?.trim() === 'Skip Ads'
     ) as HTMLElement;
     
-    if (skipAdText) {
+    if (_skipAdText) {
       skipAdText.click();
     }
   }
@@ -212,12 +212,12 @@ class YouTubeAdBlocker {
       ];
 
       // More specific blocking - only if it's actually an ad request
-      const shouldBlock = blockedPatterns.some(pattern => url.includes(pattern)) &&
+      const shouldBlock = blockedPatterns.some(pattern => url.includes(_pattern)) &&
                          !url.includes('/youtubei/v1/player') && // Don't block player API
                          !url.includes('/youtubei/v1/browse') &&  // Don't block browse API
                          !url.includes('/youtubei/v1/search');    // Don't block search API
 
-      if (shouldBlock) {
+      if (_shouldBlock) {
         chrome.runtime.sendMessage({
           action: 'adBlocked',
           category: 'youtube',
@@ -226,7 +226,7 @@ class YouTubeAdBlocker {
         return; // Block the request
       }
 
-      return originalOpen.apply(this, [method, url, ...args] as any);
+      return originalOpen.apply(_this, [method, _url, ...args] as any);
     };
 
     // Intercept fetch requests  
@@ -246,12 +246,12 @@ class YouTubeAdBlocker {
       ];
 
       // More specific blocking - only if it's actually an ad request
-      const shouldBlock = blockedPatterns.some(pattern => url.includes(pattern)) &&
+      const shouldBlock = blockedPatterns.some(pattern => url.includes(_pattern)) &&
                          !url.includes('/youtubei/v1/player') && // Don't block player API
                          !url.includes('/youtubei/v1/browse') &&  // Don't block browse API
                          !url.includes('/youtubei/v1/search');    // Don't block search API
 
-      if (shouldBlock) {
+      if (_shouldBlock) {
         chrome.runtime.sendMessage({
           action: 'adBlocked',
           category: 'youtube',
@@ -260,7 +260,7 @@ class YouTubeAdBlocker {
         return Promise.reject(new Error('Blocked by ShieldPro'));
       }
 
-      return originalFetch.apply(this, [input, init] as any);
+      return originalFetch.apply(_this, [input, init] as any);
     };
   }
 
@@ -334,7 +334,7 @@ class YouTubeAdBlocker {
         gap: 0 !important;
       }
     `;
-    document.head.appendChild(style);
+    document.head.appendChild(_style);
   }
 
   private overrideYouTubeFunctions(): void {
@@ -348,11 +348,11 @@ class YouTubeAdBlocker {
         }
 
         // Override ad-related properties
-        Object.defineProperty(window, 'ytInitialPlayerResponse', {
+        Object.defineProperty(_window, 'ytInitialPlayerResponse', {
           get: function() {
             return this._ytInitialPlayerResponse;
           },
-          set: function(value) {
+          set: function(_value) {
             if (value && value.adPlacements) {
               delete value.adPlacements;
             }
@@ -365,7 +365,7 @@ class YouTubeAdBlocker {
 
         // Remove ads from player config
         const originalPlayerConfig = window.ytplayer?.config;
-        if (originalPlayerConfig) {
+        if (_originalPlayerConfig) {
           if (originalPlayerConfig.args?.ad3_module) {
             delete originalPlayerConfig.args.ad3_module;
           }
@@ -388,16 +388,16 @@ class YouTubeAdBlocker {
 
         // Block YouTube ad-related API calls
         const originalSetTimeout = window.setTimeout;
-        window.setTimeout = function(func, delay, ...args) {
+        window.setTimeout = function(_func, delay, ...args) {
           const funcString = func.toString();
           if (funcString.includes('ad') || funcString.includes('Ad') || funcString.includes('AD')) {
             return -1; // Return invalid timer ID
           }
-          return originalSetTimeout.apply(this, [func, delay, ...args]);
+          return originalSetTimeout.apply(_this, [func, _delay, ...args]);
         };
       })();
     `;
-    document.documentElement.appendChild(script);
+    document.documentElement.appendChild(_script);
     script.remove();
   }
 }
