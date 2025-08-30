@@ -210,21 +210,24 @@ function Options() {
     }
   };
 
+  // Use effective tier (5 for early adopters, otherwise current tier)
+  const effectiveTier = isEarlyAdopter ? 5 : currentTier;
+  
   const tabs: TabItem[] = [
     { id: 'general', label: 'General', icon: Settings },
     { id: 'filters', label: 'Filters', icon: Filter },
     { id: 'privacy', label: 'Privacy', icon: Lock },
     { id: 'whitelist', label: 'Whitelist', icon: Globe },
     { id: 'tiers', label: 'Tiers', icon: Users },
-    ...(currentTier >= 2 ? [
+    ...(effectiveTier >= 2 ? [
       { id: 'themes', label: 'Themes', icon: Palette }
     ] : []),
-    ...(currentTier >= 3 ? [
+    ...(effectiveTier >= 3 ? [
       { id: 'custom-filters', label: 'Custom Filters', icon: Filter },
       { id: 'image-swap', label: 'Image Swap', icon: Image },
       { id: 'backup-sync', label: 'Backup & Sync', icon: Cloud }
     ] : []),
-    ...(currentTier >= 4 ? [
+    ...(effectiveTier >= 4 ? [
       { id: 'filter-lists', label: 'Filter Lists', icon: Database },
       { id: 'whitelist-manager', label: 'Whitelist Manager', icon: List },
       { id: 'regex-patterns', label: 'Regex Patterns', icon: Code },

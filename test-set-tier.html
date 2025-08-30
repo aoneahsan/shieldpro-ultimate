@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Set Tier Level</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; font-size: 16px; }
+        .tier-1 { background: #f0f0f0; }
+        .tier-2 { background: #90EE90; }
+        .tier-3 { background: #87CEEB; }
+        .tier-4 { background: #DDA0DD; }
+        .tier-5 { background: linear-gradient(45deg, #FFD700, #FFA500); color: white; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4f4dd; color: #155724; }
+        .current { background: #d1ecf1; color: #0c5460; padding: 10px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Extension Tier Manager</h1>
+    
+    <div id="current-tier" class="current">Loading current tier...</div>
+    
+    <h2>Set Your Tier Level:</h2>
+    <p>Click a button to unlock features for that tier level:</p>
+    
+    <div>
+        <button class="tier-1" onclick="setTier(1)">
+            Tier 1 - Basic<br>
+            <small>5 tabs only</small>
+        </button>
+        <button class="tier-2" onclick="setTier(2)">
+            Tier 2 - Enhanced<br>
+            <small>+1 tab (Themes)</small>
+        </button>
+        <button class="tier-3" onclick="setTier(3)">
+            Tier 3 - Professional<br>
+            <small>+3 tabs</small>
+        </button>
+        <button class="tier-4" onclick="setTier(4)">
+            Tier 4 - Premium<br>
+            <small>+6 tabs</small>
+        </button>
+        <button class="tier-5" onclick="setTier(5)">
+            Tier 5 - Ultimate<br>
+            <small>ALL 15 TABS!</small>
+        </button>
+    </div>
+    
+    <div id="status"></div>
+    
+    <h3>After Setting Tier:</h3>
+    <ol>
+        <li>Reload the extension in Chrome</li>
+        <li>Open the Options page</li>
+        <li>You should see all tabs for your tier level</li>
+    </ol>
+    
+    <h3>Tabs by Tier:</h3>
+    <ul>
+        <li><strong>Tier 1 (5 tabs):</strong> General, Filters, Privacy, Whitelist, Tiers</li>
+        <li><strong>Tier 2 (6 tabs):</strong> + Themes</li>
+        <li><strong>Tier 3 (9 tabs):</strong> + Custom Filters, Image Swap, Backup & Sync</li>
+        <li><strong>Tier 4-5 (15 tabs):</strong> + Filter Lists, Whitelist Manager, Regex Patterns, Scripts, Network Logger, Security</li>
+    </ul>
+
+    <script>
+        // Check current tier on load
+        chrome.storage.local.get(['settings'], function(result) {
+            const tier = result.settings?.tier?.level || 1;
+            const name = result.settings?.tier?.name || 'Basic';
+            document.getElementById('current-tier').innerHTML = 
+                `Current Tier: <strong>Level ${tier} - ${name}</strong>`;
+        });
+
+        async function setTier(level) {
+            const tierNames = {
+                1: 'Basic',
+                2: 'Enhanced', 
+                3: 'Professional',
+                4: 'Premium',
+                5: 'Ultimate'
+            };
+            
+            const settings = {
+                enabled: true,
+                tier: {
+                    level: level,
+                    name: tierNames[level],
+                    unlockedAt: Date.now(),
+                    progress: level * 20
+                },
+                notifications: true,
+                showBadge: true,
+                autoUpdate: true
+            };
+            
+            // Set in chrome storage
+            chrome.storage.local.set({ settings: settings }, function() {
+                const status = document.getElementById('status');
+                status.className = 'status success';
+                status.innerHTML = `✅ Tier ${level} (${tierNames[level]}) activated!<br>
+                                   Now reload the extension and check the Options page.`;
+                
+                // Update current tier display
+                document.getElementById('current-tier').innerHTML = 
+                    `Current Tier: <strong>Level ${level} - ${tierNames[level]}</strong>`;
+            });
+        }
+    </script>
+</body>
+</html>
