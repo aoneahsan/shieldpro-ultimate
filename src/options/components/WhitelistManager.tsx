@@ -3,10 +3,8 @@ import {
   Shield,
   Plus,
   Trash2,
-  Globe,
   Clock,
   AlertCircle,
-  CheckCircle,
   Search,
   Download,
   Upload,
@@ -14,14 +12,8 @@ import {
   StarOff,
   Edit,
   Save,
-  X,
-  Link,
-  FileText,
   ToggleLeft,
-  ToggleRight,
-  Calendar,
-  TrendingUp,
-  AlertTriangle
+  ToggleRight
 } from 'lucide-react';
 
 type WhitelistType = 'domain' | 'page' | 'regex';

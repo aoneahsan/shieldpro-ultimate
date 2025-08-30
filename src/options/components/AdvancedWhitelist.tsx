@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Globe, 
   Plus, 
-  Trash2, 
-  Edit2,
+  Trash2,
   Save,
   X,
   Search,
@@ -11,13 +10,7 @@ import {
   Upload,
   Clock,
   Shield,
-  AlertCircle,
-  CheckCircle,
-  Link,
-  Calendar,
-  Star,
-  Sparkles,
-  Gift
+  CheckCircle
 } from 'lucide-react';
 import { earlyAdopterService } from '../../shared/services/early-adopter.service';
 import { EarlyAdopterStatus } from '../../shared/constants/marketing';

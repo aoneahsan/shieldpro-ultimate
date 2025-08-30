@@ -7,21 +7,16 @@ import {
   CheckCircle,
   Search,
   Copy,
-  Edit,
-  Save,
   X,
   TestTube,
   BookOpen,
   Zap,
-  Info,
-  RefreshCw,
   Download,
   Upload,
   ToggleLeft,
   ToggleRight,
   Star,
-  Sparkles,
-  Gift
+  Sparkles
 } from 'lucide-react';
 import { earlyAdopterService } from '../../shared/services/early-adopter.service';
 import { EarlyAdopterStatus } from '../../shared/constants/marketing';

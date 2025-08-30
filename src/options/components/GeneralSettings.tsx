@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Info, Shield, Youtube, Tv, MousePointer, Code, Database, Bell, Eye, EyeOff, Check, X } from 'lucide-react';
+import { Shield, Youtube, Tv, MousePointer, Code, Database, Bell, Eye, EyeOff, X } from 'lucide-react';
 import { StorageManager } from '../../shared/utils/storage';
 
 interface GeneralSettingsProps {

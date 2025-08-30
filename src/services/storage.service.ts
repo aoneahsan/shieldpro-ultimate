@@ -2,8 +2,7 @@ import {
   ref, 
   uploadBytes, 
   getDownloadURL, 
-  deleteObject,
-  StorageReference
+  deleteObject
 } from 'firebase/storage';
 import { storage } from '../utils/firebase';
 

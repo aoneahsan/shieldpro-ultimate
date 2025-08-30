@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Cloud, Download, Upload, RefreshCw, Check, AlertCircle, Shield, Calendar, Smartphone, Monitor, Copy } from 'lucide-react';
+import { Cloud, Download, Upload, RefreshCw, Check, Shield, Calendar, Smartphone, Monitor, Copy } from 'lucide-react';
 import { StorageManager } from '../../shared/utils/storage';
 import authService from '../../services/auth.service';
 

@@ -9,15 +9,13 @@ import {
   linkWithCredential,
   EmailAuthProvider,
   onAuthStateChanged,
-  User,
-  deleteUser
+  User
 } from 'firebase/auth';
 import { 
   getFirestore, 
   doc, 
   setDoc, 
   getDoc, 
-  updateDoc, 
   increment,
   serverTimestamp,
   deleteDoc,

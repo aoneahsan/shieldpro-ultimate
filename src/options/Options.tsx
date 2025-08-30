@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Shield, Users, Settings, Filter, Globe, Lock, Check, Download, Upload, Network, Code, Zap, ShieldX, Database, List, Sparkles, Gift, Star, X, Palette, Image, Cloud, Info, UserCircle } from 'lucide-react';
+import { Shield, Users, Settings, Filter, Globe, Lock, Check, Download, Upload, Network, Code, Zap, ShieldX, Database, List, Sparkles, Gift, Star, Palette, Image, Cloud, Info, UserCircle } from 'lucide-react';
 import { CustomFilters } from './components/CustomFilters';
 import { AdvancedWhitelist } from './components/AdvancedWhitelist';
 import { FilterListManager } from './components/FilterListManager';

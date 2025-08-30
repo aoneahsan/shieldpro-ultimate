@@ -10,7 +10,6 @@ import { ElementPicker } from './element-picker';
 import { PrivacyProtector } from './privacy-protection';
 import { CookieConsentHandler } from './cookie-consent-handler';
 import { FloatingVideoBlocker } from './floating-video-blocker';
-import { imageSwapper } from './image-swap';
 
 class ContentScriptManager {
   private youtubeBlocker?: YouTubeAdBlockerV2;

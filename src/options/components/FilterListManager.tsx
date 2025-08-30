@@ -6,22 +6,14 @@ import {
   Download,
   Upload,
   RefreshCw,
-  Globe,
   Shield,
   Clock,
-  CheckCircle,
-  AlertTriangle,
-  X,
   ExternalLink,
-  Copy,
   Search,
   Filter,
   ToggleLeft,
   ToggleRight,
-  Zap,
-  Database,
-  GitBranch,
-  Star
+  Database
 } from 'lucide-react';
 
 interface FilterList {

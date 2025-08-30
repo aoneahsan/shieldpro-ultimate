@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { UserCircle, Check, X, Mail, Lock, Eye, EyeOff } from 'lucide-react';
-import authService from '../../services/auth.service';
 
 export const SignIn: React.FC = () => {
   const [isSignUp, setIsSignUp] = useState(false);

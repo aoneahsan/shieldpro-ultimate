@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { 
   UserCircle, 
-  Mail, 
   Shield, 
   Calendar,
   Award,
   RefreshCw,
   LogOut,
-  Save,
-  Upload,
   Download,
   Trash2,
   Check,
