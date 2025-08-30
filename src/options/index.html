@@ -6,6 +6,7 @@
   <title>ShieldPro Ultimate - Settings</title>
   <link rel="stylesheet" href="../assets/styles/global.css">
   <style>
+    /* Hide body initially to prevent flash */
     body {
       margin: 0;
       padding: 0;
@@ -15,6 +16,14 @@
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       background: #f5f5f5;
+      opacity: 0;
+      transition: opacity 0.1s ease-in;
+    }
+    body.theme-loaded {
+      opacity: 1;
+    }
+    .dark body {
+      background: #111827;
     }
     #root {
       width: 100%;
@@ -26,21 +35,38 @@
   <!-- Load theme immediately to prevent flash -->
   <script>
     (function() {
-      // Load theme from Chrome storage synchronously if possible
+      // First check localStorage for immediate sync access (we'll sync this)
+      const cachedTheme = localStorage.getItem('shieldpro_theme');
+      if (cachedTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+      }
+      
+      // Then load from Chrome storage to ensure it's up to date
       if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
         chrome.storage.local.get(['themeSettings'], function(result) {
           if (result.themeSettings) {
             const { theme } = result.themeSettings;
             if (theme === 'dark') {
               document.documentElement.classList.add('dark');
+              // Cache in localStorage for next load
+              localStorage.setItem('shieldpro_theme', 'dark');
+            } else {
+              document.documentElement.classList.remove('dark');
+              localStorage.setItem('shieldpro_theme', theme || 'light');
             }
           } else {
             // Check system preference as fallback
             if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
               document.documentElement.classList.add('dark');
+              localStorage.setItem('shieldpro_theme', 'dark');
             }
           }
+          // Show body after theme is loaded
+          document.body.classList.add('theme-loaded');
         });
+      } else {
+        // If chrome storage not available, show body anyway
+        document.body.classList.add('theme-loaded');
       }
     })();
   </script>

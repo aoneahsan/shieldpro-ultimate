@@ -219,7 +219,10 @@ export const ThemeManager: React.FC<ThemeManagerProps> = ({ currentTier }) => {
 
     setSelectedTheme(themeId);
     
-    // Save to chrome.storage.local for immediate access on page load
+    // Save to localStorage for immediate sync access on next load
+    localStorage.setItem('shieldpro_theme', themeId);
+    
+    // Save to chrome.storage.local for persistence
     const themeSettings = {
       theme: themeId,
       customColors: theme.colors,
@@ -227,6 +230,13 @@ export const ThemeManager: React.FC<ThemeManagerProps> = ({ currentTier }) => {
       fontFamily: fontFamily
     };
     await chrome.storage.local.set({ themeSettings });
+    
+    // Apply theme immediately
+    if (themeId === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
     
     // Use the theme service for consistent application
     await themeService.setTheme(themeId);

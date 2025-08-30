@@ -18,8 +18,13 @@
       -moz-osx-font-smoothing: grayscale;
       /* Ensure body respects dark mode */
       background-color: white;
-      transition: background-color 0.3s ease;
+      opacity: 0;
+      transition: opacity 0.1s ease-in, background-color 0.3s ease;
     }
+    body.theme-loaded {
+      opacity: 1;
+    }
+    .dark body,
     body.dark {
       background-color: #111827; /* gray-900 */
     }
@@ -33,7 +38,14 @@
   <!-- Load theme immediately to prevent flash -->
   <script>
     (function() {
-      // Load theme from Chrome storage synchronously if possible
+      // First check localStorage for immediate sync access
+      const cachedTheme = localStorage.getItem('shieldpro_theme');
+      if (cachedTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+        document.body.classList.add('dark');
+      }
+      
+      // Then load from Chrome storage to ensure it's up to date
       if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
         chrome.storage.local.get(['themeSettings'], function(result) {
           if (result.themeSettings) {
@@ -41,15 +53,26 @@
             if (theme === 'dark') {
               document.documentElement.classList.add('dark');
               document.body.classList.add('dark');
+              localStorage.setItem('shieldpro_theme', 'dark');
+            } else {
+              document.documentElement.classList.remove('dark');
+              document.body.classList.remove('dark');
+              localStorage.setItem('shieldpro_theme', theme || 'light');
             }
           } else {
             // Check system preference as fallback
             if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
               document.documentElement.classList.add('dark');
               document.body.classList.add('dark');
+              localStorage.setItem('shieldpro_theme', 'dark');
             }
           }
+          // Show body after theme is loaded
+          document.body.classList.add('theme-loaded');
         });
+      } else {
+        // If chrome storage not available, show body anyway
+        document.body.classList.add('theme-loaded');
       }
     })();
   </script>

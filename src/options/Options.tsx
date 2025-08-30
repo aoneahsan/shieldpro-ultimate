@@ -120,8 +120,10 @@ function Options() {
         // Apply theme immediately
         if (theme === 'dark') {
           document.documentElement.classList.add('dark');
+          localStorage.setItem('shieldpro_theme', 'dark');
         } else {
           document.documentElement.classList.remove('dark');
+          localStorage.setItem('shieldpro_theme', theme || 'light');
         }
         
         // Apply other theme settings using themeService
@@ -144,11 +146,17 @@ function Options() {
         // If no theme saved, check system preference for dark mode
         if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
           document.documentElement.classList.add('dark');
+          localStorage.setItem('shieldpro_theme', 'dark');
+        } else {
+          localStorage.setItem('shieldpro_theme', 'light');
         }
       }
     } catch (error) {
       console.error('Failed to load theme:', error);
     }
+    
+    // Ensure body is visible after theme loads
+    document.body.classList.add('theme-loaded');
   };
 
   // Calculate actual width percentage
