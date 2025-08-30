@@ -30,13 +30,22 @@ function Options() {
     loadCurrentTier();
     checkEarlyAdopterStatus();
     
-    // Handle browser back/forward navigation
-    const handlePopState = () => {
-      setActiveTab(getInitialTab());
+    // Handle browser back/forward navigation and hash changes
+    const handleNavigation = () => {
+      const hash = window.location.hash.slice(1); // Remove #
+      if (hash) {
+        setActiveTab(hash);
+      }
     };
     
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    // Handle both popstate and hashchange events
+    window.addEventListener('popstate', handleNavigation);
+    window.addEventListener('hashchange', handleNavigation);
+    
+    return () => {
+      window.removeEventListener('popstate', handleNavigation);
+      window.removeEventListener('hashchange', handleNavigation);
+    };
   }, []);
 
   const loadCurrentTier = async () => {
@@ -57,12 +66,23 @@ function Options() {
     }
   };
 
+  // Sync activeTab with URL hash on mount and when tier changes
+  useEffect(() => {
+    const hash = window.location.hash.slice(1);
+    if (hash && hash !== activeTab) {
+      // Just set the active tab to the hash - tab visibility is handled in rendering
+      setActiveTab(hash);
+    }
+  }, [currentTier]); // Re-check when tier changes as available tabs change
+
   // Update URL when tab changes
   const handleTabChange = (tabId: string) => {
-    setActiveTab(tabId);
-    // Update URL without page reload
-    const newUrl = `${window.location.pathname}#${tabId}`;
-    window.history.pushState({ tab: tabId }, '', newUrl);
+    if (tabId !== activeTab) {
+      setActiveTab(tabId);
+      // Update URL without page reload - use replaceState to avoid history spam
+      const newUrl = `${window.location.pathname}#${tabId}`;
+      window.history.replaceState({ tab: tabId }, '', newUrl);
+    }
   };
 
   const tabs = [
@@ -149,6 +169,7 @@ function Options() {
                             : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
                           }
                         `}
+                        aria-current={activeTab === tab.id ? 'page' : undefined}
                       >
                         <Icon className="w-5 h-5 flex-shrink-0" />
                         <span>{tab.label}</span>
