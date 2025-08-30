@@ -7,11 +7,7 @@ import {
   deleteUser,
   User,
   onAuthStateChanged,
-  sendEmailVerification,
-  GoogleAuthProvider,
-  signInWithPopup,
-  FacebookAuthProvider,
-  GithubAuthProvider
+  sendEmailVerification
 } from 'firebase/auth';
 import { 
   doc, 
@@ -294,46 +290,18 @@ class AuthService {
     }
   }
 
-  // Sign in with Google
+  // Sign in with Google - Not available in extension context
   async signInWithGoogle(): Promise<User> {
-    return this.signInWithSocial('google');
+    // In Chrome extension context, this should be handled via message passing
+    // to the background script which uses Chrome Identity API
+    throw new Error('Google Sign-In must be handled through the background script in Chrome extensions');
   }
 
-  // Social sign in
+  // Social sign in - Not available in extension context
   async signInWithSocial(provider: 'google' | 'facebook' | 'github'): Promise<User> {
-    try {
-      let authProvider;
-      switch (provider) {
-        case 'google':
-          authProvider = new GoogleAuthProvider();
-          break;
-        case 'facebook':
-          authProvider = new FacebookAuthProvider();
-          break;
-        case 'github':
-          authProvider = new GithubAuthProvider();
-          break;
-        default:
-          throw new Error('Invalid provider');
-      }
-
-      const userCredential = await signInWithPopup(auth, authProvider);
-      const user = userCredential.user;
-
-      // Check if user profile exists
-      const docRef = doc(db, 'users', user.uid);
-      const docSnap = await getDoc(docRef);
-      
-      if (!docSnap.exists()) {
-        await this.createUserProfileInternal(user);
-        // Automatically upgrade to Tier 2 for social sign-ups
-        await this.upgradeTier(user.uid, 2);
-      }
-
-      return user;
-    } catch (error: any) {
-      throw new Error(error.message);
-    }
+    // In Chrome extension context, social sign-in should be handled via message passing
+    // to the background script which uses Chrome Identity API
+    throw new Error('Social sign-in must be handled through the background script in Chrome extensions');
   }
 
   // Sign out
