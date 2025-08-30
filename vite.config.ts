@@ -47,7 +47,8 @@ export default defineConfig(({ mode }) => {
 			jsx: 'transform',
 			jsxFactory: 'React.createElement',
 			jsxFragment: 'React.Fragment',
-			jsxInject: `import React from 'react'`,
+			// Don't inject React since files already import it
+			// jsxInject: `import React from 'react'`,
 			minify: isProd,
 			drop: isProd ? ['console', 'debugger'] : [],
 			jsxSideEffects: false,
@@ -193,7 +194,6 @@ export default defineConfig(({ mode }) => {
 			'import.meta.env.VITE_FIREBASE_APP_ID': JSON.stringify(env.VITE_FIREBASE_APP_ID || env.REACT_APP_FIREBASE_APP_ID),
 			'import.meta.env.VITE_FIREBASE_MEASUREMENT_ID': JSON.stringify(env.VITE_FIREBASE_MEASUREMENT_ID || env.REACT_APP_FIREBASE_MEASUREMENT_ID),
 			'import.meta.env.VITE_USE_FIREBASE_EMULATOR': JSON.stringify(env.VITE_USE_FIREBASE_EMULATOR || env.USE_FIREBASE_EMULATOR),
-			'import.meta.env.DEV': JSON.stringify(isDev),
 		},
 
 

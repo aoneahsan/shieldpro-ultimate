@@ -16,6 +16,12 @@
         sans-serif;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
+      /* Ensure body respects dark mode */
+      background-color: white;
+      transition: background-color 0.3s ease;
+    }
+    body.dark {
+      background-color: #111827; /* gray-900 */
     }
     #root {
       width: 100%;
@@ -23,7 +29,7 @@
     }
   </style>
 </head>
-<body>
+<body class="popup">
   <div id="root"></div>
   <script type="module" src="./index.tsx"></script>
 </body>

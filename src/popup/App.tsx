@@ -220,7 +220,7 @@ const App: React.FC = () => {
   const isYouTubeActive = hasYouTubeAccess && tabState?.domain?.includes('youtube.com');
 
   return (
-    <div className="popup-container bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="popup-container bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
       {/* Compact Header with Power Toggle and Refresh */}
       <div className="bg-gradient-to-r from-primary-600 to-primary-700 px-3 py-2">
         <div className="flex items-center justify-between">
@@ -337,7 +337,7 @@ const App: React.FC = () => {
         )}
 
         {/* PRIMARY USER FOCUS - Current Site Stats */}
-        <div className="bg-white rounded-lg p-3 shadow-sm border border-gray-100">
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm border border-gray-100 dark:border-gray-700">
           {/* Big blocking number first - what users care about most */}
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center space-x-3">
@@ -350,7 +350,7 @@ const App: React.FC = () => {
                 )}
               </div>
               <div>
-                <span className="text-3xl font-bold text-primary-600">
+                <span className="text-3xl font-bold text-primary-600 dark:text-primary-400">
                   {tabState?.blocked || 0}
                 </span>
                 <span className="text-sm text-gray-500 ml-2">blocked on this page</span>
@@ -363,14 +363,14 @@ const App: React.FC = () => {
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
                 <Globe className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-                <span className="text-xs text-gray-500">Current Site</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">Current Site</span>
                 {tabState?.whitelisted && (
-                  <span className="text-xs bg-yellow-100 text-yellow-600 px-1.5 py-0.5 rounded">
+                  <span className="text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 px-1.5 py-0.5 rounded">
                     Whitelisted
                   </span>
                 )}
               </div>
-              <div className="text-sm font-medium text-gray-900 truncate">
+              <div className="text-sm font-medium text-gray-900 dark:text-white truncate">
                 {tabState?.domain || 'No active tab'}
               </div>
             </div>
@@ -378,8 +378,8 @@ const App: React.FC = () => {
               onClick={toggleWhitelist}
               className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
                 tabState?.whitelisted
-                  ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-200 dark:hover:bg-yellow-900/40'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
             >
               {tabState?.whitelisted ? 'Remove' : 'Whitelist'}
@@ -388,7 +388,7 @@ const App: React.FC = () => {
 
           {/* YouTube indicator inline */}
           {isYouTubeActive && (
-            <div className="flex items-center gap-1.5 text-red-600 bg-red-50 px-2 py-1 rounded">
+            <div className="flex items-center gap-1.5 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 px-2 py-1 rounded">
               <Youtube className="w-3.5 h-3.5 flex-shrink-0" />
               <span className="text-xs font-medium">YouTube Ad Blocking Active</span>
             </div>
@@ -396,25 +396,25 @@ const App: React.FC = () => {
         </div>
 
         {/* Overall Statistics - Compact */}
-        <div className="bg-white rounded-lg p-3 shadow-sm border border-gray-100">
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm border border-gray-100 dark:border-gray-700">
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">
                 {formatNumber(stats?.totalBlocked || 0)}
               </div>
-              <div className="text-xs text-gray-500">Total</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">Total</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-primary-600">
+              <div className="text-2xl font-bold text-primary-600 dark:text-primary-400">
                 {formatNumber(stats?.blockedToday || 0)}
               </div>
-              <div className="text-xs text-gray-500">Today</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">Today</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                 {currentTier}
               </div>
-              <div className="text-xs text-gray-500">Tier</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">Tier</div>
             </div>
           </div>
         </div>
@@ -466,14 +466,14 @@ const App: React.FC = () => {
         <div className="flex gap-2">
           <button
             onClick={openSettings}
-            className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded-lg transition-colors text-xs font-medium flex items-center justify-center space-x-1.5"
+            className="flex-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 py-2 px-3 rounded-lg transition-colors text-xs font-medium flex items-center justify-center space-x-1.5"
           >
             <Settings className="w-3.5 h-3.5" />
             <span>Settings</span>
           </button>
           <button
             onClick={clearStats}
-            className="bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded-lg transition-colors text-xs font-medium flex items-center justify-center"
+            className="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 py-2 px-3 rounded-lg transition-colors text-xs font-medium flex items-center justify-center"
             title="Clear Statistics"
           >
             <RefreshCw className="w-3.5 h-3.5" />
@@ -483,39 +483,39 @@ const App: React.FC = () => {
         {/* BELOW THE FOLD - Additional details */}
         
         {/* Category Breakdown - Collapsible */}
-        <details className="bg-white rounded-lg shadow-sm border border-gray-100">
-          <summary className="p-3 cursor-pointer hover:bg-gray-50 transition-colors list-none">
+        <details className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+          <summary className="p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors list-none">
             <div className="flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-gray-400 flex-shrink-0" />
-              <span className="text-sm font-medium text-gray-700">Detailed Stats</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Detailed Stats</span>
             </div>
           </summary>
           <div className="px-3 pb-3 space-y-1.5">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-600">Ads Blocked</span>
-              <span className="text-xs font-medium">{stats?.categoryStats?.ads || 0}</span>
+              <span className="text-xs text-gray-600 dark:text-gray-400">Ads Blocked</span>
+              <span className="text-xs font-medium text-gray-900 dark:text-gray-100">{stats?.categoryStats?.ads || 0}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-600">Trackers</span>
-              <span className="text-xs font-medium">{stats?.categoryStats?.trackers || 0}</span>
+              <span className="text-xs text-gray-600 dark:text-gray-400">Trackers</span>
+              <span className="text-xs font-medium text-gray-900 dark:text-gray-100">{stats?.categoryStats?.trackers || 0}</span>
             </div>
             {hasYouTubeAccess && (
               <>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-600">YouTube</span>
-                  <span className="text-xs font-medium text-red-600">
+                  <span className="text-xs text-gray-600 dark:text-gray-400">YouTube</span>
+                  <span className="text-xs font-medium text-red-600 dark:text-red-400">
                     {stats?.categoryStats?.youtube || 0}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-600">Social</span>
-                  <span className="text-xs font-medium">{stats?.categoryStats?.social || 0}</span>
+                  <span className="text-xs text-gray-600 dark:text-gray-400">Social</span>
+                  <span className="text-xs font-medium text-gray-900 dark:text-gray-100">{stats?.categoryStats?.social || 0}</span>
                 </div>
               </>
             )}
             <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-600">Other</span>
-              <span className="text-xs font-medium">{stats?.categoryStats?.other || 0}</span>
+              <span className="text-xs text-gray-600 dark:text-gray-400">Other</span>
+              <span className="text-xs font-medium text-gray-900 dark:text-gray-100">{stats?.categoryStats?.other || 0}</span>
             </div>
           </div>
         </details>
@@ -545,12 +545,12 @@ const App: React.FC = () => {
             </div>
 
             {/* Account Creation Form - Always visible, not hidden in component state */}
-            <div id="account-section-form" className="bg-white rounded-lg p-3 shadow-sm border border-gray-100">
-              <h3 className="text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
+            <div id="account-section-form" className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm border border-gray-100 dark:border-gray-700">
+              <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
                 <Gift className="w-4 h-4 text-green-600" />
                 Secure Your Lifetime Access
               </h3>
-              <p className="text-xs text-gray-600 mb-3">
+              <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
                 Create your free account now to lock in all benefits forever
               </p>
               <AccountManager 
@@ -582,7 +582,7 @@ const App: React.FC = () => {
             </div>
 
             {/* Account Creation Form */}
-            <div id="account-section-form" className="bg-white rounded-lg p-3 shadow-sm border border-gray-100">
+            <div id="account-section-form" className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm border border-gray-100 dark:border-gray-700">
               <AccountManager 
                 currentTier={currentTier}
                 onTierUpgrade={handleTierUpgrade}
