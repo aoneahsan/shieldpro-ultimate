@@ -125,38 +125,40 @@ export const ImageSwap: React.FC<ImageSwapProps> = ({ currentTier }) => {
     }
   };
 
-  const saveSettings = async () => {
+  const saveSettings = async (overrides?: {
+    enabled?: boolean;
+    categories?: string[];
+    customImages?: string[];
+    frequency?: number;
+    size?: string;
+  }) => {
     const storage = StorageManager.getInstance();
+    const settingsToSave = {
+      enabled: overrides?.enabled !== undefined ? overrides.enabled : enabled,
+      categories: overrides?.categories || selectedCategories,
+      customImages: overrides?.customImages || customImages,
+      frequency: overrides?.frequency !== undefined ? overrides.frequency : replaceFrequency,
+      size: overrides?.size || imageSize
+    };
+    
     await storage.setSettings({
-      imageSwap: {
-        enabled,
-        categories: selectedCategories,
-        customImages,
-        frequency: replaceFrequency,
-        size: imageSize
-      }
+      imageSwap: settingsToSave
     });
 
     // Send message to content scripts to update image swap
     chrome.runtime.sendMessage({
       action: 'updateImageSwap',
-      settings: {
-        enabled,
-        categories: selectedCategories,
-        customImages,
-        frequency: replaceFrequency,
-        size: imageSize
-      }
+      settings: settingsToSave
     });
   };
 
-  const toggleEnabled = () => {
+  const toggleEnabled = async () => {
     const newEnabled = !enabled;
     setEnabled(newEnabled);
-    saveSettings();
+    await saveSettings({ enabled: newEnabled });
   };
 
-  const toggleCategory = (categoryId: string) => {
+  const toggleCategory = async (categoryId: string) => {
     const category = imageCategories.find(c => c.id === categoryId);
     if (!category || currentTier < category.requiredTier) return;
 
@@ -165,22 +167,22 @@ export const ImageSwap: React.FC<ImageSwapProps> = ({ currentTier }) => {
       : [...selectedCategories, categoryId];
     
     setSelectedCategories(newCategories);
-    saveSettings();
+    await saveSettings({ categories: newCategories });
   };
 
-  const addCustomImage = () => {
+  const addCustomImage = async () => {
     if (newImageUrl && !customImages.includes(newImageUrl)) {
       const newImages = [...customImages, newImageUrl];
       setCustomImages(newImages);
       setNewImageUrl('');
-      saveSettings();
+      await saveSettings({ customImages: newImages });
     }
   };
 
-  const removeCustomImage = (url: string) => {
+  const removeCustomImage = async (url: string) => {
     const newImages = customImages.filter(img => img !== url);
     setCustomImages(newImages);
-    saveSettings();
+    await saveSettings({ customImages: newImages });
   };
 
   const getRandomReplacementImage = () => {
@@ -258,9 +260,10 @@ export const ImageSwap: React.FC<ImageSwapProps> = ({ currentTier }) => {
                 max="100"
                 step="10"
                 value={replaceFrequency}
-                onChange={(e) => {
-                  setReplaceFrequency(Number(e.target.value));
-                  saveSettings();
+                onChange={async (e) => {
+                  const newFrequency = Number(e.target.value);
+                  setReplaceFrequency(newFrequency);
+                  await saveSettings({ frequency: newFrequency });
                 }}
                 className="w-full"
               />
@@ -280,9 +283,9 @@ export const ImageSwap: React.FC<ImageSwapProps> = ({ currentTier }) => {
                 {['original', 'small', 'medium', 'large'].map(size => (
                   <button
                     key={size}
-                    onClick={() => {
+                    onClick={async () => {
                       setImageSize(size);
-                      saveSettings();
+                      await saveSettings({ size });
                     }}
                     className={`px-3 py-1.5 rounded-lg capitalize transition-colors ${
                       imageSize === size
