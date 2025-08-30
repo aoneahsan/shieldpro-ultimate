@@ -133,27 +133,31 @@ function Options() {
 
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg">
           <div className="border-b border-gray-200 dark:border-gray-700">
-            <nav className="flex space-x-8 px-6" aria-label="Tabs">
-              {tabs.map((tab) => {
-                const Icon = tab.icon;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => handleTabChange(tab.id)}
-                    className={`
-                      flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors
-                      ${activeTab === tab.id
-                        ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
-                      }
-                    `}
-                  >
-                    <Icon className="w-5 h-5" />
-                    <span>{tab.label}</span>
-                  </button>
-                );
-              })}
-            </nav>
+            <div className="relative">
+              <nav className="flex overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 px-6" aria-label="Tabs">
+                <div className="flex space-x-6 min-w-max">
+                  {tabs.map((tab) => {
+                    const Icon = tab.icon;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => handleTabChange(tab.id)}
+                        className={`
+                          flex items-center space-x-2 py-4 px-3 border-b-2 font-medium text-sm transition-colors whitespace-nowrap
+                          ${activeTab === tab.id
+                            ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                          }
+                        `}
+                      >
+                        <Icon className="w-5 h-5 flex-shrink-0" />
+                        <span>{tab.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </nav>
+            </div>
           </div>
 
           <div className="p-6">
