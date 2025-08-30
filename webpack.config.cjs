@@ -157,6 +157,7 @@ module.exports = (env, argv) => {
           { from: 'public/icons', to: 'icons' },
           { from: 'public/rules', to: 'rules' },
           { from: 'public/youtube.css', to: 'youtube.css' },
+          { from: 'public/theme-loader.js', to: 'theme-loader.js' },
           { from: 'src/locales', to: 'locales' },
           { from: 'src/content/content.css', to: 'content.css' }
         ]
