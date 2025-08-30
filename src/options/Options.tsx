@@ -12,6 +12,9 @@ import { ThemeManager } from './components/ThemeManager';
 import { ImageSwap } from './components/ImageSwap';
 import { BackupSync } from './components/BackupSync';
 import { StorageManager } from '../shared/utils/storage';
+import { TabsLayout, SidebarLayout, HeaderLayout, HeaderSidebarLayout } from './layouts';
+import { LayoutSwitcher } from './components/LayoutSwitcher';
+import type { LayoutType, TabItem } from './layouts/types';
 
 function Options() {
   // Get initial tab from URL or default to 'general'
@@ -25,10 +28,12 @@ function Options() {
   const [currentTier, setCurrentTier] = useState(1);
   const [isEarlyAdopter, setIsEarlyAdopter] = useState(false);
   const [userNumber, setUserNumber] = useState(0);
+  const [layoutType, setLayoutType] = useState<LayoutType>('tabs');
 
   useEffect(() => {
     loadCurrentTier();
     checkEarlyAdopterStatus();
+    loadLayoutPreference();
     
     // Handle browser back/forward navigation and hash changes
     const handleNavigation = () => {
@@ -52,6 +57,18 @@ function Options() {
     const storage = StorageManager.getInstance();
     const settings = await storage.getSettings();
     setCurrentTier(settings.tier?.level || 1);
+  };
+
+  const loadLayoutPreference = async () => {
+    const result = await chrome.storage.local.get(['optionsLayoutType']);
+    if (result.optionsLayoutType) {
+      setLayoutType(result.optionsLayoutType as LayoutType);
+    }
+  };
+
+  const handleLayoutChange = async (layout: LayoutType) => {
+    setLayoutType(layout);
+    await chrome.storage.local.set({ optionsLayoutType: layout });
   };
 
   const checkEarlyAdopterStatus = async () => {
@@ -85,7 +102,7 @@ function Options() {
     }
   };
 
-  const tabs = [
+  const tabs: TabItem[] = [
     { id: 'general', label: 'General', icon: Settings },
     { id: 'filters', label: 'Filters', icon: Filter },
     { id: 'privacy', label: 'Privacy', icon: Lock },
@@ -108,6 +125,44 @@ function Options() {
       { id: 'security', label: 'Security', icon: Shield }
     ] : [])
   ];
+
+  // Render the content based on active tab
+  const renderContent = () => {
+    return (
+      <>
+        {activeTab === 'general' && (
+          <div className="space-y-6">
+            <GeneralSettings currentTier={isEarlyAdopter ? 5 : currentTier} />
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+              <LayoutSwitcher currentLayout={layoutType} onLayoutChange={handleLayoutChange} />
+            </div>
+          </div>
+        )}
+        {activeTab === 'filters' && <FilterSettings />}
+        {activeTab === 'privacy' && <PrivacySettings />}
+        {activeTab === 'whitelist' && <WhitelistSettings />}
+        {activeTab === 'tiers' && <TierSettings />}
+        {activeTab === 'themes' && (isEarlyAdopter || currentTier >= 2) && <ThemeManager currentTier={isEarlyAdopter ? 5 : currentTier} />}
+        {activeTab === 'custom-filters' && (isEarlyAdopter || currentTier >= 3) && <CustomFilters currentTier={isEarlyAdopter ? 5 : currentTier} />}
+        {activeTab === 'image-swap' && (isEarlyAdopter || currentTier >= 3) && <ImageSwap currentTier={isEarlyAdopter ? 5 : currentTier} />}
+        {activeTab === 'backup-sync' && (isEarlyAdopter || currentTier >= 3) && <BackupSync currentTier={isEarlyAdopter ? 5 : currentTier} />}
+        {activeTab === 'filter-lists' && (isEarlyAdopter || currentTier >= 4) && <FilterListManager currentTier={isEarlyAdopter ? 5 : currentTier} />}
+        {activeTab === 'whitelist-manager' && (isEarlyAdopter || currentTier >= 4) && <WhitelistManager currentTier={isEarlyAdopter ? 5 : currentTier} />}
+        {activeTab === 'regex-patterns' && (isEarlyAdopter || currentTier >= 4) && <RegexPatternManager currentTier={isEarlyAdopter ? 5 : currentTier} />}
+        {activeTab === 'scripts' && (isEarlyAdopter || currentTier >= 4) && <ScriptControlPanel currentTier={isEarlyAdopter ? 5 : currentTier} />}
+        {activeTab === 'network' && (isEarlyAdopter || currentTier >= 4) && <NetworkLogger currentTier={isEarlyAdopter ? 5 : currentTier} />}
+        {activeTab === 'security' && (isEarlyAdopter || currentTier >= 4) && <SecuritySettings />}
+      </>
+    );
+  };
+
+  // Select the layout component based on layoutType
+  const LayoutComponent = {
+    'tabs': TabsLayout,
+    'sidebar': SidebarLayout,
+    'header': HeaderLayout,
+    'header-sidebar': HeaderSidebarLayout
+  }[layoutType];
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -151,57 +206,13 @@ function Options() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg">
-          <div className="border-b border-gray-200 dark:border-gray-700">
-            <div className="relative">
-              <nav className="flex overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 px-6" aria-label="Tabs">
-                <div className="flex space-x-6 min-w-max">
-                  {tabs.map((tab) => {
-                    const Icon = tab.icon;
-                    const isActive = activeTab === tab.id;
-                    
-                    return (
-                      <button
-                        key={tab.id}
-                        onClick={() => handleTabChange(tab.id)}
-                        className={
-                          isActive
-                            ? 'flex items-center space-x-2 py-4 px-3 border-b-2 font-medium text-sm transition-colors whitespace-nowrap border-primary-500 text-primary-600 dark:text-primary-400'
-                            : 'flex items-center space-x-2 py-4 px-3 border-b-2 font-medium text-sm transition-colors whitespace-nowrap border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
-                        }
-                        aria-current={isActive ? 'page' : undefined}
-                        style={{
-                          borderBottomColor: isActive ? 'var(--primary-500, #3b82f6)' : 'transparent'
-                        }}
-                      >
-                        <Icon className="w-5 h-5 flex-shrink-0" />
-                        <span>{tab.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </nav>
-            </div>
-          </div>
-
-          <div className="p-6">
-            {activeTab === 'general' && <GeneralSettings currentTier={isEarlyAdopter ? 5 : currentTier} />}
-            {activeTab === 'filters' && <FilterSettings />}
-            {activeTab === 'privacy' && <PrivacySettings />}
-            {activeTab === 'whitelist' && <WhitelistSettings />}
-            {activeTab === 'tiers' && <TierSettings />}
-            {activeTab === 'themes' && (isEarlyAdopter || currentTier >= 2) && <ThemeManager currentTier={isEarlyAdopter ? 5 : currentTier} />}
-            {activeTab === 'custom-filters' && (isEarlyAdopter || currentTier >= 3) && <CustomFilters currentTier={isEarlyAdopter ? 5 : currentTier} />}
-            {activeTab === 'image-swap' && (isEarlyAdopter || currentTier >= 3) && <ImageSwap currentTier={isEarlyAdopter ? 5 : currentTier} />}
-            {activeTab === 'backup-sync' && (isEarlyAdopter || currentTier >= 3) && <BackupSync currentTier={isEarlyAdopter ? 5 : currentTier} />}
-            {activeTab === 'filter-lists' && (isEarlyAdopter || currentTier >= 4) && <FilterListManager currentTier={isEarlyAdopter ? 5 : currentTier} />}
-            {activeTab === 'whitelist-manager' && (isEarlyAdopter || currentTier >= 4) && <WhitelistManager currentTier={isEarlyAdopter ? 5 : currentTier} />}
-            {activeTab === 'regex-patterns' && (isEarlyAdopter || currentTier >= 4) && <RegexPatternManager currentTier={isEarlyAdopter ? 5 : currentTier} />}
-            {activeTab === 'scripts' && (isEarlyAdopter || currentTier >= 4) && <ScriptControlPanel currentTier={isEarlyAdopter ? 5 : currentTier} />}
-            {activeTab === 'network' && (isEarlyAdopter || currentTier >= 4) && <NetworkLogger currentTier={isEarlyAdopter ? 5 : currentTier} />}
-            {activeTab === 'security' && (isEarlyAdopter || currentTier >= 4) && <SecuritySettings />}
-          </div>
-        </div>
+        <LayoutComponent
+          tabs={tabs}
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+        >
+          {renderContent()}
+        </LayoutComponent>
       </div>
     </div>
   );
