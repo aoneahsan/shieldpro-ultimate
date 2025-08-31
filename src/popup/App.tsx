@@ -92,7 +92,7 @@ const App: React.FC = () => {
       if ('authUser' in cached) {
         setAuthChecked(true);
       }
-    } catch {
+    } catch (error) {
       console.error('Failed to load cached data:', error);
       // Set defaults on error
       setSettings({
@@ -161,7 +161,7 @@ const App: React.FC = () => {
     try {
       const response = await chrome.runtime.sendMessage({ action: 'toggleExtension' });
       setSettings((prev) => (prev ? { ...prev, enabled: response.enabled } : null));
-    } catch {
+    } catch (error) {
       console.error('Failed to toggle extension:', error);
     }
   };
@@ -175,7 +175,7 @@ const App: React.FC = () => {
         domain: tabState.domain,
       });
       setTabState((prev) => (prev ? { ...prev, whitelisted: response.whitelisted } : null));
-    } catch {
+    } catch (error) {
       console.error('Failed to toggle whitelist:', error);
     }
   };
@@ -189,7 +189,7 @@ const App: React.FC = () => {
       try {
         await chrome.runtime.sendMessage({ action: 'clearStats' });
         await loadData();
-      } catch {
+      } catch (error) {
         console.error('Failed to clear stats:', error);
       }
     }
