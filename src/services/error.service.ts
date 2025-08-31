@@ -105,7 +105,7 @@ class ErrorService {
     const errorDetails = this.parseError(error, action);
 
     // Log to console in development
-    if (__ENV__.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === 'development') {
       console.error('Error:', _errorDetails);
     }
 

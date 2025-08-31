@@ -74,7 +74,7 @@ async function handleGoogleSignIn() {
   // This opens a popup window for Google OAuth
   const redirectUrl = chrome.identity.getRedirectURL();
   const clientId =
-    __ENV__.VITE_FIREBASE_CLIENT_ID ||
+    process.env.VITE_FIREBASE_CLIENT_ID ||
     '526899927330-q60p30m9tjt8nb9av2bgq7tii388kfgf.apps.googleusercontent.com';
 
   const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');

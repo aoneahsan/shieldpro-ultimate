@@ -12,6 +12,13 @@ dotenv.config();
 
 const isDev = process.env.NODE_ENV !== 'production';
 
+// Log to verify env vars are loaded
+console.log('Building with Firebase config:', {
+  apiKey: process.env.VITE_FIREBASE_API_KEY ? 'SET' : 'NOT SET',
+  authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN ? 'SET' : 'NOT SET',
+  projectId: process.env.VITE_FIREBASE_PROJECT_ID ? 'SET' : 'NOT SET',
+});
+
 module.exports = {
   mode: isDev ? 'development' : 'production',
   devtool: isDev ? 'inline-source-map' : false,
@@ -97,20 +104,18 @@ module.exports = {
     }),
     
     // Define environment variables including Firebase config
-    // Define __ENV__ as a complete object for browser context
-    new webpack.DefinePlugin({
-      __ENV__: JSON.stringify({
-        NODE_ENV: isDev ? 'development' : 'production',
-        VITE_FIREBASE_API_KEY: process.env.VITE_FIREBASE_API_KEY || '',
-        VITE_FIREBASE_AUTH_DOMAIN: process.env.VITE_FIREBASE_AUTH_DOMAIN || '',
-        VITE_FIREBASE_PROJECT_ID: process.env.VITE_FIREBASE_PROJECT_ID || '',
-        VITE_FIREBASE_STORAGE_BUCKET: process.env.VITE_FIREBASE_STORAGE_BUCKET || '',
-        VITE_FIREBASE_MESSAGING_SENDER_ID: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
-        VITE_FIREBASE_APP_ID: process.env.VITE_FIREBASE_APP_ID || '',
-        VITE_FIREBASE_MEASUREMENT_ID: process.env.VITE_FIREBASE_MEASUREMENT_ID || '',
-        VITE_USE_FIREBASE_EMULATOR: process.env.VITE_USE_FIREBASE_EMULATOR || 'false',
-        VITE_FIREBASE_CLIENT_ID: process.env.VITE_FIREBASE_CLIENT_ID || '526899927330-q60p30m9tjt8nb9av2bgq7tii388kfgf.apps.googleusercontent.com',
-      }),
+    // Use EnvironmentPlugin with defaults for better compatibility
+    new webpack.EnvironmentPlugin({
+      NODE_ENV: isDev ? 'development' : 'production',
+      VITE_FIREBASE_API_KEY: process.env.VITE_FIREBASE_API_KEY || '',
+      VITE_FIREBASE_AUTH_DOMAIN: process.env.VITE_FIREBASE_AUTH_DOMAIN || '',
+      VITE_FIREBASE_PROJECT_ID: process.env.VITE_FIREBASE_PROJECT_ID || '',
+      VITE_FIREBASE_STORAGE_BUCKET: process.env.VITE_FIREBASE_STORAGE_BUCKET || '',
+      VITE_FIREBASE_MESSAGING_SENDER_ID: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
+      VITE_FIREBASE_APP_ID: process.env.VITE_FIREBASE_APP_ID || '',
+      VITE_FIREBASE_MEASUREMENT_ID: process.env.VITE_FIREBASE_MEASUREMENT_ID || '',
+      VITE_USE_FIREBASE_EMULATOR: process.env.VITE_USE_FIREBASE_EMULATOR || 'false',
+      VITE_FIREBASE_CLIENT_ID: process.env.VITE_FIREBASE_CLIENT_ID || '526899927330-q60p30m9tjt8nb9av2bgq7tii388kfgf.apps.googleusercontent.com',
     }),
     
     // Generate popup.html

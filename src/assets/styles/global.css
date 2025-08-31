@@ -15,7 +15,9 @@
 
   /* Chrome extension popup specific */
   body.popup {
-    @apply w-96 h-[600px] overflow-hidden;
+    @apply overflow-hidden;
+    width: 450px;
+    min-height: 600px;
   }
 
   /* Chrome extension options page */
