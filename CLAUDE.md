@@ -72,9 +72,25 @@ yarn format
 ```
 
 ### Building & Deployment
+
+#### ⚠️ CRITICAL BUILD NOTES
+1. **ALWAYS use production vite config** - Check `.vite-config-notes.md`
+2. **Verify popup.html has script tags** after build
+3. **Run build checklist** - See `docs/BUILD-CHECKLIST.md`
+4. **If blank popup** - Check `docs/BUILD-TROUBLESHOOTING.md`
+
 ```bash
-# Create optimized production build
-yarn build:prod
+# Clean build (RECOMMENDED)
+rm -rf dist
+yarn build
+
+# If build issues, use clean config:
+cp vite.config.clean.ts vite.config.ts
+yarn build
+
+# Verify build output
+grep "popup.js" dist/popup.html  # Must show script tag
+grep "jsxDEV" dist/popup.js && echo "ERROR!" || echo "OK"
 
 # Create ZIP for Chrome Web Store
 yarn package
@@ -87,6 +103,12 @@ firebase deploy --only hosting
 # Version bump and release
 yarn release -- --version=patch  # or minor, major
 ```
+
+#### Known Build Issues & Fixes
+- **Blank popup**: Set `opacity: 1` in dist/popup.html
+- **jsxDEV error**: Use vite.config.clean.ts
+- **Missing scripts**: Copy from dist/src/popup/index.html
+- **"2" in paths**: Use full yarn path `/home/ahsan/.local/share/pnpm/yarn build`
 
 ## High-Level Architecture
 
