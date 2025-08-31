@@ -20,6 +20,7 @@ module.exports = {
     // Extension pages
     popup: './src/popup/index.tsx',
     options: './src/options/index.tsx',
+    'tiers-info': './src/tiers-info/index.tsx',
     
     // Background script
     background: './src/background/service-worker.ts',
@@ -90,21 +91,24 @@ module.exports = {
     
     // Extract CSS into separate files (without hash for extension)
     new MiniCssExtractPlugin({
-      filename: '[name].css', // No hash for Chrome extensions
-      chunkFilename: '[name].css', // No hash for chunks either
+      filename: '[name].css',
+      chunkFilename: '[name].css',
+      ignoreOrder: true,
     }),
     
     // Define environment variables including Firebase config
+    // Use __ENV__ instead of process.env to avoid conflicts
     new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify(isDev ? 'development' : 'production'),
-      'process.env.VITE_FIREBASE_API_KEY': JSON.stringify(process.env.VITE_FIREBASE_API_KEY || ''),
-      'process.env.VITE_FIREBASE_AUTH_DOMAIN': JSON.stringify(process.env.VITE_FIREBASE_AUTH_DOMAIN || ''),
-      'process.env.VITE_FIREBASE_PROJECT_ID': JSON.stringify(process.env.VITE_FIREBASE_PROJECT_ID || ''),
-      'process.env.VITE_FIREBASE_STORAGE_BUCKET': JSON.stringify(process.env.VITE_FIREBASE_STORAGE_BUCKET || ''),
-      'process.env.VITE_FIREBASE_MESSAGING_SENDER_ID': JSON.stringify(process.env.VITE_FIREBASE_MESSAGING_SENDER_ID || ''),
-      'process.env.VITE_FIREBASE_APP_ID': JSON.stringify(process.env.VITE_FIREBASE_APP_ID || ''),
-      'process.env.VITE_FIREBASE_MEASUREMENT_ID': JSON.stringify(process.env.VITE_FIREBASE_MEASUREMENT_ID || ''),
-      'process.env.VITE_USE_FIREBASE_EMULATOR': JSON.stringify(process.env.VITE_USE_FIREBASE_EMULATOR || 'false'),
+      '__ENV__.NODE_ENV': JSON.stringify(isDev ? 'development' : 'production'),
+      '__ENV__.VITE_FIREBASE_API_KEY': JSON.stringify(process.env.VITE_FIREBASE_API_KEY || ''),
+      '__ENV__.VITE_FIREBASE_AUTH_DOMAIN': JSON.stringify(process.env.VITE_FIREBASE_AUTH_DOMAIN || ''),
+      '__ENV__.VITE_FIREBASE_PROJECT_ID': JSON.stringify(process.env.VITE_FIREBASE_PROJECT_ID || ''),
+      '__ENV__.VITE_FIREBASE_STORAGE_BUCKET': JSON.stringify(process.env.VITE_FIREBASE_STORAGE_BUCKET || ''),
+      '__ENV__.VITE_FIREBASE_MESSAGING_SENDER_ID': JSON.stringify(process.env.VITE_FIREBASE_MESSAGING_SENDER_ID || ''),
+      '__ENV__.VITE_FIREBASE_APP_ID': JSON.stringify(process.env.VITE_FIREBASE_APP_ID || ''),
+      '__ENV__.VITE_FIREBASE_MEASUREMENT_ID': JSON.stringify(process.env.VITE_FIREBASE_MEASUREMENT_ID || ''),
+      '__ENV__.VITE_USE_FIREBASE_EMULATOR': JSON.stringify(process.env.VITE_USE_FIREBASE_EMULATOR || 'false'),
+      '__ENV__.VITE_FIREBASE_CLIENT_ID': JSON.stringify(process.env.VITE_FIREBASE_CLIENT_ID || '526899927330-q60p30m9tjt8nb9av2bgq7tii388kfgf.apps.googleusercontent.com'),
     }),
     
     // Generate popup.html
@@ -131,6 +135,24 @@ module.exports = {
       template: './src/options/index.html',
       filename: 'options.html',
       chunks: ['options'],
+      inject: 'body',
+      minify: !isDev,
+      scriptLoading: 'module',
+      meta: {
+        viewport: 'width=device-width, initial-scale=1.0',
+      },
+      templateParameters: {
+        isDev,
+      },
+      // Don't inject CSS with hash, we'll use clean names
+      hash: false,
+    }),
+    
+    // Generate tiers-info.html
+    new HtmlWebpackPlugin({
+      template: './src/tiers-info/index.html',
+      filename: 'tiers-info.html',
+      chunks: ['tiers-info'],
       inject: 'body',
       minify: !isDev,
       scriptLoading: 'module',
@@ -232,11 +254,21 @@ module.exports = {
           priority: 5,
           reuseExistingChunk: true,
         },
+        styles: {
+          name: (module, chunks, cacheGroupKey) => {
+            const allChunksNames = chunks.map((chunk) => chunk.name).join('-');
+            return allChunksNames;
+          },
+          type: 'css/mini-extract',
+          chunks: 'all',
+          enforce: true,
+        },
       },
     },
-    // Disable content hashing for CSS files
-    moduleIds: 'deterministic',
-    chunkIds: 'deterministic',
+    // Disable content hashing completely
+    moduleIds: 'named',
+    chunkIds: 'named',
+    realContentHash: false,
   },
   
   // Chrome extension specific settings
