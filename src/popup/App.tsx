@@ -106,20 +106,46 @@ const App: React.FC = () => {
 
   const loadDataInBackground = useCallback(async () => {
     try {
+      // Check if service worker is available
+      if (!chrome.runtime?.id) {
+        console.warn('Extension context invalidated, reloading...');
+        window.location.reload();
+        return;
+      }
+
+      // Helper function to safely send messages
+      const sendMessage = (message: any): Promise<any> => {
+        return new Promise((resolve) => {
+          chrome.runtime.sendMessage(message, (response) => {
+            if (chrome.runtime.lastError) {
+              console.warn(`Message failed for ${message.action}:`, chrome.runtime.lastError.message);
+              resolve(null);
+            } else {
+              resolve(response);
+            }
+          });
+        });
+      };
+
       const [settingsRes, statsRes, tabStateRes, earlyAdopterRes] = await Promise.all([
-        chrome.runtime.sendMessage({ action: 'getSettings' }),
-        chrome.runtime.sendMessage({ action: 'getStats' }),
-        chrome.runtime.sendMessage({ action: 'getTabState' }),
-        chrome.runtime.sendMessage({ action: 'getEarlyAdopterStatus' }),
+        sendMessage({ action: 'getSettings' }),
+        sendMessage({ action: 'getStats' }),
+        sendMessage({ action: 'getTabState' }),
+        sendMessage({ action: 'getEarlyAdopterStatus' }),
       ]);
 
-      // Cache the data for next instant load
-      await chrome.storage.local.set({
-        cachedSettings: settingsRes,
-        cachedStats: statsRes,
-        cachedTabState: tabStateRes,
-        cachedEarlyAdopter: earlyAdopterRes,
-      });
+      // Only cache if we got valid responses
+      if (settingsRes || statsRes || tabStateRes || earlyAdopterRes) {
+        const cacheData: any = {};
+        if (settingsRes) cacheData.cachedSettings = settingsRes;
+        if (statsRes) cacheData.cachedStats = statsRes;
+        if (tabStateRes) cacheData.cachedTabState = tabStateRes;
+        if (earlyAdopterRes) cacheData.cachedEarlyAdopter = earlyAdopterRes;
+        
+        if (Object.keys(cacheData).length > 0) {
+          await chrome.storage.local.set(cacheData);
+        }
+      }
 
       // Check if data has changed
       const hasChanged =
@@ -140,13 +166,14 @@ const App: React.FC = () => {
         };
       }
 
-      // Update state with fresh data
-      setSettings(settingsRes);
-      setStats(statsRes);
-      setTabState(tabStateRes);
-      setEarlyAdopterStatus(earlyAdopterRes);
+      // Update state with fresh data only if we got valid responses
+      if (settingsRes) setSettings(settingsRes);
+      if (statsRes) setStats(statsRes);
+      if (tabStateRes) setTabState(tabStateRes);
+      if (earlyAdopterRes !== null) setEarlyAdopterStatus(earlyAdopterRes);
     } catch (error) {
       console.error('Failed to load fresh data:', error);
+      // Don't show error to user - cached data is still valid
     }
   }, [stats, tabState]);
 
@@ -159,8 +186,20 @@ const App: React.FC = () => {
 
   const toggleExtension = async () => {
     try {
-      const response = await chrome.runtime.sendMessage({ action: 'toggleExtension' });
-      setSettings((prev) => (prev ? { ...prev, enabled: response.enabled } : null));
+      if (!chrome.runtime?.id) {
+        console.warn('Extension context invalidated');
+        return;
+      }
+      
+      chrome.runtime.sendMessage({ action: 'toggleExtension' }, (response) => {
+        if (chrome.runtime.lastError) {
+          console.error('Failed to toggle extension:', chrome.runtime.lastError);
+          return;
+        }
+        if (response?.enabled !== undefined) {
+          setSettings((prev) => (prev ? { ...prev, enabled: response.enabled } : null));
+        }
+      });
     } catch (error) {
       console.error('Failed to toggle extension:', error);
     }
@@ -170,11 +209,23 @@ const App: React.FC = () => {
     if (!tabState?.domain) return;
 
     try {
-      const response = await chrome.runtime.sendMessage({
+      if (!chrome.runtime?.id) {
+        console.warn('Extension context invalidated');
+        return;
+      }
+      
+      chrome.runtime.sendMessage({
         action: 'toggleWhitelist',
         domain: tabState.domain,
+      }, (response) => {
+        if (chrome.runtime.lastError) {
+          console.error('Failed to toggle whitelist:', chrome.runtime.lastError);
+          return;
+        }
+        if (response?.whitelisted !== undefined) {
+          setTabState((prev) => (prev ? { ...prev, whitelisted: response.whitelisted } : null));
+        }
       });
-      setTabState((prev) => (prev ? { ...prev, whitelisted: response.whitelisted } : null));
     } catch (error) {
       console.error('Failed to toggle whitelist:', error);
     }
@@ -187,8 +238,18 @@ const App: React.FC = () => {
   const clearStats = async () => {
     if (window.confirm('Clear all statistics?')) {
       try {
-        await chrome.runtime.sendMessage({ action: 'clearStats' });
-        await loadData();
+        if (!chrome.runtime?.id) {
+          console.warn('Extension context invalidated');
+          return;
+        }
+        
+        chrome.runtime.sendMessage({ action: 'clearStats' }, async (response) => {
+          if (chrome.runtime.lastError) {
+            console.error('Failed to clear stats:', chrome.runtime.lastError);
+            return;
+          }
+          await loadData();
+        });
       } catch (error) {
         console.error('Failed to clear stats:', error);
       }
