@@ -97,18 +97,20 @@ module.exports = {
     }),
     
     // Define environment variables including Firebase config
-    // Use __ENV__ instead of process.env to avoid conflicts
+    // Define __ENV__ as a complete object for browser context
     new webpack.DefinePlugin({
-      '__ENV__.NODE_ENV': JSON.stringify(isDev ? 'development' : 'production'),
-      '__ENV__.VITE_FIREBASE_API_KEY': JSON.stringify(process.env.VITE_FIREBASE_API_KEY || ''),
-      '__ENV__.VITE_FIREBASE_AUTH_DOMAIN': JSON.stringify(process.env.VITE_FIREBASE_AUTH_DOMAIN || ''),
-      '__ENV__.VITE_FIREBASE_PROJECT_ID': JSON.stringify(process.env.VITE_FIREBASE_PROJECT_ID || ''),
-      '__ENV__.VITE_FIREBASE_STORAGE_BUCKET': JSON.stringify(process.env.VITE_FIREBASE_STORAGE_BUCKET || ''),
-      '__ENV__.VITE_FIREBASE_MESSAGING_SENDER_ID': JSON.stringify(process.env.VITE_FIREBASE_MESSAGING_SENDER_ID || ''),
-      '__ENV__.VITE_FIREBASE_APP_ID': JSON.stringify(process.env.VITE_FIREBASE_APP_ID || ''),
-      '__ENV__.VITE_FIREBASE_MEASUREMENT_ID': JSON.stringify(process.env.VITE_FIREBASE_MEASUREMENT_ID || ''),
-      '__ENV__.VITE_USE_FIREBASE_EMULATOR': JSON.stringify(process.env.VITE_USE_FIREBASE_EMULATOR || 'false'),
-      '__ENV__.VITE_FIREBASE_CLIENT_ID': JSON.stringify(process.env.VITE_FIREBASE_CLIENT_ID || '526899927330-q60p30m9tjt8nb9av2bgq7tii388kfgf.apps.googleusercontent.com'),
+      __ENV__: JSON.stringify({
+        NODE_ENV: isDev ? 'development' : 'production',
+        VITE_FIREBASE_API_KEY: process.env.VITE_FIREBASE_API_KEY || '',
+        VITE_FIREBASE_AUTH_DOMAIN: process.env.VITE_FIREBASE_AUTH_DOMAIN || '',
+        VITE_FIREBASE_PROJECT_ID: process.env.VITE_FIREBASE_PROJECT_ID || '',
+        VITE_FIREBASE_STORAGE_BUCKET: process.env.VITE_FIREBASE_STORAGE_BUCKET || '',
+        VITE_FIREBASE_MESSAGING_SENDER_ID: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
+        VITE_FIREBASE_APP_ID: process.env.VITE_FIREBASE_APP_ID || '',
+        VITE_FIREBASE_MEASUREMENT_ID: process.env.VITE_FIREBASE_MEASUREMENT_ID || '',
+        VITE_USE_FIREBASE_EMULATOR: process.env.VITE_USE_FIREBASE_EMULATOR || 'false',
+        VITE_FIREBASE_CLIENT_ID: process.env.VITE_FIREBASE_CLIENT_ID || '526899927330-q60p30m9tjt8nb9av2bgq7tii388kfgf.apps.googleusercontent.com',
+      }),
     }),
     
     // Generate popup.html
