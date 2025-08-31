@@ -549,5 +549,280 @@
       "urlFilter": "*drift.com*",
       "resourceTypes": ["script", "sub_frame"]
     }
+  },
+  {
+    "id": 51,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*popcash.net*",
+      "resourceTypes": ["script", "xmlhttprequest", "sub_frame", "main_frame"]
+    }
+  },
+  {
+    "id": 52,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*popads.net*",
+      "resourceTypes": ["script", "xmlhttprequest", "sub_frame", "main_frame"]
+    }
+  },
+  {
+    "id": 53,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*popmyads.com*",
+      "resourceTypes": ["script", "xmlhttprequest", "sub_frame", "main_frame"]
+    }
+  },
+  {
+    "id": 54,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*onclickads.net*",
+      "resourceTypes": ["script", "xmlhttprequest", "sub_frame", "main_frame"]
+    }
+  },
+  {
+    "id": 55,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*clickadu.com*",
+      "resourceTypes": ["script", "xmlhttprequest", "sub_frame", "main_frame"]
+    }
+  },
+  {
+    "id": 56,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*adrunnr.com*",
+      "resourceTypes": ["script", "xmlhttprequest", "sub_frame", "main_frame"]
+    }
+  },
+  {
+    "id": 57,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*trafficjunky.com*",
+      "resourceTypes": ["script", "xmlhttprequest", "sub_frame", "main_frame"]
+    }
+  },
+  {
+    "id": 58,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*adsterra.com*",
+      "resourceTypes": ["script", "xmlhttprequest", "sub_frame", "main_frame"]
+    }
+  },
+  {
+    "id": 59,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*exoclick.com*",
+      "resourceTypes": ["script", "xmlhttprequest", "sub_frame", "main_frame"]
+    }
+  },
+  {
+    "id": 60,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*exosrv.com*",
+      "resourceTypes": ["script", "xmlhttprequest", "sub_frame", "main_frame"]
+    }
+  },
+  {
+    "id": 61,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*juicyads.com*",
+      "resourceTypes": ["script", "xmlhttprequest", "sub_frame", "main_frame"]
+    }
+  },
+  {
+    "id": 62,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*adsco.re*",
+      "resourceTypes": ["script", "xmlhttprequest", "sub_frame", "main_frame"]
+    }
+  },
+  {
+    "id": 63,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*tsyndicate.com*",
+      "resourceTypes": ["script", "xmlhttprequest", "sub_frame", "main_frame"]
+    }
+  },
+  {
+    "id": 64,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*traffichaus.com*",
+      "resourceTypes": ["script", "xmlhttprequest", "sub_frame", "main_frame"]
+    }
+  },
+  {
+    "id": 65,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*ero-advertising.com*",
+      "resourceTypes": ["script", "xmlhttprequest", "sub_frame", "main_frame"]
+    }
+  },
+  {
+    "id": 66,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*awemdia.com*",
+      "resourceTypes": ["script", "xmlhttprequest", "sub_frame", "main_frame"]
+    }
+  },
+  {
+    "id": 67,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*etahub.com*",
+      "resourceTypes": ["script", "xmlhttprequest", "sub_frame", "main_frame"]
+    }
+  },
+  {
+    "id": 68,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*go.xlirdr.com*",
+      "resourceTypes": ["script", "xmlhttprequest", "sub_frame", "main_frame"]
+    }
+  },
+  {
+    "id": 69,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*go.xtbg.org*",
+      "resourceTypes": ["script", "xmlhttprequest", "sub_frame", "main_frame"]
+    }
+  },
+  {
+    "id": 70,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*//1337x.*/cdn-cgi/*",
+      "resourceTypes": ["main_frame", "sub_frame"]
+    }
+  },
+  {
+    "id": 71,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*//1377x.*/cdn-cgi/*",
+      "resourceTypes": ["main_frame", "sub_frame"]
+    }
+  },
+  {
+    "id": 72,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*revenuehits.com*",
+      "resourceTypes": ["script", "xmlhttprequest", "sub_frame", "main_frame"]
+    }
+  },
+  {
+    "id": 73,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*yllix.com*",
+      "resourceTypes": ["script", "xmlhttprequest", "sub_frame", "main_frame"]
+    }
+  },
+  {
+    "id": 74,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*a-ads.com*",
+      "resourceTypes": ["script", "xmlhttprequest", "sub_frame", "main_frame"]
+    }
+  },
+  {
+    "id": 75,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*hilltopads.net*",
+      "resourceTypes": ["script", "xmlhttprequest", "sub_frame", "main_frame"]
+    }
   }
 ]

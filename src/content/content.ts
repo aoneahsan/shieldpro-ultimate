@@ -10,6 +10,7 @@ import { ElementPicker } from './element-picker';
 import { PrivacyProtector } from './privacy-protection';
 import { CookieConsentHandler } from './cookie-consent-handler';
 import { FloatingVideoBlocker } from './floating-video-blocker';
+import { TorrentSiteBlocker } from './torrent-site-blocker';
 
 class ContentScriptManager {
   private youtubeBlocker?: YouTubeAdBlockerV2;
@@ -19,6 +20,7 @@ class ContentScriptManager {
   private privacyProtector: PrivacyProtector;
   private cookieConsentHandler: CookieConsentHandler;
   private floatingVideoBlocker: FloatingVideoBlocker;
+  private torrentSiteBlocker: TorrentSiteBlocker;
   private currentTier: number = 1;
   private isEarlyAdopter: boolean = false;
 
@@ -30,6 +32,7 @@ class ContentScriptManager {
     this.privacyProtector = new PrivacyProtector();
     this.cookieConsentHandler = new CookieConsentHandler();
     this.floatingVideoBlocker = new FloatingVideoBlocker();
+    this.torrentSiteBlocker = new TorrentSiteBlocker();
 
     this.initialize();
   }
@@ -68,6 +71,9 @@ class ContentScriptManager {
 
     // Floating video blocking (FREE - AdBlock Plus Premium feature!)
     this.floatingVideoBlocker.init();
+
+    // Aggressive blocking for torrent/high-ad sites
+    this.torrentSiteBlocker.init();
 
     // Basic element hiding
     this.injectBasicStyles();
