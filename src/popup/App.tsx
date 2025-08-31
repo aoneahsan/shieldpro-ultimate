@@ -25,6 +25,9 @@ const App: React.FC = () => {
   const [hasNewData, setHasNewData] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [_authChecked, setAuthChecked] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   // Load cached data immediately on mount for instant display
   useEffect(() => {
@@ -44,6 +47,9 @@ const App: React.FC = () => {
 
   const loadCachedData = async () => {
     try {
+      setIsLoading(true);
+      setHasError(false);
+      
       // Get cached data from chrome storage for instant display
       const cached = await chrome.storage.local.get([
         'cachedSettings',
@@ -92,6 +98,8 @@ const App: React.FC = () => {
       if ('authUser' in cached) {
         setAuthChecked(true);
       }
+      
+      setIsLoading(false);
     } catch (error) {
       console.error('Failed to load cached data:', error);
       // Set defaults on error
@@ -101,6 +109,8 @@ const App: React.FC = () => {
       } as ExtensionSettings);
       setStats({ totalBlocked: 0, blockedToday: 0, categoryStats: {} } as BlockingStats);
       setTabState({ domain: 'Loading...', blocked: 0, whitelisted: false } as TabState);
+      setIsLoading(false);
+      setHasError(true);
     }
   };
 
@@ -167,21 +177,47 @@ const App: React.FC = () => {
       }
 
       // Update state with fresh data only if we got valid responses
-      if (settingsRes) setSettings(settingsRes);
+      if (settingsRes) {
+        setSettings(settingsRes);
+        setHasError(false);
+        setRetryCount(0);
+      }
       if (statsRes) setStats(statsRes);
       if (tabStateRes) setTabState(tabStateRes);
       if (earlyAdopterRes !== null) setEarlyAdopterStatus(earlyAdopterRes);
+      
+      // If we got at least some data, clear loading state
+      if (settingsRes || statsRes || tabStateRes) {
+        setIsLoading(false);
+        setHasError(false);
+      } else if (!settings && !stats && !tabState) {
+        // No cached data and no fresh data - show error state
+        setHasError(true);
+        setRetryCount(prev => prev + 1);
+      }
     } catch (error) {
       console.error('Failed to load fresh data:', error);
-      // Don't show error to user - cached data is still valid
+      // If we have no data at all, show error
+      if (!settings && !stats && !tabState) {
+        setHasError(true);
+        setRetryCount(prev => prev + 1);
+      }
     }
-  }, [stats, tabState]);
+  }, [stats, tabState, settings]);
 
   const refreshData = async () => {
     setIsRefreshing(true);
     setHasNewData(false);
+    setHasError(false);
     await loadDataInBackground();
     setTimeout(() => setIsRefreshing(false), 500);
+  };
+  
+  const retryConnection = async () => {
+    setHasError(false);
+    setIsLoading(true);
+    await loadCachedData();
+    await loadDataInBackground();
   };
 
   const toggleExtension = async () => {
@@ -306,6 +342,78 @@ const App: React.FC = () => {
   const hasYouTubeAccess = isEarlyAdopter || currentTier >= 2;
   const isYouTubeActive = hasYouTubeAccess && tabState?.domain?.includes('youtube.com');
 
+  // Show loading state
+  if (isLoading && !settings && !stats && !tabState) {
+    return (
+      <div className="popup-container bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+        <div className="bg-gradient-to-r from-primary-600 to-primary-700 px-3 py-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Shield className="w-5 h-5 text-white" />
+              <h1 className="text-sm font-bold text-white">ShieldPro</h1>
+            </div>
+          </div>
+        </div>
+        <div className="flex-1 flex items-center justify-center p-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Loading extension...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state with retry option
+  if (hasError && !settings && !stats && !tabState) {
+    return (
+      <div className="popup-container bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+        <div className="bg-gradient-to-r from-primary-600 to-primary-700 px-3 py-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Shield className="w-5 h-5 text-white" />
+              <h1 className="text-sm font-bold text-white">ShieldPro</h1>
+            </div>
+          </div>
+        </div>
+        <div className="flex-1 flex items-center justify-center p-8">
+          <div className="text-center">
+            <div className="mb-4">
+              <div className="bg-red-100 dark:bg-red-900/30 rounded-full p-3 inline-block">
+                <RefreshCw className="w-8 h-8 text-red-600 dark:text-red-400" />
+              </div>
+            </div>
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Connection Error</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              Unable to connect to extension service.
+              {retryCount > 2 && (
+                <span className="block mt-2 text-xs">
+                  Please reload the extension from chrome://extensions
+                </span>
+              )}
+            </p>
+            <div className="space-y-2">
+              <button
+                onClick={retryConnection}
+                className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              >
+                Try Again
+              </button>
+              {retryCount > 1 && (
+                <button
+                  onClick={() => chrome.runtime.reload()}
+                  className="block mx-auto text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                >
+                  Reload Extension
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="popup-container bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
       {/* Compact Header with Power Toggle and Refresh */}
@@ -323,6 +431,14 @@ const App: React.FC = () => {
           </div>
 
           <div className="flex items-center space-x-2">
+            {/* Connection status indicator */}
+            {hasError && (
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse" />
+                <span className="text-xs text-white/80">Offline</span>
+              </div>
+            )}
+            
             {/* Refresh button */}
             <button
               onClick={refreshData}
@@ -441,9 +557,11 @@ const App: React.FC = () => {
               </div>
               <div>
                 <span className="text-3xl font-bold text-primary-600 dark:text-primary-400">
-                  {tabState?.blocked || 0}
+                  {tabState?.blocked ?? '-'}
                 </span>
-                <span className="text-sm text-gray-500 ml-2">blocked on this page</span>
+                <span className="text-sm text-gray-500 ml-2">
+                  {tabState ? 'blocked on this page' : 'loading...'}
+                </span>
               </div>
             </div>
           </div>
@@ -461,7 +579,7 @@ const App: React.FC = () => {
                 )}
               </div>
               <div className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                {tabState?.domain || 'No active tab'}
+                {tabState?.domain || (isLoading ? 'Connecting...' : 'No active tab')}
               </div>
             </div>
             <button
@@ -490,13 +608,13 @@ const App: React.FC = () => {
           <div className="grid grid-cols-3 gap-3">
             <div>
               <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                {formatNumber(stats?.totalBlocked || 0)}
+                {stats ? formatNumber(stats.totalBlocked || 0) : '-'}
               </div>
               <div className="text-xs text-gray-500 dark:text-gray-400">Total</div>
             </div>
             <div>
               <div className="text-2xl font-bold text-primary-600 dark:text-primary-400">
-                {formatNumber(stats?.blockedToday || 0)}
+                {stats ? formatNumber(stats.blockedToday || 0) : '-'}
               </div>
               <div className="text-xs text-gray-500 dark:text-gray-400">Today</div>
             </div>
